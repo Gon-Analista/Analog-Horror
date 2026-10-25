@@ -16,15 +16,15 @@ func run_smoke(main: Node) -> void:
 	await get_tree().physics_frame
 
 	# 0. Input reaches the player inside the 3D SubViewport.
-	var lit := player.flashlight.visible
+	var light_on := player.flashlight.visible
 	var ev := InputEventAction.new()
 	ev.action = "flashlight"
 	ev.pressed = true
 	Input.parse_input_event(ev)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check("input reaches the 3D world", player.flashlight.visible != lit, "flashlight did not toggle")
-	player.flashlight.visible = lit
+	_check("input reaches the 3D world", player.flashlight.visible != light_on, "flashlight did not toggle")
+	player.flashlight.visible = light_on
 
 	# Reading the broadcast wakes it; E again closes the broadcast.
 	var screen: ReadableScreen = null
@@ -45,6 +45,15 @@ func run_smoke(main: Node) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_check("closing the alert wakes it", not run.reading and entity.state != Entity.State.DORMANT, "")
+	run._request_pickup("Tape0")
+	run._request_pickup("Tape1")
+	await get_tree().process_frame
+	var lit := 0
+	for lamp in run.level.lamps:
+		if not lamp.dead:
+			lit += 1
+	_check("the second tape cuts the power (lamps and TV)", run.tapes_got == 2 and lit == 0 and not run.tv.powered,
+			"tapes=%d lit=%d tv=%s" % [run.tapes_got, lit, run.tv.powered])
 
 	# 1. Freeze: entity 4 m ahead in the hallway, camcorder up.
 	player.global_position = Vector3(6.5, 0, 11.5)
@@ -56,6 +65,12 @@ func run_smoke(main: Node) -> void:
 	var before := entity.global_position
 	await _wait(2.0)
 	_check("filmed entity stays still", entity.global_position.distance_to(before) < 0.01, "moved %.2f m" % entity.global_position.distance_to(before))
+	# Enraged (all tapes taken), the camera only holds it for a moment.
+	entity.enraged = true
+	before = entity.global_position
+	await _wait(Tuning.RAGE_HOLD + 0.8)
+	_check("enraged, it tears free of the camera", entity.global_position.distance_to(before) > 0.3, "moved %.2f m" % entity.global_position.distance_to(before))
+	entity.enraged = false
 
 	# 2. Chase: camcorder down; from its bedroom it must path through the
 	# house and catch the player at the front door.

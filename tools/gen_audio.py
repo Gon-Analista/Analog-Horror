@@ -131,6 +131,16 @@ def tape_whir() -> np.ndarray:
     return normalize(x, 0.4)
 
 
+def power_down() -> np.ndarray:
+    """The power goes: a relay clack, the mains hum sinking into nothing."""
+    t = t_axis(1.8)
+    f = 120 * np.exp(-t * 2.2) + 8
+    hum = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 1.6) * 0.6
+    clack = lowpass(noise(1.8), 0.2) * np.exp(-t * 40) * 2.5
+    thump = np.sin(2 * np.pi * 50 * t) * np.exp(-t * 9) * 0.7
+    return fade(normalize(hum + clack + thump, 0.85), 5)
+
+
 def main() -> None:
     print("audio ->", OUT)
     write("static", static())
@@ -142,6 +152,7 @@ def main() -> None:
     write("click", click())
     write("van_horn", van_horn())
     write("tape_whir", tape_whir())
+    write("power_down", power_down())
 
 
 if __name__ == "__main__":

@@ -46,6 +46,10 @@ var _light: OmniLight3D
 var _audio: AudioStreamPlayer3D
 var _t := 0.0
 var _rng := RandomNumberGenerator.new()
+## Off when the power goes; the corrupted broadcast turns it back on by
+## itself (there is no power).
+var powered := true
+var _screen: MeshInstance3D
 
 
 ## Stands on the "V" cell, screen towards the nearest sofa.
@@ -113,7 +117,17 @@ func _apply_state() -> void:
 			_show_rules(state == State.CORRUPT)
 
 
+## Every machine: the power is gone, the screen dies.
+func power_off() -> void:
+	powered = false
+	_screen.visible = false
+	_audio.stop()
+
+
 func _show_rules(p_corrupted: bool) -> void:
+	if p_corrupted and not powered:
+		powered = true
+		_screen.visible = true
 	_show.visible = false
 	_alert.visible = true
 	_disturb_mat.set_shader_parameter("disturb", 0.15 if p_corrupted else 0.0)
@@ -182,7 +196,7 @@ func _process(delta: float) -> void:
 			if state == State.CORRUPT and _rng.randf() < delta * 2.0:
 				e *= 0.2
 				_title.text = _glitch(tr("AVISO - CANAL 9"))
-	_light.light_energy = e
+	_light.light_energy = e if powered else 0.0
 
 
 func _glitch(text: String) -> String:
@@ -254,6 +268,7 @@ func _build() -> void:
 	_viewport.move_child(overlay, -1)
 
 	var screen := MeshInstance3D.new()
+	_screen = screen
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.48, 0.36)
 	screen.mesh = quad

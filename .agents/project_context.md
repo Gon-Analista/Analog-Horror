@@ -142,6 +142,16 @@ Fusión de las tres direcciones propuestas: **«Solo la cámara la ve»** + **la
   - **Salida clara:** lámpara encima, cartel rojo de «SALIDA», luz por debajo de la puerta y los faros de la furgoneta por la ventanita. Con la cuota, los faros se encienden del todo y la furgoneta pita.
   - **Las cintas aparecen al despertar la Visita** (no antes) y suenan rebobinándose: se encuentran de oído.
   - **Manos en primera persona** más bajas, pegadas al cuerpo y abiertas a los lados; la linterna tiene un modelo nuevo (goma con anillos, bisel cromado).
+- **Ajustes del 2026-10-26:**
+  - **Apagón a la segunda cinta:** se apagan todas las lámparas y la tele; solo queda la lámpara de la salida (otro circuito). A partir de ahí se ve con la linterna, la cámara y las luces de los compañeros. La tele se vuelve a encender sola con la alerta corrupta a la tercera cinta.
+  - **Batería al doble de gasto:** 2,8 %/s, unos 36 s de grabación con la batería llena.
+  - **Sin abusar de la cámara:** tras bajarla hay 0,7 s antes de poder subirla. La Visita solo cambia de pose si llevaba más de 0,6 s sin que la grabaran, y el golpe de cinta suena como mucho cada 3 s.
+  - **Tele:** el último fotograma del programa estropeado se dibuja otra vez con zoom a resolución completa, y la boca abierta queda dentro del hocico.
+- **Final de la noche (2026-10-26):**
+  - **Bajo los tablones, a gatas:** la Visita pasa por las puertas tapiadas como una araña, con codos y rodillas por encima del cuerpo y la cabeza colgando del revés (pose `CRAWL`).
+  - **La quinta cinta la enfurece:** grita por toda la casa (interferencia en todas las pantallas), se vuelve más grande y roja, nunca está quieta y su canción se acelera. La cámara parece funcionar, pero solo la sujeta 1,2 s; después se suelta, aunque la sigas grabando, con un chasquido de cinta, y persigue un 20 % más rápido.
+  - **Con que salga uno, se gana.**
+  - **Pantalla de victoria:** la cinta recuperada se reproduce en una tele (con algún fotograma que no debería estar), el informe se escribe solo, «Las copias serán destruidas» se corrompe en «emitidas» y aparece «GRACIAS POR JUGAR LA DEMO» con la música de cierre.
 - **Falta para el cooperativo completo:** voz por proximidad (RTC de Epic), cámaras escasas que se pueden pasar de mano, probar una sesión online real con varias personas y ajustar el juego en grupo.
 - No añadir progresión, tienda ni campaña antes de que una noche dé miedo jugándola en grupo.
 

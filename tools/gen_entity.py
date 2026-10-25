@@ -54,6 +54,11 @@ POSES = [
     ("lunge", dict(head=(256, 330), neck=(256, 470), sh=((170, 520), (342, 520)), hip=((220, 760), (292, 760)),
                    elb=((110, 560), (402, 560)), hand=((80, 410), (432, 410)), knee=((234, 830), (280, 830)),
                    foot=((228, 890), (286, 890)), tilt=0, hs=1.5, gs=(1.6, 1.6), spread=(1.4, 1.4), front=True)),
+    # Squeezing under the boards: on all fours like a spider, elbows and
+    # knees above the body, the head hanging upside down, looking at you.
+    ("crawl", dict(head=(256, 760), neck=(256, 690), sh=((196, 700), (316, 700)), hip=((232, 600), (280, 600)),
+                   elb=((92, 600), (420, 600)), hand=((44, 874), (468, 874)), knee=((146, 500), (366, 500)),
+                   foot=((196, 884), (316, 884)), tilt=172, hs=0.8, gs=(1.05, 1.05), spread=(1.3, 1.3), front=False, hole=210)),
 ]
 
 
@@ -262,7 +267,7 @@ def draw_pose(index, frame):
     d.polygon(outline, fill=INK)
     for _ in range(60):
         x = struct.uniform(min(p[0] for p in body), max(p[0] for p in body))
-        y = struct.uniform(ny, hl[1] + 30)
+        y = struct.uniform(min(ny, hl[1] + 30), max(ny, hl[1] + 30))
         sketch(d, [(x, y), (x + struct.normal(0, 6), y + struct.uniform(10, 30))], 2, INK2, boil, 1, 1.0)
     for a, b in zip(outline[:-1], outline[1:]):
         if struct.random() < 0.55:
@@ -279,7 +284,11 @@ def draw_pose(index, frame):
 
     # Neck and head (drawn apart so it can tilt).
     hx, hy = k["head"]
-    sketch(d, curve((nx, ny + 10), (hx, hy + 60), 0.15 if k["tilt"] < -40 else 0.02), 20, INK, boil, 2, 2.0)
+    attach = (hx, hy + 60)
+    if abs(k["tilt"]) > 120:  # upside down: the neck meets the head from above
+        a = math.radians(k["tilt"])
+        attach = (hx + 60 * math.sin(a), hy + 60 * math.cos(a))
+    sketch(d, curve((nx, ny + 10), attach, 0.15 if k["tilt"] < -40 else 0.02), 20, INK, boil, 2, 2.0)
     head = draw_head(struct, boil, k["hs"], name == "lunge", k.get("hole", 290)).rotate(k["tilt"], resample=Image.BICUBIC, center=(300, 300))
     img.alpha_composite(head, (int(hx - 300), int(hy - 300)))
     if k["front"]:

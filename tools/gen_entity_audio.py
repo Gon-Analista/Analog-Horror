@@ -350,6 +350,34 @@ def show_theme():
     return normalize(out, 0.5)
 
 
+def rage(jingle_loop):
+    """All the tapes are gone: it screams. A long torn 'aaah' climbing out
+    of an octave below, the show's song spun backwards and fast, a rumble."""
+    n = int(3.0 * SR)
+    t = np.arange(n) / SR
+    seg = [("a", 2.6), ("_", 0.4)]
+    f0 = [(0, 150), (0.25, 260), (0.6, 520), (0.85, 600), (1, 300)]
+    v = normalize(formant_voice(seg, f0, 1.0, 1.15), 1) + normalize(formant_voice(seg, f0, 0.5, 0.9), 1) * 0.9
+    v = saturate(v * 1.5, 6.0)
+    spin = np.interp(np.arange(n) * 2.2, np.arange(len(jingle_loop)), jingle_loop[::-1], period=len(jingle_loop))
+    rumble = lp(white(n), 120) * 6 + np.sin(2 * np.pi * 38 * t) * 0.6
+    x = v * 0.9 + spin * 0.5 + rumble * 0.5 + hp(white(n), 2000) * 0.25
+    x *= np.minimum(1, t * 30) * np.exp(-np.maximum(0, t - 2.3) * 5)
+    x = echo(x, ((0.13, 0.4), (0.29, 0.25), (0.47, 0.15)))
+    return np.clip(normalize(saturate(x, 2.0), 1.0), -0.95, 0.95)
+
+
+def break_free():
+    """Filmed, and it moves anyway: the tape snaps, a wet grunt."""
+    n = int(0.8 * SR)
+    t = np.arange(n) / SR
+    snap = hp(white(n), 3000) * np.exp(-t * 30) * 1.5
+    screech = np.sin(2 * np.pi * np.cumsum(3200 - 2600 * t / 0.8) / SR) * np.exp(-t * 6) * 0.3
+    grunt = normalize(formant_voice([("o", 0.5), ("_", 0.3)], [(0, 90), (1, 60)], 1.0, 0.8), 1) * 0.8
+    x = snap + screech + saturate(grunt, 3.0)
+    return fade(normalize(lp(x, 6000), 0.85), 5)
+
+
 def main() -> None:
     # The show's theme and the jingle are music: tools/gen_music.py (run it
     # first; the capture and the sting reuse the jingle).
@@ -362,6 +390,8 @@ def main() -> None:
     write("entity_step", entity_step())
     write("filmed_sting", filmed_sting(j))
     write("caught", caught(j))
+    write("rage", rage(j))
+    write("break_free", break_free())
 
 
 if __name__ == "__main__":

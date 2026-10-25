@@ -76,6 +76,25 @@ func run_tour(main: Node, dir: String) -> void:
 	player._set_crouch(true)
 	player.crouching = true
 	await _pose_shot(player, Vector2(3.5, 11.4), 0.0, 0.15, dir, "16_boards_crouched")
+	# The entity squeezing under the boards (kid room door), on camera.
+	player._set_crouch(false)
+	player.crouching = false
+	entity.global_position = Vector3(3.5, 0, 10.5)
+	await _pose_shot(player, Vector2(3.5, 12.6), 0.0, -0.1, dir, "17_crawl_naked")
+	player.camcorder.force_held = true
+	await _wait(0.6)
+	await _shot(dir, "18_crawl_camcorder")
+	player.camcorder.force_held = false
+	entity.enraged = true
+	entity.global_position = Vector3(7.5, 0, 11.5)
+	await _pose_shot(player, Vector2(3.5, 11.5), -PI / 2, 0.05, dir, "19_enraged_naked")
+	player.camcorder.force_held = true
+	await _wait(0.6)
+	await _shot(dir, "20_enraged_camcorder")
+	player.camcorder.force_held = false
+	main.screens.show_escaped(5, 5, 372.0, 2, "Lucía", PackedStringArray(["Lucía"]), true)
+	await _wait(10.0)
+	await _shot(dir, "21_win")
 	print("PERF fps=%d draw_calls=%d objects=%d vram=%.0fMB" % [Engine.get_frames_per_second(),
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 			Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),

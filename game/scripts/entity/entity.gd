@@ -15,7 +15,7 @@ signal caught(player: Player)
 
 const LAYER_MASK := 2  # visual layer 2
 enum State { DORMANT, STALKING, FROZEN, FEEDING }
-enum Pose { STAND, REACH, TILT, PEEK, CROUCH, LUNGE }
+enum Pose { STAND, REACH, TILT, PEEK, CROUCH, LUNGE, CRAWL }
 
 const SHEET := "res://assets/textures/entity_sheet.png"
 const FRAME_SIZE := Vector2i(128, 224)
@@ -49,6 +49,13 @@ var _boil_t := 0.0
 var _flash := 0.0
 var _voice_in := 10.0
 var _shown_state := State.DORMANT
+## Host: seconds since it was last filmed (a flick of the camera does not
+## count as finding it again).
+var _unfilmed := 0.0
+## All the tapes are gone: the camera only holds it for a moment.
+var enraged := false
+var _filmed_time := 0.0
+var _sting_cooldown := 0.0
 var _sprite: Sprite3D
 var _rng := RandomNumberGenerator.new()
 
@@ -68,7 +75,7 @@ func _ready() -> void:
 	var sync := MultiplayerSynchronizer.new()
 	sync.name = "Sync"
 	var cfg := SceneReplicationConfig.new()
-	for prop in ["net_pos", "state", "pose", "tapes"]:
+	for prop in ["net_pos", "state", "pose", "tapes", "enraged"]:
 		var path := NodePath(".:" + prop)
 		cfg.add_property(path)
 		cfg.property_set_replication_mode(path, SceneReplicationConfig.REPLICATION_MODE_ALWAYS)
@@ -83,7 +90,8 @@ func wake() -> void:
 
 
 func speed() -> float:
-	return Tuning.ENTITY_SPEED + Tuning.ENTITY_SPEED_PER_TAPE * tapes
+	var s := Tuning.ENTITY_SPEED + Tuning.ENTITY_SPEED_PER_TAPE * tapes
+	return s * Tuning.RAGE_SPEED_MULT if enraged else s
 
 
 ## Whether `p` is filming it right now: camcorder up, inside the frame,
@@ -158,12 +166,20 @@ func _think(delta: float) -> void:
 		if p.global_position.distance_to(global_position) < target.global_position.distance_to(global_position):
 			target = p
 	var was := state
-	state = State.FROZEN if filmed else State.STALKING
 	if filmed:
+		_filmed_time += delta
+	else:
+		_filmed_time = 0.0
+	# Enraged, the camera seems to work... for a moment, then it tears free.
+	var holds := filmed and (not enraged or _filmed_time < Tuning.RAGE_HOLD)
+	state = State.FROZEN if holds else State.STALKING
+	if holds:
 		# Found again on camera: every time, in another pose.
-		if was == State.STALKING:
+		if was == State.STALKING and _unfilmed > 0.6:
 			_new_pose()
+		_unfilmed = 0.0
 		return
+	_unfilmed += delta
 	var mult := 1.0 if seen else Tuning.ENTITY_UNSEEN_MULT
 	_move(speed() * mult * delta, delta)
 	if _flat(target.global_position - global_position).length() < Tuning.ENTITY_KILL_RANGE:
@@ -186,6 +202,17 @@ func _move(dist: float, delta: float) -> void:
 		global_position += to.normalized() * moved
 
 
+## Squeezing under the boards of a barricaded doorway (it crawls there).
+func _under_boards() -> bool:
+	if level == null:
+		return false
+	var c := level.cell_of(global_position)
+	for cell: Vector2i in level.spots_of("U"):
+		if _flat(level.center(cell) - global_position).length() < 0.75:
+			return true
+	return level.char_at(c) == "U"
+
+
 func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
 
@@ -195,8 +222,12 @@ func _flat(v: Vector3) -> Vector3:
 func _present(delta: float) -> void:
 	# Found again on camera (the pose comes from the host): the tape dies.
 	if state != _shown_state:
-		if state == State.FROZEN and _shown_state == State.STALKING and viewer and viewer.camcorder.filming:
+		if state == State.FROZEN and _shown_state == State.STALKING and viewer and viewer.camcorder.filming \
+				and _sting_cooldown <= 0.0:
 			Sfx.play(self, "filmed_sting", -6.0)
+			_sting_cooldown = 3.0
+		elif enraged and state == State.STALKING and _shown_state == State.FROZEN and viewer and viewer.camcorder.filming:
+			Sfx.play(self, "break_free", -2.0)  # it moves while you film it
 		if state == State.FEEDING:
 			jingle.stop()
 			drone.stop()
@@ -214,8 +245,11 @@ func _present(delta: float) -> void:
 			steps.play()
 	_last_pos = global_position
 
-	_boil_t += delta
+	_sting_cooldown -= delta
+	_boil_t += delta * (1.8 if enraged else 1.0)
 	var shown_pose := pose
+	if _under_boards():
+		shown_pose = Pose.CRAWL
 	if state == State.FROZEN:
 		_flash -= delta
 		if _flash <= 0.0 and _rng.randf() < FLASH_CHANCE * delta:
@@ -230,14 +264,17 @@ func _present(delta: float) -> void:
 		# Unlit drawing: it fades with distance instead of with light.
 		var d := global_position.distance_to(viewer.global_position)
 		var v := lerpf(0.45, 0.16, clampf((d - 2.0) / 12.0, 0.0, 1.0))
-		_sprite.modulate = Color(v, v * 0.95, v * 0.92)
+		_sprite.modulate = Color(v * 1.25, v * 0.6, v * 0.55) if enraged else Color(v, v * 0.95, v * 0.92)
+	# Enraged: bigger, redder, never quite still.
+	_sprite.scale = Vector3.ONE * (1.12 if enraged else 1.0)
+	_sprite.position = Vector3(_rng.randf_range(-0.025, 0.025), 0.0, _rng.randf_range(-0.025, 0.025)) if enraged else Vector3.ZERO
 
 	# Silent until woken. Then the show's song stops while it is filmed;
 	# the drone never does.
 	drone.stream_paused = state == State.DORMANT
 	jingle.stream_paused = state == State.FROZEN or state == State.DORMANT
 	jingle.volume_db = -18.0 if state == State.DORMANT else -7.0 + tapes
-	jingle.pitch_scale = 1.0 - 0.02 * tapes
+	jingle.pitch_scale = 1.25 if enraged else 1.0 - 0.02 * tapes
 	_voice(delta)
 
 

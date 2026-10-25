@@ -35,6 +35,8 @@ var _watchers := {}
 ## reading it any more, or after ALERT_GRACE: time to read the rules first.
 var _alert_at := -1.0
 var _rng := RandomNumberGenerator.new()
+## 1 when it screams (all tapes taken), fading: a burst of interference.
+var rage_flash := 0.0
 
 
 func setup(p_level: Level, p_players: Dictionary, p_local: Player, p_entity: Entity, p_tv: TvBroadcast, p_screens: Screens) -> void:
@@ -86,6 +88,7 @@ func alive_players() -> Array[Player]:
 
 func _process(delta: float) -> void:
 	entity.viewer = viewed_player()
+	rage_flash = maxf(0.0, rage_flash - delta * 0.8)
 	if phase != Phase.PLAYING:
 		return
 	time += delta
@@ -286,7 +289,7 @@ func _request_pickup(pickup_name: String) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func _request_escape() -> void:
 	if multiplayer.is_server() and phase == Phase.PLAYING and tapes_got >= tapes_needed:
-		_end.rpc(Phase.ESCAPED, time)
+		_end.rpc(Phase.ESCAPED, time, _sender())  # one out is enough
 
 
 func _on_caught(p: Player) -> void:
@@ -301,7 +304,7 @@ func _on_caught(p: Player) -> void:
 
 func _check_all_caught() -> bool:
 	if phase == Phase.PLAYING and alive_players().is_empty():
-		_end.rpc(Phase.CAUGHT, time)
+		_end.rpc(Phase.CAUGHT, time, 0)
 		return true
 	return false
 
@@ -333,15 +336,43 @@ func _pickup_taken(pickup_name: String, by: int) -> void:
 		tapes_got += 1
 		entity.tapes = tapes_got
 		tapes_changed.emit(tapes_got, tapes_needed)
+		if tapes_got == tapes_needed:
+			_enrage()
 		if tapes_got >= tapes_needed:
-			message.emit(tr("Ya están todas: volved a la furgoneta") if players.size() > 1 else tr("Vuelve a la furgoneta"))
+			message.emit(tr("¡Corred a la furgoneta!") if players.size() > 1 else tr("¡Corre a la furgoneta!"))
 		elif not mine:
 			message.emit(tr("%s encontró una cinta (%d de %d)") % [Net.name_of(by), tapes_got, tapes_needed])
 		else:
 			message.emit(tr("Cinta %d de %d") % [tapes_got, tapes_needed])
 		if multiplayer.is_server() and tapes_got == Tuning.TV_CORRUPT_AT:
 			tv.set_corrupted()
+		if tapes_got == Tuning.BLACKOUT_AT:
+			_blackout()
 	p.queue_free()
+
+
+## The last tape: it screams through the whole house and changes. From
+## now on the camera only holds it for a moment, and it is faster.
+func _enrage() -> void:
+	if multiplayer.is_server():
+		entity.enraged = true
+		entity.wake()
+	Sfx.play(self, "rage", 0.0)
+	rage_flash = 1.0
+
+
+## The power goes: every lamp and the TV die. Only the lamp over the front
+## door stays on (another circuit). From here you see with your flashlight,
+## your camcorder and your friends' lights.
+func _blackout() -> void:
+	for lamp in level.lamps:
+		lamp.dead = true
+		lamp.shadow_enabled = false
+	tv.power_off()
+	if reading:
+		_close_reading()
+	Sfx.play(self, "power_down", -2.0)
+	message.emit(tr("Se ha ido la luz"))
 
 
 @rpc("authority", "call_local", "reliable")
@@ -369,7 +400,7 @@ func _player_caught(id: int) -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func _end(p_phase: Phase, p_time: float) -> void:
+func _end(p_phase: Phase, p_time: float, by: int) -> void:
 	if phase != Phase.PLAYING:
 		return
 	phase = p_phase
@@ -383,7 +414,7 @@ func _end(p_phase: Phase, p_time: float) -> void:
 		if pl.alive:
 			survivors.append(pl.display_name)
 	if phase == Phase.ESCAPED:
-		screens.show_escaped(tapes_got, tapes_needed, p_time, players.size(), survivors, multiplayer.is_server())
+		screens.show_escaped(tapes_got, tapes_needed, p_time, players.size(), Net.name_of(by), survivors, multiplayer.is_server())
 	else:
 		screens.show_caught(tapes_got, tapes_needed, p_time, multiplayer.is_server())
 

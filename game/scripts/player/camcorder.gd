@@ -17,6 +17,9 @@ var force_held := false
 ## The capture: show the entity whatever the camcorder is doing.
 var reveal := false
 var _was_filming := false
+## After lowering it, a moment before it can go up again (no spamming).
+var _cooldown := 0.0
+var _was_held := false
 
 @onready var _player: Player = get_parent()
 
@@ -30,6 +33,13 @@ var filming: bool:
 func _process(delta: float) -> void:
 	if _player.is_local:
 		var held := force_held or (_player.input_enabled and _player.alive and Input.is_action_pressed("film"))
+		_cooldown = maxf(0.0, _cooldown - delta)
+		if _was_held and not held:
+			_cooldown = Tuning.CAMCORDER_COOLDOWN
+		if not _was_held and held and _cooldown > 0.0 and not force_held:
+			held = false  # still lowering: wait for it
+		else:
+			_was_held = held
 		raise = move_toward(raise, 1.0 if held else 0.0, delta / Tuning.CAMCORDER_RAISE_TIME)
 		if filming:
 			battery = maxf(0.0, battery - Tuning.BATTERY_DRAIN * delta)

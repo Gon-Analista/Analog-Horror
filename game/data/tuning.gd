@@ -26,7 +26,7 @@ const READ_RANGE := 2.5          # walking further closes the broadcast
 
 # Camcorder
 const CAMCORDER_RAISE_TIME := 0.22
-const BATTERY_DRAIN := 1.4       # % per second while filming
+const BATTERY_DRAIN := 2.8       # % per second while filming (a full battery: ~36 s)
 const BATTERY_PICKUP := 45.0     # % restored by a battery
 const FILM_RANGE := 22.0         # metres at which filming still freezes it
 
@@ -47,3 +47,7 @@ const STATIC_RANGE := 9.0        # viewfinder interference
 const TAPES_SPAWNED := 6
 const TAPES_NEEDED := 5
 const TV_CORRUPT_AT := 3         # tapes taken when the broadcast turns
+const RAGE_HOLD := 1.2           # with all the tapes taken, filming only holds it this long
+const RAGE_SPEED_MULT := 1.2     # ...and then it comes a little faster
+const BLACKOUT_AT := 2           # tapes taken when the power goes (all but the exit's lamp)
+const CAMCORDER_COOLDOWN := 0.7  # after lowering the camcorder, before it can go up again

@@ -26,29 +26,43 @@ BW, BH = 160 * S, 120 * S
 
 
 class ScaledDraw:
-    """ImageDraw in the 480x360 drawing space, on a Q-times larger canvas."""
+    """ImageDraw in the 480x360 drawing space, on a Q-times larger canvas.
+    With a zoom and a centre it draws a close-up of that point at full
+    resolution (no blurry crop-and-enlarge)."""
 
-    def __init__(self, im: Image.Image):
+    def __init__(self, im: Image.Image, zoom: float = 1.0, center=(BW / 2, BH / 2)):
         self.d = ImageDraw.Draw(im)
+        self.zoom = zoom
+        self.cx, self.cy = center
 
-    @staticmethod
-    def _xy(xy):
-        return [v * Q for v in xy] if not isinstance(xy[0], (tuple, list)) else [(x * Q, y * Q) for x, y in xy]
+    def _p(self, x, y):
+        return ((x - self.cx) * self.zoom + BW / 2) * Q, ((y - self.cy) * self.zoom + BH / 2) * Q
+
+    def _xy(self, xy):
+        if isinstance(xy[0], (tuple, list)):
+            return [self._p(x, y) for x, y in xy]
+        out = []
+        for i in range(0, len(xy), 2):
+            out.extend(self._p(xy[i], xy[i + 1]))
+        return out
+
+    def _w(self, width):
+        return max(1, int(width * Q * self.zoom))
 
     def ellipse(self, xy, fill=None, outline=None, width=1):
-        self.d.ellipse(self._xy(xy), fill=fill, outline=outline, width=int(width * Q))
+        self.d.ellipse(self._xy(xy), fill=fill, outline=outline, width=self._w(width))
 
     def rectangle(self, xy, fill=None, outline=None, width=1):
-        self.d.rectangle(self._xy(xy), fill=fill, outline=outline, width=int(width * Q))
+        self.d.rectangle(self._xy(xy), fill=fill, outline=outline, width=self._w(width))
 
     def polygon(self, xy, fill=None, outline=None, width=1):
-        self.d.polygon(self._xy(xy), fill=fill, outline=outline, width=int(width * Q))
+        self.d.polygon(self._xy(xy), fill=fill, outline=outline, width=self._w(width))
 
     def line(self, xy, fill=None, width=1):
-        self.d.line(self._xy(xy), fill=fill, width=int(width * Q), joint="curve")
+        self.d.line(self._xy(xy), fill=fill, width=self._w(width), joint="curve")
 
     def arc(self, xy, start, end, fill=None, width=1):
-        self.d.arc(self._xy(xy), start, end, fill=fill, width=int(width * Q))
+        self.d.arc(self._xy(xy), start, end, fill=fill, width=self._w(width))
 
     def text(self, xy, text, font, fill):
         self.d.text((xy[0] * Q, xy[1] * Q), text, font=font, fill=fill)
@@ -107,15 +121,16 @@ def vecinito(d: ScaledDraw, cx: float, cy: float, wave: float, eyes: str = "shin
     e(40, 120, 26, 14, (150, 60, 50))
     e(0, 40, 62, 78, FUR)                                  # body
     e(0, 52, 38, 48, (245, 215, 150), 0)                   # belly
-    # arms: one resting, one waving
-    d.line((cx - 55, cy + 10, cx - 85, cy + 70), fill=INK, width=22)
-    d.line((cx - 55, cy + 10, cx - 85, cy + 70), fill=FUR, width=14)
-    e(-88, 74, 18, 18, GLOVE)
+    # Arms grow out of the body: each starts just inside the shoulder and a
+    # patch of fur (no outline) hides the seam, so they read as one piece.
+    shoulders = [(cx - 44, cy + 2), (cx + 44, cy - 2)]
     a = math.radians(70 if wave is None else -70 + wave)
-    hx, hy = cx + 55 + math.cos(a) * 70, cy + math.sin(a) * 70
-    d.line((cx + 50, cy + 5, hx, hy), fill=INK, width=22)
-    d.line((cx + 50, cy + 5, hx, hy), fill=FUR, width=14)
-    d.ellipse((hx - 19, hy - 19, hx + 19, hy + 19), fill=GLOVE, outline=INK, width=4)
+    hands = [(cx - 86, cy + 72), (cx + 46 + math.cos(a) * 74, cy - 2 + math.sin(a) * 74)]
+    for (sx, sy), (hx, hy) in zip(shoulders, hands):
+        d.line((sx, sy, hx, hy), fill=INK, width=24)
+        d.line((sx, sy, hx, hy), fill=FUR, width=16)
+        d.ellipse((sx - 11, sy - 11, sx + 11, sy + 11), fill=FUR)
+        d.ellipse((hx - 19, hy - 19, hx + 19, hy + 19), fill=GLOVE, outline=INK, width=4)
     # head
     e(-58, -112, 26, 26, FUR)                              # ears
     e(58, -112, 26, 26, FUR)
@@ -142,12 +157,18 @@ def vecinito(d: ScaledDraw, cx: float, cy: float, wave: float, eyes: str = "shin
         d.arc((cx - 26, cy - 66, cx + 26, cy - 30), 20, 160, fill=INK, width=5)
     elif mouth == "flat":
         d.line((cx - 22, cy - 40, cx + 22, cy - 40), fill=INK, width=5)
-    else:                                                  # the jaw drops
-        d.ellipse((cx - 26, cy - 46, cx + 26, cy + 30), fill=INK)
-        for k in range(5):
-            tx = cx - 18 + k * 9
-            d.rectangle((tx, cy - 44, tx + 5, cy - 34), fill=(230, 220, 180))
-        d.line((cx - 6, cy - 30, cx - 8, cy + 40), fill=(150, 20, 20), width=4)
+    else:                                                  # the jaw drops, inside the muzzle
+        top, bottom = cy - 50, cy - 14
+        d.polygon([(cx - 24, top + 2), (cx, top - 2), (cx + 24, top + 2), (cx + 20, bottom - 6),
+                   (cx + 8, bottom), (cx - 8, bottom), (cx - 20, bottom - 6)], fill=(50, 10, 12), outline=INK, width=3)
+        d.ellipse((cx - 12, bottom - 14, cx + 12, bottom - 2), fill=(120, 30, 34))       # tongue
+        for k in range(6):                                                                  # upper teeth
+            tx = cx - 19 + k * 6.6
+            d.polygon([(tx, top + 2), (tx + 5, top + 2), (tx + 2.5, top + 10)], fill=(232, 222, 190))
+        for k in range(5):                                                                  # lower teeth
+            tx = cx - 15 + k * 6.6
+            d.polygon([(tx, bottom - 4), (tx + 5, bottom - 4), (tx + 2.5, bottom - 11)], fill=(214, 200, 165))
+        d.line((cx + 9, bottom - 2, cx + 10, bottom + 12), fill=(140, 20, 20), width=2)  # a drip
     # bow tie
     d.polygon([(cx, cy - 4), (cx - 28, cy - 18), (cx - 28, cy + 10)], fill=BOW, outline=INK)
     d.polygon([(cx, cy - 4), (cx + 28, cy - 18), (cx + 28, cy + 10)], fill=BOW, outline=INK)
@@ -182,14 +203,13 @@ def show_frame(i: int) -> Image.Image:
 def disturbed_frame(eyes: str, mouth: str, tint: float, close: bool = False) -> Image.Image:
     """The show going wrong: he stops waving and the set loses its colour."""
     im = Image.new("RGB", (BW * Q, BH * Q))
-    d = ScaledDraw(im)
-    set_background(d)
     cx, cy = BW / 2, BH * 0.58
+    # The close-up is drawn again, zoomed on the face, at full resolution.
+    d = ScaledDraw(im, 2.3, (cx, cy - 70)) if close else ScaledDraw(im)
+    set_background(d)
     vecinito(d, cx, cy, None, eyes, mouth)
-    title(d, 0)
-    if close:  # the face fills the screen
-        box = (int((cx - 95) * Q), int((cy - 160) * Q), int((cx + 95) * Q), int((cy - 160 + 190 * H / W) * Q))
-        im = im.crop(box).resize((BW * Q, BH * Q), Image.BICUBIC)
+    if not close:
+        title(d, 0)
     a = np.array(im).astype(float)
     gray = a.mean(axis=-1, keepdims=True)
     a = a * (1 - tint) + gray * np.array([1.05, 0.7, 0.65]) * tint

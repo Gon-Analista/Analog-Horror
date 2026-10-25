@@ -1,0 +1,32 @@
+# Godot
+game/.godot/
+*.import.tmp
+
+epic_sdk/
+
+# Assets extraídos del cliente de Ragnarok Online (copyright de Gravity).
+# Se regeneran con tools/export_assets.py desde tu propio cliente.
+game/assets/ro/
+
+# Salidas temporales del exportador / pruebas
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Epic Online Services: credenciales del producto (nunca en git).
+game/eos/credentials.cfg
+# EOS C SDK (descargado del portal de Epic, no se sube).
+eos-sdk/
+# EOSG plugin binaries (36 MB): tools/get_eosg.py puts them back.
+game/addons/epic-online-services-godot/bin/

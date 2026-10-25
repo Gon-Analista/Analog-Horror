@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/player/camcorder.gd" id="2_camcorder"]
+[ext_resource type="Texture2D" path="res://assets/textures/flashlight_cookie.png" id="3_cookie"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.3
+height = 1.75
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+current = true
+fov = 75.0
+near = 0.05
+far = 60.0
+
+[node name="Flashlight" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(1, 0.93, 0.8, 1)
+light_energy = 2.6
+light_projector = ExtResource("3_cookie")
+light_volumetric_fog_energy = 0.7
+shadow_enabled = true
+spot_range = 16.0
+spot_attenuation = 1.2
+spot_angle = 27.0
+spot_angle_attenuation = 0.8
+
+[node name="Camcorder" type="Node" parent="."]
+script = ExtResource("2_camcorder")

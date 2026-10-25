@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/world/level.gd" id="2_level"]
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/entity.tscn" id="4_entity"]
 [ext_resource type="Script" path="res://scripts/core/run.gd" id="5_run"]
 [ext_resource type="Shader" path="res://shaders/post.gdshader" id="6_post"]
@@ -35,25 +34,38 @@ volumetric_fog_ambient_inject = 0.15
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_post"]
 shader = ExtResource("6_post")
 
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node"]
 script = ExtResource("1_main")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_house")
-
-[node name="Level" type="Node3D" parent="."]
-script = ExtResource("2_level")
-
-[node name="Player" parent="." instance=ExtResource("3_player")]
-
-[node name="Entity" parent="." instance=ExtResource("4_entity")]
 
 [node name="Run" type="Node" parent="."]
 script = ExtResource("5_run")
 
-[node name="PostLayer" type="CanvasLayer" parent="."]
+[node name="WorldView" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
 
-[node name="PostFX" type="ColorRect" parent="PostLayer"]
+[node name="World" type="SubViewport" parent="WorldView"]
+handle_input_locally = false
+audio_listener_enable_3d = true
+size = Vector2i(480, 270)
+render_target_update_mode = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="WorldView/World"]
+environment = SubResource("Environment_house")
+
+[node name="Level" type="Node3D" parent="WorldView/World"]
+script = ExtResource("2_level")
+
+[node name="Entity" parent="WorldView/World" instance=ExtResource("4_entity")]
+
+[node name="PostLayer" type="CanvasLayer" parent="WorldView/World"]
+
+[node name="PostFX" type="ColorRect" parent="WorldView/World/PostLayer"]
 material = SubResource("ShaderMaterial_post")
 anchors_preset = 15
 anchor_right = 1.0

@@ -26,6 +26,15 @@ func _ready() -> void:
 	add_child(shape)
 	if kind == Kind.TAPE:
 		_build_tape()
+		# It is rewinding: you can find it by ear.
+		var whir := AudioStreamPlayer3D.new()
+		whir.stream = Sfx.get_stream("tape_whir", true)
+		whir.volume_db = -14.0
+		whir.unit_size = 1.2
+		whir.max_distance = 9.0
+		whir.position.y = 0.05
+		add_child(whir)
+		whir.play()
 	else:
 		_build_battery()
 

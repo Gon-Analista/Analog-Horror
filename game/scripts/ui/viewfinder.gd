@@ -4,7 +4,7 @@ extends Control
 
 const WHITE := Color(0.92, 0.92, 0.88)
 const RED := Color(0.95, 0.15, 0.1)
-const FONT_SIZE := 8
+const FONT_SIZE := 13
 const MARGIN := 14.0
 
 var _player: Player
@@ -28,9 +28,13 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if _player == null or _player.camcorder.raise < 0.9:
+	if _player == null:
 		return
-	var cam := _player.camcorder
+	var p := _run.viewed_player()
+	var spectating := p != _player
+	if p.camcorder.raise < 0.9 and not spectating:
+		return
+	var cam := p.camcorder
 	var font := get_theme_default_font()
 	var w := size.x
 	var h := size.y
@@ -45,14 +49,22 @@ func _draw() -> void:
 	draw_line(mid - Vector2(4, 0), mid + Vector2(4, 0), WHITE)
 	draw_line(mid - Vector2(0, 4), mid + Vector2(0, 4), WHITE)
 
-	var top := m + 10.0
+	var top := m + 12.0
+	if spectating:
+		# Watching a teammate's feed after being taken.
+		var label := tr("CÁMARA DE %s") % p.display_name.to_upper()
+		draw_string(font, Vector2(m + 4, top), label, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, p.tint.lightened(0.3))
+		if cam.filming and fmod(_t, 1.0) < 0.6:
+			draw_circle(Vector2(w - m - 30, top - 4), 3.0, RED)
+		draw_string(font, Vector2(m + 4, top + 13), tr("CINTAS %d/%d · clic: otra cámara") % [_tapes, _needed], HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
+		return
 	if cam.battery > 0.0:
 		if fmod(_t, 1.0) < 0.6:
-			draw_circle(Vector2(m + 8, top - 3), 2.5, RED)
-		draw_string(font, Vector2(m + 14, top), "REC", HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
+			draw_circle(Vector2(m + 8, top - 4), 3.0, RED)
+		draw_string(font, Vector2(m + 15, top), "REC", HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
 	elif fmod(_t, 0.8) < 0.5:
 		draw_string(font, Vector2(m + 4, top), tr("SIN BATERÍA"), HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, RED)
-	draw_string(font, Vector2(m + 4, top + 12), tr("CINTAS %d/%d") % [_tapes, _needed], HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
+	draw_string(font, Vector2(m + 4, top + 13), tr("CINTAS %d/%d") % [_tapes, _needed], HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
 
 	# battery: 4 segments
 	var bx := w - m - 26.0
@@ -69,5 +81,5 @@ func _draw() -> void:
 	var cw := font.get_string_size(counter, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE).x
 	draw_string(font, Vector2(w - m - 4 - cw, h - m - 4), counter, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
 	var clock := 52 + int(_run.time / 60.0)
-	draw_string(font, Vector2(m + 4, h - m - 14), "OCT.14 1989", HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
+	draw_string(font, Vector2(m + 4, h - m - 16), "OCT.14 1989", HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
 	draw_string(font, Vector2(m + 4, h - m - 4), "PM %02d:%02d" % [11 + clock / 60, clock % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)

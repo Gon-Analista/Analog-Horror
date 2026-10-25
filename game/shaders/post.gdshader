@@ -57,6 +57,9 @@ void fragment() {
 		col = mix(col, vec3(hash(px + t) * 0.08), dead * vhs);
 	}
 
+	// A faint film grain even to the naked eye: the whole game is "footage".
+	col += (hash(px * 0.73 + fract(t * 3.7) * 57.1) - 0.5) * 0.025 * (1.0 - vhs);
+
 	vec2 d = SCREEN_UV - 0.5;
 	col *= 1.0 - dot(d, d) * (vignette + 0.7 * vhs) * 2.0;
 

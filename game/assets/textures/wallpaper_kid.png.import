@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7y0u5g734oll"
-path="res://.godot/imported/mascot_face.png-6c1324af666556bdd6dcbf534aeffd65.ctex"
+uid="uid://dhoojxmjjmwx5"
+path="res://.godot/imported/wallpaper_kid.png-442882f2bfbff80be3b253d63e26f29e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/mascot_face.png"
-dest_files=["res://.godot/imported/mascot_face.png-6c1324af666556bdd6dcbf534aeffd65.ctex"]
+source_file="res://assets/textures/wallpaper_kid.png"
+dest_files=["res://.godot/imported/wallpaper_kid.png-442882f2bfbff80be3b253d63e26f29e.ctex"]
 
 [params]
 

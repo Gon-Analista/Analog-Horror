@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ihs41ibec8ul"
-path="res://.godot/imported/mascot_fur.png-7bba4e6f73867b28b23b4c79dc482878.ctex"
+uid="uid://bd30uynrudx5m"
+path="res://.godot/imported/window.png-b024df7b643b32c2d0409308ceda8655.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/mascot_fur.png"
-dest_files=["res://.godot/imported/mascot_fur.png-7bba4e6f73867b28b23b4c79dc482878.ctex"]
+source_file="res://assets/textures/window.png"
+dest_files=["res://.godot/imported/window.png-b024df7b643b32c2d0409308ceda8655.ctex"]
 
 [params]
 

@@ -24,6 +24,22 @@ static func get_stream(id: String, loop := false) -> AudioStreamWAV:
 	return s
 
 
+## Positional one-shot at a point in the world (parented to `parent`, so
+## it outlives whatever made the sound).
+static func play_3d(parent: Node, at: Vector3, id: String, volume_db := 0.0) -> void:
+	var s := get_stream(id)
+	if s == null or not parent.is_inside_tree():
+		return
+	var p := AudioStreamPlayer3D.new()
+	p.stream = s
+	p.volume_db = volume_db
+	p.unit_size = 3.0
+	parent.add_child(p)
+	p.global_position = at
+	p.finished.connect(p.queue_free)
+	p.play()
+
+
 ## Non-positional one-shot (UI, the player's own sounds).
 static func play(parent: Node, id: String, volume_db := 0.0, pitch := 1.0) -> void:
 	var s := get_stream(id)

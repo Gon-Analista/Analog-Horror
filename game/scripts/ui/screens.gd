@@ -5,7 +5,7 @@ extends Control
 
 signal intro_done
 
-const FONT_SIZE := 8
+const FONT_SIZE := 13
 const NO_SIGNAL := Color(0.04, 0.1, 0.55)
 
 var _bg: ColorRect
@@ -32,17 +32,25 @@ func _ready() -> void:
 	visible = false
 
 
-func show_intro() -> void:
-	_show(Color.BLACK, tr("14 DE OCTUBRE DE 1989 — 23:52\nZONA EVACUADA · CALLE OLMOS 14\n\nRecupera %d cintas de «¡Hola, Vecinitos!» y vuelve a la furgoneta.\nLa Visita solo aparece en la cámara. Mientras la grabas, no se mueve.\n\nClic derecho: cámara · F: linterna · E: recoger · Shift: correr\n\n(clic para empezar)") % Tuning.TAPES_NEEDED)
+func show_intro(player_count: int) -> void:
+	var crew := tr("Equipo de %d.") % player_count if player_count > 1 else tr("Vas solo.")
+	_show(Color.BLACK, tr("14 DE OCTUBRE DE 1989 — 23:52\nZONA EVACUADA · CALLE OLMOS 14\n\n%s Recuperad %d cintas de «¡Hola, Vecinitos!» y volved a la furgoneta.\nAntes de nada, mirad la televisión del salón.\n\nClic derecho: cámara · F: linterna · E: usar · Shift: correr\n\n(clic para empezar)") % [crew, Tuning.TAPES_NEEDED])
 	_waiting_intro = true
 
 
-func show_caught(tapes: int, needed: int, time: float) -> void:
-	_show(NO_SIGNAL, tr("SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s\n\nR: volver a intentarlo") % [tapes, needed, _clock(time)])
+func show_caught(tapes: int, needed: int, time: float, is_host: bool) -> void:
+	_show(NO_SIGNAL, tr("SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s\n\n%s") % [tapes, needed, _clock(time), _next_line(is_host)])
 
 
-func show_escaped(tapes: int, needed: int, time: float) -> void:
-	_show(Color.BLACK, tr("CINTA 14-OCT-89 RECUPERADA\n\nCintas: %d/%d · %s\n\nR: otra noche") % [tapes, needed, _clock(time)])
+func show_escaped(tapes: int, needed: int, time: float, crew: int, survivors: PackedStringArray, is_host: bool) -> void:
+	var who := ""
+	if crew > 1:
+		who = tr("Volvieron: %s") % (", ".join(survivors) if not survivors.is_empty() else "—") + "\n\n"
+	_show(Color.BLACK, tr("CINTA 14-OCT-89 RECUPERADA\n\nCintas: %d/%d · %s\n\n%s%s") % [tapes, needed, _clock(time), who, _next_line(is_host)])
+
+
+func _next_line(is_host: bool) -> String:
+	return tr("R: otra noche · M: menú") if is_host else tr("Esperando al anfitrión · M: menú")
 
 
 func _show(color: Color, text: String) -> void:

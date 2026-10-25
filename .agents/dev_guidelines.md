@@ -24,7 +24,7 @@ Estas reglas orientan cambios de código, escenas, contenido y recursos. Léelas
 ## 3. Red y online (regla central)
 
 - **Todo se construye para online desde el principio.** Jugar solo será una sesión online de un jugador por la misma ruta de código.
-- **Excepción temporal (decisión del usuario, 2026-10-25):** el prototipo actual es para un jugador, para encontrar el estilo. Aun así, el estado autoritativo (`Run`, el movimiento de la entidad, las semillas) se mantiene separado de la presentación local (visor, post-proceso, sombras, audio), para que pasar al online sea añadir RPC y sincronización, no reescribir.
+- El online ya existe: `Net` (sesión), `Run` (eventos del anfitrión por RPC) y `MultiplayerSynchronizer` en jugadores, Visita y tele. Toda mecánica nueva debe decidir quién es su autoridad, qué se replica y qué es solo presentación local, y probarse con `--net-test` o con dos ventanas en red local.
 - **Host autoritativo:** el host decide el estado de la partida, las tareas, las anomalías, la IA, los daños, las muertes y las tiradas aleatorias. Los clientes envían intenciones (moverse, interactuar, usar) y reciben estado. No confíes en un valor calculado por un cliente para algo que afecte a otros.
 - **Aleatoriedad replicable:** las variaciones de cada partida (qué instrucción se corrompe, qué anomalía aparece, a quién afecta) salen de una semilla del host. Si un efecto es solo visual y local, debe estar claro que es local.
 - **Asimetría deliberada:** cuando un jugador deba ver u oír algo que los demás no perciben (un pilar del diseño), hazlo explícito en el código (RPC dirigido a ese peer) y documenta por qué. Nunca dependa de una desincronización accidental.
@@ -64,6 +64,7 @@ Estas reglas orientan cambios de código, escenas, contenido y recursos. Léelas
 
 ## 7. UI y accesibilidad de lectura
 
+- **El texto se dibuja a la resolución real de la ventana, nunca dentro del SubViewport pixelado** (allí no se lee). Fuente del proyecto: VT323. Tamaño mínimo 13 en coordenadas base (unos 39 px en pantalla a 1440×810), con contorno o fondo cuando va sobre la escena.
 - HUD mínimo; la información preferentemente diegética (pantallas, papeles, radios, luces). Lo que sea UI pura (menús, ajustes, lobby) mantiene la estética de material institucional de época.
 - Los textos que el jugador debe leer (manual, instrucciones) tienen que ser legibles a la resolución interna; si no, se muestran en primer plano al interactuar.
 - Ajustes mínimos desde el principio: sensibilidad, FOV, volúmenes (general, efectos, voz), dispositivo de micrófono, push-to-talk, intensidad de efectos VHS/parpadeos y brillo.
@@ -85,7 +86,8 @@ El público objetivo incluye PCs modestos y streamers que juegan mientras emiten
 - **La resolución interna es la primera optimización:** el 3D se renderiza a 480×270, así que el coste por píxel (niebla volumétrica, SSAO, sombras en pantalla) es bajo. No subirla sin decisión del usuario.
 - **Presupuestos orientativos por fotograma:** menos de 150 draw calls y menos de 6 luces con sombra activas en pantalla. Mide siempre con F3 (overlay de rendimiento) antes y después de cambios visuales.
 - **Geometría:** la arquitectura se fusiona en una malla con una superficie por material (`Level`); no añadir un nodo por pared o baldosa. Para objetos repetidos (sillas, cajas, cintas en masa) usar `MultiMeshInstance3D` o mallas fusionadas.
-- **Luces:** sombras solo en la linterna y en lámparas que funcionan; las luces decorativas, sin sombra. Usa `distance_fade` en las lámparas. Sombras duras y atlas de 2048: es más barato y encaja con el pixel art.
+- **Sombras:** la casa proyecta sombras desde una copia fusionada en una sola superficie (`HouseShadow`), así que cada pasada de sombra es una llamada de dibujo y no una por material (bajó de ~310 a ~64 llamadas). Las lámparas solo activan su sombra cerca del jugador (`Level.update_shadows`, 6,5 m): una sombra omni vuelve a dibujar la casa seis veces.
+- **Luces:** sombras solo en la linterna y en las lámparas que funcionan cerca del jugador; las luces decorativas, sin sombra. Usa `distance_fade` en las lámparas. Sombras duras y atlas de 2048: es más barato y encaja con el pixel art.
 - **Texturas:** pequeñas, sin compresión, nearest + mipmaps (configurado en `[importer_defaults]`). Mantén una densidad de 32 px por metro.
 - **Post-proceso:** una sola pasada a pantalla completa (`post.gdshader`). Añadir efectos al mismo shader con uniformes, no apilar más `ColorRect` que lean la pantalla.
 - **Lógica:** nada pesado cada fotograma. Recalcula caminos con frecuencia limitada (la entidad: cada 0,25 s con BFS sobre la rejilla), evita crear objetos o arrays en `_process`, cachea recursos (`Sfx`, materiales de `Level`) y usa señales o eventos en vez de sondear cuando se pueda.

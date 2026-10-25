@@ -9,6 +9,7 @@ const KEYS := {
 	"move_left": [KEY_A],
 	"move_right": [KEY_D],
 	"sprint": [KEY_SHIFT],
+	"crouch": [KEY_C],
 	"interact": [KEY_E],
 	"flashlight": [KEY_F],
 	"restart": [KEY_R],

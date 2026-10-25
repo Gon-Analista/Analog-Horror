@@ -1,6 +1,7 @@
 """Generates the prototype's placeholder sounds into game/assets/audio
 (22 050 Hz mono WAV, deterministic). Original synthesis, safe for streaming;
 to be replaced by recorded / designed audio once the direction is set.
+The entity's sounds are in gen_entity_audio.py.
 
     python tools/gen_audio.py
 """
@@ -54,30 +55,6 @@ def fade(x: np.ndarray, ms: float = 5) -> np.ndarray:
     return x
 
 
-def music_box() -> np.ndarray:
-    """A children's-show tune on a worn music box, slightly detuned, with
-    one wrong note at the end. Loops seamlessly (notes wrap around)."""
-    melody = [72, 76, 79, 76, 77, 81, 79, -1, 76, 79, 84, 83, 81, 77, 79, -1,
-              72, 76, 79, 76, 77, 74, 70, 72, -1, -1]
-    step = 0.42
-    n = int(len(melody) * step * SR)
-    out = np.zeros(n)
-    t = t_axis(2.5)
-    for i, m in enumerate(melody):
-        if m < 0:
-            continue
-        f = 440 * 2 ** ((m - 69) / 12) * 0.985
-        wow = 1 + 0.006 * np.sin(2 * np.pi * 0.7 * (t + i * step))
-        ph = 2 * np.pi * f * np.cumsum(wow) / SR
-        tine = (np.sin(ph) * np.exp(-t * 3.2)
-                + 0.35 * np.sin(2 * ph) * np.exp(-t * 6)
-                + 0.12 * np.sin(5.4 * ph) * np.exp(-t * 12))
-        start = int(i * step * SR)
-        idx = (np.arange(len(t)) + start) % n
-        np.add.at(out, idx, tine)
-    out += lowpass(noise(n / SR), 0.3) * 0.02
-    return normalize(out, 0.6)
-
 
 def static() -> np.ndarray:
     x = noise(2.0)
@@ -106,14 +83,6 @@ def step() -> np.ndarray:
     return fade(normalize(x, 0.7), 2)
 
 
-def entity_step() -> np.ndarray:
-    t = t_axis(0.45)
-    x = np.sin(2 * np.pi * 48 * t) * np.exp(-t * 10)
-    x += lowpass(noise(0.45), 0.06) * np.exp(-t * 14) * 2
-    creak = np.sin(2 * np.pi * (320 + 60 * np.sin(2 * np.pi * 7 * t)) * t)
-    x += creak * np.exp(-((t - 0.1) / 0.05) ** 2) * 0.25
-    return fade(normalize(x, 0.9), 3)
-
 
 def pickup() -> np.ndarray:
     t = t_axis(0.16)
@@ -138,28 +107,41 @@ def click() -> np.ndarray:
     return fade(normalize((n - lowpass(n, 0.3)) * np.exp(-t * 120), 0.5), 1)
 
 
-def caught() -> np.ndarray:
-    t = t_axis(1.4)
-    x = noise(1.4) * 0.9
-    x += np.sin(2 * np.pi * np.cumsum(120 - 80 * t / 1.4) / SR) * 0.6
-    saw = ((np.cumsum(300 - 150 * t / 1.4 + 12 * np.sin(2 * np.pi * 9 * t)) / SR) % 1) * 2 - 1
-    x += saw * 0.45 * np.exp(-t * 1.5)
-    x *= np.minimum(1, t * 40) * np.exp(-np.maximum(0, t - 0.9) * 6)
-    return np.clip(normalize(x, 1.2), -0.95, 0.95)
+
+def van_horn() -> np.ndarray:
+    """The van outside: two short honks, muffled by the door."""
+    t = t_axis(1.3)
+    tone = np.sign(np.sin(2 * np.pi * 380 * t)) + np.sign(np.sin(2 * np.pi * 472 * t))
+    env = ((t > 0.02) & (t < 0.32)) | ((t > 0.5) & (t < 0.95))
+    x = lowpass(tone * env * 0.5, 0.12)
+    x = x + np.concatenate([np.zeros(int(0.09 * SR)), x[: -int(0.09 * SR)]]) * 0.3
+    return fade(normalize(x, 0.7), 10)
+
+
+def tape_whir() -> np.ndarray:
+    """A VHS rewinding somewhere: motor whine with flutter, ticking reels.
+    Each tape in the house plays it, so you can find them by ear."""
+    t = t_axis(3.0)
+    f = 140 * (1 + 0.01 * np.sin(2 * np.pi * 7 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = np.sin(ph) * 0.4 + np.sin(2 * ph) * 0.25 + np.sin(3.02 * ph) * 0.1
+    x += (lowpass(noise(3.0), 0.3) - lowpass(noise(3.0), 0.05)) * 0.3
+    ticks = (np.sin(2 * np.pi * 4 * t) > 0.995).astype(float)
+    x += lowpass(ticks, 0.5) * 2.0
+    return normalize(x, 0.4)
 
 
 def main() -> None:
     print("audio ->", OUT)
-    write("music_box", music_box())
     write("static", static())
     write("hum", hum())
     write("tv_tone", tv_tone())
     write("step", step())
-    write("entity_step", entity_step())
     write("pickup", pickup())
     write("rec_beep", rec_beep())
     write("click", click())
-    write("caught", caught())
+    write("van_horn", van_horn())
+    write("tape_whir", tape_whir())
 
 
 if __name__ == "__main__":

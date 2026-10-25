@@ -5,10 +5,21 @@
 [node name="Entity" type="Node3D"]
 script = ExtResource("1_entity")
 
-[node name="MusicBox" type="AudioStreamPlayer3D" parent="."]
+[node name="Jingle" type="AudioStreamPlayer3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 unit_size = 3.0
 max_distance = 22.0
+
+[node name="Drone" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+volume_db = -4.0
+unit_size = 1.2
+max_distance = 12.0
+
+[node name="Voice" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+unit_size = 4.0
+max_distance = 26.0
 
 [node name="Steps" type="AudioStreamPlayer3D" parent="."]
 unit_size = 4.0

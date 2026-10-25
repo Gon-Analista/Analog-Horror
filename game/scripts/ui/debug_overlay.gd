@@ -11,7 +11,7 @@ func setup(player: Player, entity: Entity) -> void:
 	_player = player
 	_entity = entity
 	visible = false
-	add_theme_font_size_override("font_size", 8)
+	add_theme_font_size_override("font_size", 10)
 	add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
 	add_theme_color_override("font_shadow_color", Color.BLACK)
 	position = Vector2(4, 4)

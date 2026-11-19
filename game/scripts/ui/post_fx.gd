@@ -50,7 +50,9 @@ func _process(_delta: float) -> void:
 	if _entity.state != Entity.State.DORMANT:
 		var d := p.global_position.distance_to(_entity.global_position)
 		near = pow(clampf(1.0 - d / Tuning.STATIC_RANGE, 0.0, 1.0), 2.0) * 0.38  # interference near it (a little less than before)
+	# Fewer flashes (Settings): the bursts of static and the hits toned down.
+	var calm := Settings.flash_scale()
 	_mat.set_shader_parameter("vhs", vhs)
-	_mat.set_shader_parameter("static_amount", maxf(near if cam.filming or spectating else 0.0, ruined * 0.12))
-	_mat.set_shader_parameter("hit", 1.0 if hit else maxf(_run.rage_flash * 0.8, ruined * 0.22))
+	_mat.set_shader_parameter("static_amount", maxf(near if cam.filming or spectating else 0.0, ruined * 0.12) * calm)
+	_mat.set_shader_parameter("hit", (1.0 if hit else maxf(_run.rage_flash * 0.8, ruined * 0.22)) * calm)
 	_mat.set_shader_parameter("dead", 1.0 if not spectating and cam.battery <= 0.0 and not hit else 0.0)

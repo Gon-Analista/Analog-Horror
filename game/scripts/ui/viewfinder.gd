@@ -52,14 +52,16 @@ func _draw() -> void:
 		draw_line(c, c + Vector2(l * sx, 0), WHITE)
 		draw_line(c, c + Vector2(0, l * sy), WHITE)
 	if _white > 0.0:
-		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, _white * 0.9))
+		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, _white * 0.9 * Settings.flash_scale()))
 	if _scare > 0.0:
 		# Cuts: a frame of red, a frame of black, torn bars.
+		# (Fewer flashes: the same cuts, much fainter.)
 		var phase := int(_scare * 16.0) % 4
+		var calm := Settings.flash_scale()
 		if phase == 0:
-			draw_rect(Rect2(Vector2.ZERO, size), Color(0.7, 0.0, 0.0, 0.45 * minf(1.0, _scare)))
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.7, 0.0, 0.0, 0.45 * minf(1.0, _scare) * calm))
 		elif phase == 2:
-			draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55 * minf(1.0, _scare)))
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55 * minf(1.0, _scare) * calm))
 		for i in 3:
 			var y := fmod(_t * 900.0 + i * 97.0, size.y)
 			draw_rect(Rect2(0, y, size.x, 3 + i * 2), Color(1, 1, 1, 0.25))

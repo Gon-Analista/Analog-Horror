@@ -6,7 +6,9 @@ extends Control
 ## Dev flags (after "--"): --smoke / --shots go straight to the house;
 ## --net-test host|client runs the two-window online check on LAN;
 ## --menu-shot <file.png> saves a screenshot of this screen and quits
-## (with --options, of the options panel).
+## (with --options, of the options panel; --access, of the controls and
+## accessibility; --credits, of the credits). The arrow keys and Enter work
+## the menu too: the first arrow press picks the first button.
 
 const SHOW_SHEET := "res://assets/textures/tv_show.png"
 const FRAME := Vector2i(320, 240)
@@ -29,6 +31,8 @@ var _main_box: VBoxContainer
 var _join_box: HBoxContainer
 var _lobby_box: VBoxContainer
 var _options_box: VBoxContainer
+var _access_box: VBoxContainer
+var _credits_box: VBoxContainer
 var _title: TextureRect
 ## The options were open when the language changed (the menu is rebuilt).
 static var _reopen_options := false
@@ -69,6 +73,10 @@ func _ready() -> void:
 	if shot >= 0 and shot + 1 < args.size():
 		if args.has("--options"):  # dev: the options panel instead
 			_show_options(true)
+		elif args.has("--access"):
+			_show_access(true)
+		elif args.has("--credits"):
+			_show_credits(true)
 		elif args.has("--lobby"):  # dev: a full room
 			Net.code = "LRXSB"
 			Net.players = {1: {"name": "nearQ", "slot": 0}, 2: {"name": "Tomatesixseven", "slot": 1}, 3: {"name": "Lucía", "slot": 2}}
@@ -85,16 +93,51 @@ func _ready() -> void:
 		_net_test(args[t + 1])
 
 
-## Esc goes back: out of the options, or out of the room.
+## Esc goes back: out of the controls, the options, the credits or the
+## room. An arrow key with nothing picked picks the first button.
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down") or event.is_action_pressed("ui_focus_next"):
+		if get_viewport().gui_get_focus_owner() == null:
+			_focus(_current_box())
+			get_viewport().set_input_as_handled()
+		return
 	var k := event as InputEventKey
 	if k == null or not k.pressed or k.echo or k.keycode != KEY_ESCAPE:
 		return
-	if _options_box.visible:
+	if _access_box.visible:
+		_show_access(false)
+	elif _options_box.visible:
 		_show_options(false)
+	elif _credits_box.visible:
+		_show_credits(false)
 	elif _lobby_box.visible:
 		_leave()
 	get_viewport().set_input_as_handled()
+
+
+## The panel on screen now.
+func _current_box() -> Control:
+	for box: Control in [_access_box, _options_box, _credits_box, _lobby_box]:
+		if box.visible:
+			return box
+	return _main_box
+
+
+## The keyboard goes to the first button of `box`.
+func _focus(box: Control) -> void:
+	var first := AccessOptions.first_focus(box)
+	if first:
+		first.grab_focus()
+
+
+## After a panel changes: if the keyboard was in use, it follows to the new
+## one (a mouse player never sees a picked button).
+func _refocus() -> void:
+	var owner := get_viewport().gui_get_focus_owner()
+	if owner == null or owner is LineEdit and owner.is_visible_in_tree():
+		return
+	if not owner.is_visible_in_tree() or not _current_box().is_ancestor_of(owner):
+		_focus(_current_box())
 
 
 func _process(delta: float) -> void:
@@ -200,12 +243,14 @@ func _show_main() -> void:
 	_main_box.visible = true
 	_lobby_box.visible = false
 	_name_row.visible = true
+	_refocus()
 
 
 func _show_lobby() -> void:
 	_main_box.visible = false
 	_lobby_box.visible = true
 	_refresh_lobby()
+	_refocus()
 
 
 func _refresh_lobby() -> void:
@@ -368,9 +413,12 @@ func _build() -> void:
 	_join_box.add_child(_code_edit)
 	if OS.is_debug_build():
 		_join_box.add_child(_button(tr("LAN"), _host_lan))  # development: a room on the local network
+	_main_box.add_child(_button(tr("CRÉDITOS"), func() -> void: _show_credits(true)))
 	_main_box.add_child(_button(tr("SALIR"), func() -> void: get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)))
 
 	_build_options(col)
+	_build_access(col)
+	_build_credits(col)
 
 	_lobby_box = VBoxContainer.new()
 	_lobby_box.visible = false
@@ -482,7 +530,6 @@ func _build_options(col: Control) -> void:
 		slider.value = Settings.volume[pair[0]]
 		slider.custom_minimum_size = Vector2(120, 14)
 		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		slider.focus_mode = Control.FOCUS_NONE
 		_style_slider(slider)
 		var key: String = pair[0]
 		slider.value_changed.connect(func(v: float) -> void: Settings.set_volume(key, v))
@@ -530,39 +577,90 @@ func _build_options(col: Control) -> void:
 		_reopen_options = true
 		get_tree().reload_current_scene.call_deferred())
 	_options_box.add_child(lang)
-	_options_box.add_child(_button(tr("VOLVER"), func() -> void: _show_options(false)))
-	# Many rows: tighter buttons than the main menu's, so all of them fit.
-	var tight := StyleBoxEmpty.new()
-	tight.content_margin_top = 0
-	tight.content_margin_bottom = 0
-	for b in _options_box.find_children("*", "Button", true, false):
-		for state in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
-			(b as Button).add_theme_stylebox_override(state, tight)
+	# Controls and accessibility on a page of their own (no room for more
+	# rows here), on the same line as going back.
+	var last := HBoxContainer.new()
+	last.add_theme_constant_override("separation", 10)
+	last.add_child(_button(tr("VOLVER"), func() -> void: _show_options(false)))
+	last.add_child(_button(tr("CONTROLES Y ACCESIBILIDAD"), func() -> void: _show_access(true)))
+	_options_box.add_child(last)
+	_tighten(_options_box)
+
+
+## Many rows: tighter buttons than the main menu's, so all of them fit.
+func _tighten(box: Control) -> void:
+	AccessOptions.tighten(box)
 
 
 func _show_options(on: bool) -> void:
 	_options_box.visible = on
+	_access_box.visible = false
+	_credits_box.visible = false
 	_main_box.visible = not on
 	_name_row.visible = not on
+	_refocus()
+
+
+## Mouse sensitivity, the vertical axis and fewer flashes (AccessOptions).
+func _build_access(col: Control) -> void:
+	_access_box = VBoxContainer.new()
+	_access_box.visible = false
+	_access_box.add_theme_constant_override("separation", 2)
+	col.add_child(_access_box)
+	_access_box.add_child(_label(tr("CONTROLES Y ACCESIBILIDAD"), FONT, ACCENT))
+	AccessOptions.add_rows(_access_box, _button, func(text: String) -> Label: return _label(text, FONT, TEXT), _style_slider)
+	_access_box.add_child(_spacer(4))
+	var keys := _label(tr("WASD moverse · RATÓN mirar · SHIFT correr\nC agacharse · E usar · F linterna · R pilas\nCLIC DCHO cámara · CLIC IZQ flash\nTAB inventario · V hablar · ESC pausa"), 10, DIM)
+	_access_box.add_child(keys)
+	_access_box.add_child(_spacer(4))
+	_access_box.add_child(_button(tr("VOLVER"), func() -> void: _show_access(false)))
+	_tighten(_access_box)
+
+
+func _show_access(on: bool) -> void:
+	_access_box.visible = on
+	_options_box.visible = not on
+	_main_box.visible = false
+	_name_row.visible = false
+	_refocus()
+
+
+## Who made it and with what.
+func _build_credits(col: Control) -> void:
+	_credits_box = VBoxContainer.new()
+	_credits_box.visible = false
+	_credits_box.add_theme_constant_override("separation", 1)
+	col.add_child(_credits_box)
+	_credits_box.add_child(_label(tr("CRÉDITOS"), FONT, ACCENT))
+	_credits_box.add_child(_spacer(2))
+	for pair: Array in [
+			[tr("UN JUEGO DE"), "nearQ"],
+			[tr("MÚSICA Y SONIDO"), tr("síntesis propia")],
+			[tr("MOTOR"), "Godot Engine (MIT)"],
+			[tr("ONLINE"), "Epic Online Services · EOSG (MIT)"],
+			[tr("FUENTE"), "VT323 · Peter Hull (SIL OFL)"]]:
+		var row := HBoxContainer.new()
+		var what := _label(pair[0], 11, DIM)
+		what.custom_minimum_size = Vector2(78, 0)
+		row.add_child(what)
+		row.add_child(_label(pair[1], FONT, TEXT))
+		_credits_box.add_child(row)
+	_credits_box.add_child(_spacer(4))
+	_credits_box.add_child(_label(tr("Gracias por grabar con nosotros."), 11, DIM))
+	_credits_box.add_child(_spacer(2))
+	_credits_box.add_child(_button(tr("VOLVER"), func() -> void: _show_credits(false)))
+	_tighten(_credits_box)
+
+
+func _show_credits(on: bool) -> void:
+	_credits_box.visible = on
+	_main_box.visible = not on
+	_name_row.visible = not on
+	_refocus()
 
 
 func _style_slider(slider: HSlider) -> void:
-	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.25, 0.25, 0.24)
-	track.content_margin_top = 2
-	track.content_margin_bottom = 2
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = ACCENT
-	fill.content_margin_top = 2
-	fill.content_margin_bottom = 2
-	slider.add_theme_stylebox_override("slider", track)
-	slider.add_theme_stylebox_override("grabber_area", fill)
-	slider.add_theme_stylebox_override("grabber_area_highlight", fill)
-	var img := Image.create(6, 10, false, Image.FORMAT_RGBA8)
-	img.fill(TEXT)
-	var knob := ImageTexture.create_from_image(img)
-	slider.add_theme_icon_override("grabber", knob)
-	slider.add_theme_icon_override("grabber_highlight", knob)
+	AccessOptions.style_slider(slider, TEXT, ACCENT)
 
 
 func _screen_label() -> String:
@@ -639,7 +737,11 @@ func _button(text: String, action: Callable) -> Button:
 	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	b.add_theme_constant_override("outline_size", 4)
 	b.mouse_entered.connect(func() -> void: b.text = "> " + b.text.substr(2))
-	b.mouse_exited.connect(func() -> void: b.text = "  " + b.text.substr(2))
+	b.mouse_exited.connect(func() -> void:
+		if not b.has_focus():
+			b.text = "  " + b.text.substr(2))
+	b.focus_entered.connect(func() -> void: b.text = "> " + b.text.substr(2))
+	b.focus_exited.connect(func() -> void: b.text = "  " + b.text.substr(2))
 	b.pressed.connect(func() -> void:
 		Sfx.play(self, "click", -4.0)
 		action.call())

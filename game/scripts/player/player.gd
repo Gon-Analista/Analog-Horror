@@ -193,7 +193,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled or not alive or ui_open:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Tuning.MOUSE_SENS
+		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Settings.look_scale()
 		if seated:
 			rotation.y = clampf(wrapf(rotation.y - m.x - _seat_yaw, -PI, PI), -0.5, 0.5) + _seat_yaw
 		else:

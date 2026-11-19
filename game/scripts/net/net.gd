@@ -234,6 +234,7 @@ func end_session(message := "") -> void:
 	if was_online:
 		EosNet.leave_async()
 	get_tree().change_scene_to_file(MENU_SCENE)
+	TapeCut.play(get_tree())
 
 
 func _reset(p_mode: Mode) -> void:
@@ -333,6 +334,7 @@ func _start(p_seed: int, tapes: int, p_mode := 0, p_entity := 0, p_bots := 0) ->
 func _enter_game() -> void:
 	log_line("enter game, my id %d, roster %s" % [my_id(), players.keys()])
 	get_tree().change_scene_to_file(GAME_SCENE)
+	TapeCut.play(get_tree())
 
 
 func _local_address() -> String:

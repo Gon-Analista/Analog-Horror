@@ -21,6 +21,8 @@ var _status: Label
 var _noise: ShaderMaterial
 var _progress := [0.0]
 var _going := false
+## A key or a click during the photosensitivity notice.
+var _skip := false
 
 
 func _ready() -> void:
@@ -30,7 +32,8 @@ func _ready() -> void:
 		get_tree().change_scene_to_file.call_deferred(MENU)
 		return
 	if shot >= 0 and shot + 1 < args.size():
-		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		# (With --notice: the photosensitivity notice instead.)
+		get_tree().create_timer(3.5 if args.has("--notice") else 1.0).timeout.connect(func() -> void:
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(args[shot + 1])
 			get_tree().quit())
@@ -98,5 +101,44 @@ func _process(delta: float) -> void:
 	_noise.set_shader_parameter("disturb", 0.35 if glitch else 0.07)
 	if loaded and not checking and not window_open and _t >= MIN_TIME:
 		_going = true
+		if not Settings.photosensitivity_seen or OS.get_cmdline_user_args().has("--notice"):
+			await _notice()
 		var scene := ResourceLoader.load_threaded_get(MENU) as PackedScene
 		get_tree().change_scene_to_packed(scene)
+		TapeCut.play(get_tree())
+
+
+## The first time only: the flashing-lights notice, on the same card (a
+## key or a click goes on once it has been up a moment).
+func _notice() -> void:
+	Settings.photosensitivity_seen = true
+	Settings.save()
+	_skip = false
+	_logo.modulate.a = 0.12
+	_logo.position = Vector2.ZERO
+	_noise.set_shader_parameter("disturb", 0.04)
+	_bar.text = ""
+	_status.text = ""
+	var title := _label(16, AMBER, 70)
+	title.text = tr("AVISO DE FOTOSENSIBILIDAD")
+	var body := _label(11, Color(0.86, 0.86, 0.82), 98)
+	body.size = Vector2(400, 90)
+	body.position.x = 40
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.text = tr("Este juego tiene luces que parpadean, destellos y ruido de imagen intermitente que pueden afectar a personas con epilepsia fotosensible.\nEn OPCIONES > CONTROLES Y ACCESIBILIDAD puedes activar «MENOS DESTELLOS».")
+	_status.text = tr("(pulsa una tecla para seguir)")
+	_status.modulate.a = 0.0
+	var shown := 0.0
+	while shown < 7.0:
+		await get_tree().process_frame
+		shown += get_process_delta_time()
+		_status.modulate.a = clampf((shown - 1.2) * 2.0, 0.0, 1.0)
+		if shown > 1.2 and _skip:
+			break
+	title.queue_free()
+	body.queue_free()
+
+
+func _input(event: InputEvent) -> void:
+	if (event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton) and event.is_pressed():
+		_skip = true

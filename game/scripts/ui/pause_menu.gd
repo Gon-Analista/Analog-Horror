@@ -3,6 +3,8 @@ extends Control
 ## Esc: the pause menu (continue, options, back to the main menu, quit).
 ## Alone, or as the host, it pauses the night for everyone, and the others
 ## see that the host has paused. A guest's menu does not stop the game.
+## The options carry the controls and accessibility rows (AccessOptions).
+## Arrow keys and Enter work it too.
 
 const BG := Color(0.0, 0.0, 0.0, 0.72)
 const TEXT := Color(0.88, 0.88, 0.84)
@@ -61,7 +63,8 @@ func setup(p_run: Run) -> void:
 		slider.step = 0.05
 		slider.value = Settings.volume[pair[0]]
 		slider.custom_minimum_size = Vector2(110, 12)
-		slider.focus_mode = Control.FOCUS_NONE
+		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		AccessOptions.style_slider(slider, TEXT, ACCENT)
 		var key: String = pair[0]
 		slider.value_changed.connect(func(v: float) -> void: Settings.set_volume(key, v))
 		row.add_child(slider)
@@ -73,6 +76,11 @@ func setup(p_run: Run) -> void:
 		Settings.set_mic_device(list[(i + 1) % list.size()])
 		device.text = "  " + _device_label())
 	_options.add_child(device)
+	AccessOptions.add_rows(_options, _button, func(text: String) -> Label: return _label(text, 12, TEXT), func(slider: HSlider) -> void: AccessOptions.style_slider(slider, TEXT, ACCENT))
+	# Everything has to fit with the options open: no margins on the buttons.
+	_options.add_theme_constant_override("separation", 1)
+	AccessOptions.tighten(_options)
+	AccessOptions.tighten(_panel)
 
 	_notice = _label(tr("EL ANFITRIÓN HA PAUSADO LA PARTIDA"), 16, ACCENT)
 	_notice.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -94,6 +102,7 @@ func open() -> void:
 
 func close() -> void:
 	_open = false
+	get_viewport().gui_release_focus()  # (Space or Enter must not press a hidden button)
 	_panel.visible = false
 	_options.visible = false
 	if run.phase == Run.Phase.PLAYING and not run.reading:
@@ -124,6 +133,12 @@ func _on_paused(on: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _open and (event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down")) and get_viewport().gui_get_focus_owner() == null:
+		var first := AccessOptions.first_focus(_panel)
+		if first:
+			first.grab_focus()
+		get_viewport().set_input_as_handled()
+		return
 	var k := event as InputEventKey
 	if k and k.pressed and not k.echo and k.keycode == KEY_ESCAPE:
 		if _open:
@@ -165,10 +180,12 @@ func _button(text: String, action: Callable) -> Button:
 	b.text = "  " + text
 	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.flat = true
-	b.focus_mode = Control.FOCUS_NONE
+	b.focus_mode = Control.FOCUS_ALL
 	b.add_theme_font_size_override("font_size", 14)
 	b.add_theme_color_override("font_color", TEXT)
 	b.add_theme_color_override("font_hover_color", ACCENT)
+	b.add_theme_color_override("font_focus_color", ACCENT)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	b.pressed.connect(func() -> void:
 		Sfx.play(self, "click", -4.0)
 		action.call())

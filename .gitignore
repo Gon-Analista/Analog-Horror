@@ -4,10 +4,6 @@ game/.godot/
 
 epic_sdk/
 
-# Assets extraídos del cliente de Ragnarok Online (copyright de Gravity).
-# Se regeneran con tools/export_assets.py desde tu propio cliente.
-game/assets/ro/
-
 # Salidas temporales del exportador / pruebas
 build/
 
@@ -19,6 +15,7 @@ venv/
 *.egg-info/
 
 # Editor / SO
+.claude/settings.local.json
 .vscode/
 .idea/
 Thumbs.db

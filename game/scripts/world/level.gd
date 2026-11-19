@@ -21,6 +21,41 @@ const LAMP_SHADOW_RANGE := 6.5
 const MOON_COLOR := Color(0.45, 0.56, 0.9)
 const PHOTO_CHANCE := 0.1
 const PAPER_CHANCE := 0.12
+## Moonlight of the nearest window casts shadows within this range, with
+## the "high" graphics (one spot shadow pass: update_shadows).
+const MOON_SHADOW_RANGE := 7.0
+## Surface look per material: [roughness, relief]. The relief is a normal
+## map derived from the texture's own light and dark (grout, plank gaps,
+## stains) at the same texel size, so the flashlight rakes across a pixel-
+## art surface instead of a flat print, and glazed or varnished surfaces
+## catch a glint. Keys not listed get DEFAULT_LOOK; a key ending in "*"
+## matches a prefix. Free at runtime: one extra texture read per pixel.
+const DEFAULT_LOOK := [0.9, 1.0]
+const MATERIAL_LOOK := {
+	"floor_tile": [0.32, 2.2],   # glazed: the flashlight glints on it
+	"wall_tile": [0.45, 1.0],
+	"counter": [0.45, 1.2],
+	"enamel": [0.3, 0.6],
+	"floor_wood": [0.62, 2.4],   # old varnish, deep plank gaps
+	"wood_dark": [0.55, 1.6],
+	"wood_trim": [0.5, 1.6],
+	"door_exit": [0.55, 1.6],
+	"window": [0.35, 1.2],
+	"brass": [0.35, 0.8],
+	"plastic": [0.5, 0.6],
+	"wallpaper*": [0.88, 0.8],   # damp, peeling paper
+	"ceiling": [0.95, 0.9],
+	"sofa": [1.0, 2.0],
+	"bed": [1.0, 1.6],
+	"linen": [1.0, 1.4],
+	"plush": [1.0, 2.0],
+	"rug": [1.0, 2.6],
+	"cardboard": [0.9, 1.6],
+	"books": [0.8, 1.4],
+	"paper": [0.8, 0.0],
+	"photos": [0.3, 0.0],        # glossy prints
+	"drawing*": [0.85, 0.0],
+}
 
 var layout: HouseLayout
 var width := 0
@@ -29,6 +64,9 @@ var floors := 1
 ## char -> Array of cells (every char that is not wall or plain floor).
 var spots := {}
 var lamps: Array[FlickerLight] = []
+## Moonlight through the windows (shadowless spots unless near, see
+## update_shadows).
+var moons: Array[SpotLight3D] = []
 ## Beds, tables and wardrobes you can hide in (Hide<n>, in build order).
 var hide_spots: Array[HideSpot] = []
 ## Doors in the doorways (Door<n>, in build order); cell -> Door.
@@ -233,6 +271,18 @@ func update_shadows(viewer: Vector3) -> void:
 			nearest = lamp
 	for lamp in lamps:
 		lamp.shadow_enabled = lamp == nearest
+	# The same for the moonlight with the high graphics: furniture and the
+	# window frame cut the shaft in the fog. A spot is one shadow pass.
+	var nearest_moon: SpotLight3D = null
+	if Settings.graphics == "high":
+		var best_moon := MOON_SHADOW_RANGE
+		for moon in moons:
+			var d := moon.global_position.distance_to(viewer)
+			if d < best_moon:
+				best_moon = d
+				nearest_moon = moon
+	for moon in moons:
+		moon.shadow_enabled = moon == nearest_moon
 
 
 # --- cells ------------------------------------------------------------------
@@ -510,15 +560,50 @@ func mat(key: String) -> StandardMaterial3D:
 		m.albedo_color = Color.MAGENTA
 	m.albedo_texture = tex
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS
-	m.roughness = 0.92
+	var look := _look(key)
+	m.roughness = look[0]
+	if tex and look[1] > 0.0:
+		m.normal_enabled = true
+		m.normal_texture = _relief(tex, look[1])
 	_mats[key] = m
 	return m
+
+
+static func _look(key: String) -> Array:
+	if MATERIAL_LOOK.has(key):
+		return MATERIAL_LOOK[key]
+	for k: String in MATERIAL_LOOK:
+		if k.ends_with("*") and key.begins_with(k.trim_suffix("*")):
+			return MATERIAL_LOOK[k]
+	return DEFAULT_LOOK
+
+
+## Normal map from the albedo's brightness (dark = recessed), made once per
+## texture at load: the textures are 16-84 px, so this costs nothing.
+static func _relief(tex: Texture2D, strength: float) -> Texture2D:
+	var img := tex.get_image()
+	if img == null:
+		return null
+	img = img.duplicate()
+	if img.is_compressed():
+		img.decompress()
+	img.clear_mipmaps()
+	img.convert(Image.FORMAT_RGBA8)
+	for y in img.get_height():  # height = luminance (Godot reads red only)
+		for x in img.get_width():
+			var l := img.get_pixel(x, y).get_luminance()
+			img.set_pixel(x, y, Color(l, l, l))
+	img.bump_map_to_normal_map(strength)
+	img.generate_mipmaps()
+	return ImageTexture.create_from_image(img)
 
 
 func _commit() -> void:
 	var arch := ArrayMesh.new()
 	for key: String in _surfaces:
-		(_surfaces[key] as SurfaceTool).commit(arch)
+		var st := _surfaces[key] as SurfaceTool
+		st.generate_tangents()  # for the relief (normal maps)
+		st.commit(arch)
 		arch.surface_set_material(arch.get_surface_count() - 1, mat(key))
 	_surfaces.clear()
 	var mi := MeshInstance3D.new()
@@ -1188,8 +1273,8 @@ func _add_lamp(c: Vector3i, dead: bool) -> void:
 
 
 ## Cold moonlight falling through the window of wall cell `c` into the
-## room on side `d`: a shadowless spot with the window frame as projector,
-## so it costs little and draws a shaft in the fog.
+## room on side `d`: a spot with the window frame as projector that draws a
+## shaft in the fog; only the nearest one casts shadows (high graphics).
 func _add_moonlight(c: Vector3i, d: Vector2i) -> void:
 	var n := Vector3(d.x, 0, d.y)
 	var window := center(c) + n * CELL * 0.5
@@ -1200,9 +1285,12 @@ func _add_moonlight(c: Vector3i, d: Vector2i) -> void:
 	spot.spot_angle = 24.0
 	spot.light_projector = load("res://assets/textures/window_cookie.png")
 	spot.light_volumetric_fog_energy = 2.0
-	spot.shadow_enabled = false
+	spot.shadow_enabled = false  # turned on near the viewer: update_shadows()
+	spot.shadow_bias = 0.04
+	spot.shadow_normal_bias = 1.5
 	spot.distance_fade_enabled = true
 	spot.distance_fade_begin = 16.0
 	add_child(spot)
+	moons.append(spot)
 	spot.global_position = window - n * 0.8 + Vector3.UP * 2.4
 	spot.look_at(window + n * 2.2 + Vector3.UP * 0.1, Vector3.UP)

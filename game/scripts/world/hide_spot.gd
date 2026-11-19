@@ -80,6 +80,7 @@ func make_inside(level: Level) -> Node3D:
 		hinge.position = out * (d * 0.5) + across * k * (w * 0.5)
 		root.add_child(hinge)
 		box.call(-across * k * (leaf * 0.5), leaf, 0.025, h, hinge)
+	MeshMerge.merge_children(root)  # the fixed panels: one mesh (the doors swing)
 	root.position = Vector3.UP * 0.0
 	return root
 

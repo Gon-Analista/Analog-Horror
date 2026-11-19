@@ -29,7 +29,8 @@ const MOON_SHADOW_RANGE := 7.0
 ## stains) at the same texel size, so the flashlight rakes across a pixel-
 ## art surface instead of a flat print, and glazed or varnished surfaces
 ## catch a glint. Keys not listed get DEFAULT_LOOK; a key ending in "*"
-## matches a prefix. Free at runtime: one extra texture read per pixel.
+## matches a prefix. Made once at load; at runtime one or two extra
+## texture reads per pixel.
 const DEFAULT_LOOK := [0.9, 1.0]
 const MATERIAL_LOOK := {
 	"floor_tile": [0.32, 2.2],   # glazed: the flashlight glints on it
@@ -565,6 +566,10 @@ func mat(key: String) -> StandardMaterial3D:
 	if tex and look[1] > 0.0:
 		m.normal_enabled = true
 		m.normal_texture = _relief(tex, look[1])
+	if tex and look[0] < 0.7:
+		m.roughness = minf(1.0, look[0] * 1.6)  # times _wear's 0.375..1
+		m.roughness_texture = _wear(tex)
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
 	_mats[key] = m
 	return m
 
@@ -588,12 +593,30 @@ static func _relief(tex: Texture2D, strength: float) -> Texture2D:
 	if img.is_compressed():
 		img.decompress()
 	img.clear_mipmaps()
+	img.convert(Image.FORMAT_L8)  # height = brightness (Godot reads red only)
 	img.convert(Image.FORMAT_RGBA8)
-	for y in img.get_height():  # height = luminance (Godot reads red only)
-		for x in img.get_width():
-			var l := img.get_pixel(x, y).get_luminance()
-			img.set_pixel(x, y, Color(l, l, l))
 	img.bump_map_to_normal_map(strength)
+	img.generate_mipmaps()
+	return ImageTexture.create_from_image(img)
+
+
+## Roughness that follows the texture on glossy surfaces: the dirty joints,
+## gaps and stains (dark) stay matt, the clean glaze or varnish (light)
+## shines: 0.375 (white) .. 1 (black), times the material's roughness
+## (set to 1.6x its look), so 0.6x .. 1.6x the look's value.
+static func _wear(tex: Texture2D) -> Texture2D:
+	var img := tex.get_image()
+	if img == null:
+		return null
+	img = img.duplicate()
+	if img.is_compressed():
+		img.decompress()
+	img.clear_mipmaps()
+	img.convert(Image.FORMAT_L8)
+	var data := img.get_data()
+	for k in data.size():
+		data[k] = clampi(int(255.0 * (1.6 - data[k] / 255.0)) * 5 / 8, 0, 255)
+	img.set_data(img.get_width(), img.get_height(), false, Image.FORMAT_L8, data)
 	img.generate_mipmaps()
 	return ImageTexture.create_from_image(img)
 
@@ -604,6 +627,7 @@ func _commit() -> void:
 		var st := _surfaces[key] as SurfaceTool
 		st.generate_tangents()  # for the relief (normal maps)
 		st.commit(arch)
+		arch.surface_set_name(arch.get_surface_count() - 1, key)
 		arch.surface_set_material(arch.get_surface_count() - 1, mat(key))
 	_surfaces.clear()
 	var mi := MeshInstance3D.new()
@@ -622,6 +646,7 @@ func _commit() -> void:
 	caster.mesh = merged.commit()
 	caster.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	add_child(caster)
+	_add_occluder(arch)
 	var body := StaticBody3D.new()
 	body.name = "HouseCollision"
 	body.collision_layer = Tuning.LAYER_WORLD
@@ -630,6 +655,31 @@ func _commit() -> void:
 	shape.shape = arch.create_trimesh_shape()
 	body.add_child(shape)
 	add_child(body)
+
+
+## Occlusion culling: the walls, floors and ceilings (not the windows) as
+## an occluder, so the doors, hiding places, pickups, the TV and the
+## furniture behind a wall or on another floor are not drawn (only the
+## camera view; project setting rendering/occlusion_culling).
+func _add_occluder(arch: ArrayMesh) -> void:
+	var verts := PackedVector3Array()
+	for i in arch.get_surface_count():
+		var key := arch.surface_get_name(i)
+		if not (key.begins_with("wall") or key.begins_with("floor") or key == "ceiling" or key == "rug"):
+			continue
+		verts.append_array(arch.surface_get_arrays(i)[Mesh.ARRAY_VERTEX])
+	if verts.is_empty():
+		return
+	var indices := PackedInt32Array()
+	indices.resize(verts.size())
+	for k in verts.size():
+		indices[k] = k
+	var occ := ArrayOccluder3D.new()
+	occ.set_arrays(verts, indices)
+	var oi := OccluderInstance3D.new()
+	oi.name = "HouseOccluder"
+	oi.occluder = occ
+	add_child(oi)
 
 
 # --- furniture --------------------------------------------------------------------

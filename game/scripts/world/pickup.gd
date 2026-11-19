@@ -78,12 +78,14 @@ func _build_tape() -> void:
 	var model := GearModels.tape()
 	model.rotation.y = randf() * TAU
 	add_child(model)
+	_no_shadow(model)
 
 
 func _build_battery() -> void:
 	var model := GearModels.battery()
 	model.rotation.y = randf() * TAU
 	add_child(model)
+	_no_shadow(model)
 	# Its charge light blinks, slowly: easy to spot across a dark room.
 	_led = model.get_node("Led")
 	var glow := OmniLight3D.new()
@@ -93,6 +95,13 @@ func _build_battery() -> void:
 	glow.position.y = 0.08
 	add_child(glow)
 	_glow = glow
+
+
+## A few centimetres tall: its shadow would not show, but it would be drawn
+## again in every shadow pass that reaches it (the flashlight, lamps).
+func _no_shadow(model: Node) -> void:
+	for m in GearModels.meshes(model):
+		m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _process(_delta: float) -> void:

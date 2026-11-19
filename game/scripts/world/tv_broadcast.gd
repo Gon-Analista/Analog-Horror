@@ -443,6 +443,7 @@ func _glitch(text: String) -> String:
 ## knobs, push buttons, the channel display and a speaker grille, the
 ## tube's tapered back, little feet, and rabbit-ear aerials on top.
 func _build_set() -> void:
+	var first := get_child_count()
 	var wood := StandardMaterial3D.new()
 	wood.albedo_texture = load("res://assets/textures/wood_dark.png")
 	wood.albedo_color = Color(0.85, 0.72, 0.6)
@@ -548,6 +549,12 @@ func _build_set() -> void:
 		rod.rotation = Vector3(0.15, 0, 0.55 * side)
 		rod.position = Vector3(-0.18 - side * 0.1, 0.71, 0.03)
 		add_child(rod)
+	# Thirty-odd boxes and cylinders in one mesh (one surface per material).
+	var parts: Array[MeshInstance3D] = []
+	for child in get_children().slice(first):
+		if child is MeshInstance3D:
+			parts.append(child)
+	MeshMerge.merge(self, parts, "", "Set")
 
 
 func _tv_box(mat: Material, size: Vector3, pos: Vector3) -> void:

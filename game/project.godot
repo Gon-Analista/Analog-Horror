@@ -88,3 +88,4 @@ lights_and_shadows/positional_shadow/soft_shadow_filter_quality=0
 textures/light_projectors/filter=0
 environment/volumetric_fog/volume_depth=48
 lights_and_shadows/positional_shadow/atlas_size=2048
+occlusion_culling/use_occlusion_culling=true

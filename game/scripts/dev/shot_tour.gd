@@ -76,6 +76,25 @@ func run_tour(main: Node, dir: String) -> void:
 	player._set_crouch(true)
 	player.crouching = true
 	await _pose_shot(player, Vector2(3.5, 11.4), 0.0, 0.15, dir, "16_boards_crouched")
+	# The pause menu and its settings over the house.
+	player._set_crouch(false)
+	player.crouching = false
+	await _pose_shot(player, Vector2(15.5, 11.5), PI / 2, 0.0, dir, "17_before_pause")
+	var pause: PauseMenu = main.get_node("UILayer/Pause")
+	pause.open()
+	await _wait(0.3)
+	await _shot(dir, "17_pause")
+	pause._open_options()
+	await _wait(0.3)
+	await _shot(dir, "18_options")
+	pause.close()
+	# The end cards, once the report has typed itself out.
+	run.screens.show_escaped(5, 5, 431.0, 3, PackedStringArray(["Operador", "Lucía"]), true)
+	await _wait(4.0)
+	await _shot(dir, "19_escaped")
+	run.screens.show_caught(2, 5, 254.0, true)
+	await _wait(3.5)
+	await _shot(dir, "20_no_signal")
 	print("PERF fps=%d draw_calls=%d objects=%d vram=%.0fMB" % [Engine.get_frames_per_second(),
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 			Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),

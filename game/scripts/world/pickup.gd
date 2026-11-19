@@ -31,6 +31,7 @@ func _ready() -> void:
 		whir.stream = Sfx.get_stream("tape_whir", true)
 		whir.volume_db = -14.0
 		whir.unit_size = 1.2
+		whir.bus = Settings.BUS_SFX
 		whir.max_distance = 9.0
 		whir.position.y = 0.05
 		add_child(whir)

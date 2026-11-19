@@ -29,7 +29,7 @@ var filming: bool:
 
 func _process(delta: float) -> void:
 	if _player.is_local:
-		var held := force_held or (_player.input_enabled and _player.alive and Input.is_action_pressed("film"))
+		var held := force_held or (_player.can_act() and Input.is_action_pressed("film"))
 		raise = move_toward(raise, 1.0 if held else 0.0, delta / Tuning.CAMCORDER_RAISE_TIME)
 		if filming:
 			battery = maxf(0.0, battery - Tuning.BATTERY_DRAIN * delta)
@@ -42,8 +42,11 @@ func _process(delta: float) -> void:
 	else:
 		raise = move_toward(raise, _player.net_raise, delta / Tuning.CAMCORDER_RAISE_TIME)
 	# FOV matters for the remote cameras too: the host checks their frame.
+	# Only the naked-eye FOV is a local setting; the viewfinder's is fixed so
+	# every machine agrees on what a camcorder frames.
 	var cam := _player.camera
-	cam.fov = lerpf(Tuning.FOV, Tuning.FILM_FOV, smoothstep(0.0, 1.0, raise))
+	var eye_fov := Settings.fov() if _player.is_local else Tuning.FOV
+	cam.fov = lerpf(eye_fov, Tuning.FILM_FOV, smoothstep(0.0, 1.0, raise))
 	if filming or reveal:
 		cam.cull_mask |= Entity.LAYER_MASK
 	else:

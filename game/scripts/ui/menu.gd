@@ -5,17 +5,20 @@ extends Control
 ## code (or a LAN address, for development), see who is in, start.
 ## Dev flags (after "--"): --smoke / --shots go straight to the house;
 ## --net-test host|client runs the two-window online check on LAN;
-## --menu-shot <file.png> saves a screenshot of this screen and quits.
+## --menu-shot <file.png> saves a screenshot of this screen and quits;
+## --menu-shots <dir> saves the title screens (ident, warning, settings...).
 
 const SHOW_SHEET := "res://assets/textures/tv_show.png"
 const FRAME := Vector2i(320, 240)
 ## The TV in the room (base 480x270 coordinates).
 const TV_RECT := Rect2(236, 38, 224, 168)
-const TEXT := Color(0.9, 0.9, 0.84)
-const DIM := Color(0.6, 0.6, 0.58)
-const ACCENT := Color(1.0, 0.82, 0.3)
-const FONT_TITLE := 26
-const FONT := 13
+const TEXT := UiKit.TEXT
+const DIM := UiKit.DIM
+const ACCENT := UiKit.ACCENT
+const FONT_TITLE := UiKit.FONT_TITLE
+const FONT := UiKit.FONT
+## The title card (channel ident and warnings) plays once per launch.
+static var _boot_shown := false
 
 var _atlas: AtlasTexture
 var _music: AudioStreamPlayer
@@ -33,6 +36,11 @@ var _status: Label
 var _room: Label
 var _list: VBoxContainer
 var _start: Button
+var _col: VBoxContainer
+var _overlay: Control
+var _options: OptionsPanel
+var _credits: PanelContainer
+var _first_button: Button
 
 
 func _ready() -> void:
@@ -50,6 +58,21 @@ func _ready() -> void:
 		_show_main())
 	if Net.last_message != "":
 		_status.text = Net.last_message
+	var tour := args.find("--menu-shots")
+	if tour >= 0 and tour + 1 < args.size():
+		_boot_shown = true
+		var mt := MenuTour.new()
+		add_child(mt)
+		mt.run_tour(self, args[tour + 1])
+		return
+	var dev := args.has("--menu-shot") or args.has("--net-test")
+	if not _boot_shown and not dev:
+		_boot_shown = true
+		var card := BootCard.new()
+		add_child(card)
+		await card.done
+	if not dev:
+		_first_button.grab_focus()
 	var shot := args.find("--menu-shot")
 	if shot >= 0 and shot + 1 < args.size():
 		await get_tree().create_timer(1.5).timeout
@@ -79,7 +102,15 @@ func _process(delta: float) -> void:
 
 func _solo() -> void:
 	Net.my_name = _player_name()
+	_set_busy(true)
+	await Transition.cover()
 	Net.start_solo()
+
+
+func _start_night() -> void:
+	_start.disabled = true
+	await Transition.cover()
+	Net.start_game(randi())
 
 
 func _host() -> void:
@@ -146,12 +177,15 @@ func _net_test(role: String) -> void:
 func _show_main() -> void:
 	_main_box.visible = true
 	_lobby_box.visible = false
+	_first_button.grab_focus()
 
 
 func _show_lobby() -> void:
 	_main_box.visible = false
 	_lobby_box.visible = true
 	_refresh_lobby()
+	if _start.visible:
+		_start.grab_focus()
 
 
 func _refresh_lobby() -> void:
@@ -179,6 +213,7 @@ func _refresh_lobby() -> void:
 	for i in range(ids.size(), Net.MAX_PLAYERS):
 		_list.add_child(_label(tr("  · libre"), FONT, DIM))
 	_start.visible = Net.is_host()
+	_start.disabled = false
 	_status.text = "" if Net.is_host() else tr("Esperando a que el anfitrión empiece…")
 
 
@@ -263,18 +298,22 @@ func _build() -> void:
 	_music = AudioStreamPlayer.new()
 	_music.stream = Sfx.get_stream("menu_theme", true)
 	_music.volume_db = -40.0
+	_music.bus = Settings.BUS_MUSIC
 	add_child(_music)
 	_music.play()
 	create_tween().tween_property(_music, "volume_db", -6.0, 2.5)
 
 	var col := VBoxContainer.new()
+	_col = col
 	col.position = Vector2(26, 22)
-	col.custom_minimum_size = Vector2(250, 0)
-	col.add_theme_constant_override("separation", 4)
+	col.custom_minimum_size = Vector2(196, 0)
+	col.add_theme_constant_override("separation", 3)
 	add_child(col)
 	col.add_child(_label("¡HOLA, VECINITOS!", FONT_TITLE, ACCENT))
 	col.add_child(_label(tr("UNIDAD DE RECUPERACIÓN · CANAL 9 · 1989"), 11, DIM))
-	col.add_child(_spacer(12))
+	col.add_child(UiKit.spacer(3))
+	col.add_child(UiKit.rule(170))
+	col.add_child(UiKit.spacer(6))
 
 	var name_row := HBoxContainer.new()
 	name_row.add_child(_label(tr("NOMBRE "), FONT, DIM))
@@ -282,12 +321,13 @@ func _build() -> void:
 	_name_edit.custom_minimum_size = Vector2(140, 0)
 	name_row.add_child(_name_edit)
 	col.add_child(name_row)
-	col.add_child(_spacer(6))
+	col.add_child(UiKit.spacer(6))
 
 	_main_box = VBoxContainer.new()
-	_main_box.add_theme_constant_override("separation", 2)
+	_main_box.add_theme_constant_override("separation", 1)
 	col.add_child(_main_box)
-	_main_box.add_child(_button(tr("JUGAR SOLO"), _solo))
+	_first_button = _button(tr("JUGAR SOLO"), _solo)
+	_main_box.add_child(_first_button)
 	_main_box.add_child(_button(tr("CREAR SALA ONLINE"), _host))
 	_join_box = HBoxContainer.new()
 	_main_box.add_child(_join_box)
@@ -295,9 +335,14 @@ func _build() -> void:
 	_code_edit = _edit("", 15)
 	_code_edit.placeholder_text = tr("código")
 	_code_edit.custom_minimum_size = Vector2(90, 0)
+	_code_edit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_code_edit.text_submitted.connect(func(_t: String) -> void: _join())
 	_join_box.add_child(_code_edit)
 	if OS.is_debug_build():
 		_main_box.add_child(_button(tr("CREAR SALA LAN (desarrollo)"), _host_lan))
+	_main_box.add_child(UiKit.spacer(4))
+	_main_box.add_child(_button(tr("AJUSTES"), _open_options))
+	_main_box.add_child(_button(tr("CRÉDITOS"), _open_credits))
 	_main_box.add_child(_button(tr("SALIR"), func() -> void: get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)))
 
 	_lobby_box = VBoxContainer.new()
@@ -309,17 +354,96 @@ func _build() -> void:
 	_lobby_box.add_child(_label(tr("Pasa el código a tus amigos (hasta 4)."), 11, DIM))
 	_list = VBoxContainer.new()
 	_lobby_box.add_child(_list)
-	_start = _button(tr("EMPEZAR LA NOCHE"), func() -> void: Net.start_game(randi()))
+	_start = _button(tr("EMPEZAR LA NOCHE"), _start_night)
 	_lobby_box.add_child(_start)
 	_lobby_box.add_child(_button(tr("SALIR DE LA SALA"), _leave))
 
-	_status = _label("", 11, Color(1.0, 0.55, 0.45))
+	_status = _label("", 11, UiKit.ALERT)
 	_status.position = Vector2(26, 250)
-	_status.size = Vector2(430, 14)
+	_status.size = Vector2(300, 14)
 	add_child(_status)
-	var help := _label(tr("Auriculares recomendados."), 10, DIM)
-	help.position = Vector2(330, 252)
+	var help := _label(tr("v%s · Auriculares recomendados") % ProjectSettings.get_setting("application/config/version", "0"), 10, DIM)
+	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	help.position = Vector2(254, 252)
+	help.size = Vector2(206, 12)
 	add_child(help)
+
+	# Settings and credits open centred over a dimmed room.
+	_overlay = Control.new()
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.visible = false
+	add_child(_overlay)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.55)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.add_child(center)
+	_options = OptionsPanel.new()
+	center.add_child(_options)
+	_options.closed.connect(_close_overlay)
+	_credits = _build_credits()
+	center.add_child(_credits)
+
+
+func _build_credits() -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiKit.panel_style(10))
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 0)
+	panel.add_child(box)
+	box.add_child(UiKit.label(tr("CRÉDITOS"), 16, ACCENT))
+	box.add_child(UiKit.rule(300))
+	box.add_child(UiKit.spacer(4))
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 2)
+	box.add_child(grid)
+	for pair: Array in [
+			[tr("MOTOR"), "Godot Engine (MIT)"],
+			[tr("RED"), "Epic Online Services\nplugin EOSG, Delano Lourenco (MIT)"],
+			[tr("TIPOGRAFÍA"), "VT323, Peter Hull (SIL OFL 1.1)"],
+			[tr("MÚSICA Y SONIDO"), tr("Síntesis original del proyecto")],
+			[tr("ARTE"), tr("Texturas y la Visita, originales")]]:
+		var k := UiKit.label(pair[0], UiKit.FONT_SMALL, DIM)
+		k.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		k.custom_minimum_size = Vector2(0, 14)
+		k.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		grid.add_child(k)
+		grid.add_child(UiKit.label(pair[1], FONT, TEXT))
+	box.add_child(UiKit.spacer(6))
+	box.add_child(UiKit.label(tr("Gracias por jugar con la tele encendida."), UiKit.FONT_SMALL, DIM))
+	box.add_child(UiKit.spacer(3))
+	box.add_child(UiKit.rule(300))
+	box.add_child(UiKit.spacer(2))
+	box.add_child(_button(tr("VOLVER"), _close_overlay))
+	panel.visible = false
+	return panel
+
+
+func _open_options() -> void:
+	_overlay.visible = true
+	_options.open()
+
+
+func _open_credits() -> void:
+	_overlay.visible = true
+	_credits.visible = true
+	(_credits.find_children("*", "Button", true, false)[0] as Button).grab_focus()
+
+
+func _close_overlay() -> void:
+	_credits.visible = false
+	_overlay.visible = false
+	_show_main()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _credits and _credits.visible and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_close_overlay()
 
 
 func _set_busy(busy: bool) -> void:
@@ -328,51 +452,12 @@ func _set_busy(busy: bool) -> void:
 
 
 func _label(text: String, size_px: int, color: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_size_override("font_size", size_px)
-	l.add_theme_color_override("font_color", color)
-	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-	l.add_theme_constant_override("outline_size", 4)
-	return l
+	return UiKit.label(text, size_px, color)
 
 
 func _button(text: String, action: Callable) -> Button:
-	var b := Button.new()
-	b.text = "  " + text
-	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.flat = true
-	b.focus_mode = Control.FOCUS_ALL
-	b.add_theme_font_size_override("font_size", FONT)
-	b.add_theme_color_override("font_color", TEXT)
-	b.add_theme_color_override("font_hover_color", ACCENT)
-	b.add_theme_color_override("font_focus_color", ACCENT)
-	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-	b.add_theme_constant_override("outline_size", 4)
-	b.mouse_entered.connect(func() -> void: b.text = "> " + text)
-	b.mouse_exited.connect(func() -> void: b.text = "  " + text)
-	b.pressed.connect(func() -> void:
-		Sfx.play(self, "click", -4.0)
-		action.call())
-	return b
+	return UiKit.button(text, action)
 
 
 func _edit(text: String, max_len: int) -> LineEdit:
-	var e := LineEdit.new()
-	e.text = text
-	e.max_length = max_len
-	e.add_theme_font_size_override("font_size", FONT)
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color(0, 0, 0, 0.55)
-	box.border_color = Color(0.6, 0.6, 0.58, 0.8)
-	box.set_border_width_all(1)
-	box.set_content_margin_all(2)
-	e.add_theme_stylebox_override("normal", box)
-	e.add_theme_stylebox_override("focus", box)
-	return e
-
-
-func _spacer(h: float) -> Control:
-	var c := Control.new()
-	c.custom_minimum_size = Vector2(0, h)
-	return c
+	return UiKit.edit(text, max_len)

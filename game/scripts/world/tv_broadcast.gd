@@ -283,6 +283,7 @@ func _build() -> void:
 	_audio.stream = Sfx.get_stream("show_theme", true)
 	_audio.volume_db = -10.0
 	_audio.unit_size = 2.0
+	_audio.bus = Settings.BUS_SFX
 	_audio.position.y = 0.3
 	add_child(_audio)
 	_audio.play()

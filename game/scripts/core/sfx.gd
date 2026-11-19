@@ -34,6 +34,7 @@ static func play_3d(parent: Node, at: Vector3, id: String, volume_db := 0.0) -> 
 	p.stream = s
 	p.volume_db = volume_db
 	p.unit_size = 3.0
+	p.bus = Settings.BUS_SFX
 	parent.add_child(p)
 	p.global_position = at
 	p.finished.connect(p.queue_free)
@@ -49,6 +50,7 @@ static func play(parent: Node, id: String, volume_db := 0.0, pitch := 1.0) -> vo
 	p.stream = s
 	p.volume_db = volume_db
 	p.pitch_scale = pitch
+	p.bus = Settings.BUS_SFX
 	parent.add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()

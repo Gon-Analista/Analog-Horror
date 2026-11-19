@@ -28,7 +28,8 @@ func _process(delta: float) -> void:
 		e = ENERGY * (0.95 + 0.05 * sin(_t * 41.0) * sin(_t * 13.0))
 		if _dip > 0.0:
 			_dip -= delta
-			e *= 0.25
+			# Softer dips with reduced effects (photosensitivity setting).
+			e *= lerpf(0.85, 0.25, Settings.vhs_fx())
 		elif _rng.randf() < delta * 0.08:
 			_dip = _rng.randf_range(0.04, 0.18)
 		if disturbance > 0.0 and _rng.randf() < disturbance * 0.6:

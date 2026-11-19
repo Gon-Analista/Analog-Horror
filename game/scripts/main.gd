@@ -34,9 +34,15 @@ func _ready() -> void:
 	$UILayer/Viewfinder.setup(player, run)
 	$UILayer/Hud.setup(player, run)
 	$UILayer/Debug.setup(player, entity)
+	var pause := PauseMenu.new()
+	pause.name = "Pause"
+	pause.set_anchors_preset(Control.PRESET_FULL_RECT)
+	$UILayer.add_child(pause)
+	pause.setup(player)
 	var ambience := AudioStreamPlayer.new()
 	ambience.stream = Sfx.get_stream("house_ambience", true)
 	ambience.volume_db = -10.0
+	ambience.bus = Settings.BUS_SFX
 	add_child(ambience)
 	ambience.play()
 

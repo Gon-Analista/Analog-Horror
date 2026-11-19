@@ -121,6 +121,8 @@ func _disturb() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if local_player.menu_open:
+		return
 	if phase == Phase.PLAYING:
 		if not local_player.alive and event is InputEventMouseButton and event.pressed:
 			_spectate_next()

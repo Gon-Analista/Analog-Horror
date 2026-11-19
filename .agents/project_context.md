@@ -113,7 +113,7 @@ Fusión de las tres direcciones propuestas: **«Solo la cámara la ve»** + **la
 ## Interfaz e interacciones
 
 - HUD mínimo: un punto de mira, el aviso de interacción y mensajes breves. Todo lo demás es diegético (visor, televisión).
-- Controles: WASD, ratón, **clic derecho mantenido = cámara**, F linterna, E usar, Shift correr, C agacharse, F3 datos de rendimiento, F11 pantalla completa, R reintentar al final.
+- Controles: WASD, ratón, **clic derecho mantenido = cámara**, F linterna, E usar, Shift correr, C agacharse, Esc pausa y ajustes, F3 datos de rendimiento, F11 pantalla completa, R reintentar al final.
 - Las pantallas de intro y de final forman parte de la ficción (tarjeta de fecha, «SIN SEÑAL», «CINTA RECUPERADA»).
 
 ## Lore
@@ -142,6 +142,15 @@ Fusión de las tres direcciones propuestas: **«Solo la cámara la ve»** + **la
   - **Salida clara:** lámpara encima, cartel rojo de «SALIDA», luz por debajo de la puerta y los faros de la furgoneta por la ventanita. Con la cuota, los faros se encienden del todo y la furgoneta pita.
   - **Las cintas aparecen al despertar la Visita** (no antes) y suenan rebobinándose: se encuentran de oído.
   - **Manos en primera persona** más bajas, pegadas al cuerpo y abiertas a los lados; la linterna tiene un modelo nuevo (goma con anillos, bisel cromado).
+- **Pasada de acabado (2026-11-19):**
+  - **Ajustes** (`Settings`, autoload; `user://settings.cfg`): sensibilidad, invertir Y, campo de visión (solo a simple vista: el del visor es fijo para que todas las máquinas coincidan en lo que encuadra una cámara), volumen general/música/efectos, brillo, intensidad de los efectos VHS y parpadeos (nunca la ganancia ni la captura) y pantalla completa. F11 funciona en todas las pantallas.
+  - **Buses de audio** (`default_bus_layout.tres`): Master con limitador, Music, Sfx y Voice (reservado para la voz por proximidad). Todo sonido nuevo debe ir a su bus.
+  - **Menú de pausa** con Esc: seguir, ajustes, volver al menú, salir y la chuleta de controles. En solo pausa el mundo; en grupo no (el jugador solo deja de actuar, `Player.menu_open`).
+  - **Transiciones** (`Transition`, autoload): la imagen se rasga en estática y corta a negro con la mezcla, y la escena nueva vuelve igual. El arranque en red cambia de escena al instante en todas las máquinas y revela desde negro.
+  - **Arranque:** una vez por sesión, la carta de Canal 9 y el aviso de fotosensibilidad y auriculares (cualquier tecla la salta).
+  - **Interfaz común** en `scripts/ui/ui_kit.gd` (colores, botones con barra de foco, deslizadores, paneles). Menú navegable con teclado; ajustes y créditos.
+  - **Finales:** OSD de vídeo («PLAY», «CH 09»), el titular, un silencio, el informe que se escribe solo y después las opciones.
+  - Nombre del proyecto «¡Hola, Vecinitos!» e icono (`tools/gen_icon.py`).
 - **Falta para el cooperativo completo:** voz por proximidad (RTC de Epic), cámaras escasas que se pueden pasar de mano, probar una sesión online real con varias personas y ajustar el juego en grupo.
 - No añadir progresión, tienda ni campaña antes de que una noche dé miedo jugándola en grupo.
 
@@ -168,6 +177,7 @@ Fusión de las tres direcciones propuestas: **«Solo la cámara la ve»** + **la
   - `--seed N` fija la colocación de las cintas.
   - Prueba de red con dos ventanas en el mismo PC: `godot --headless --path game -- --net-test host` y, en otra, `... --net-test client`. Cada una imprime una línea `NETTEST` (jugadores, cintas, dónde ve al otro y a la Visita). Verificado el 2026-10-25.
   - `--menu-shot <archivo.png>` guarda una captura del menú.
+  - `--menu-shots <carpeta absoluta>` guarda la carta de arranque, el aviso, el título, los ajustes y los créditos. `--shots` también captura la pausa, los ajustes y los dos finales.
 - MCP de Godot (`Coding-Solo/godot-mcp`, en `C:\Users\usuario\mcp\godot-mcp`) registrado en `.mcp.json`.
 - **Online con Epic Online Services (EOS)**, producto `horror-proyect` (cliente Peer2Peer, sandbox y despliegue Live).
   - Credenciales en `game/eos/credentials.cfg`, ignorado por git.

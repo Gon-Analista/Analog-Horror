@@ -10,11 +10,14 @@ config_version=5
 
 [application]
 
-config/name="Analog Horror"
+config/name="¡Hola, Vecinitos!"
 config/description="Terror analógico cooperativo online en primera persona."
 config/version="0.1.0"
 run/main_scene="res://scenes/menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://assets/icon.png"
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
 
 [autoload]
 
@@ -30,6 +33,8 @@ HP2P="*res://addons/epic-online-services-godot/heos/hp2p.gd"
 HSessions="*res://addons/epic-online-services-godot/heos/hsessions.gd"
 EosNet="*res://scripts/net/eos_net.gd"
 Net="*res://scripts/net/net.gd"
+Settings="*res://scripts/core/settings.gd"
+Transition="*res://scripts/ui/transition.gd"
 
 [display]
 

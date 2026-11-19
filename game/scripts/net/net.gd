@@ -28,6 +28,7 @@ var in_game := false
 var last_message := ""
 ## Dev: "host" / "client" for the automated two-window test (--net-test).
 var test_role := ""
+var _ending := false
 
 
 func _ready() -> void:
@@ -133,14 +134,24 @@ func start_game(p_seed: int) -> void:
 
 
 func end_session(message := "") -> void:
+	if _ending:
+		return
+	_ending = true
 	last_message = message
+	# Freeze the scene and leave the session now (nothing may keep sending
+	# on a closed peer), then cut the picture and load the title under it.
+	var scene := get_tree().current_scene
+	if scene:
+		scene.process_mode = Node.PROCESS_MODE_DISABLED
 	var was_online := mode == Mode.ONLINE
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	players.clear()
 	in_game = false
 	if was_online:
 		EosNet.leave_async()
-	get_tree().change_scene_to_file(MENU_SCENE)
+	await Transition.cover()
+	await Transition.swap_and_reveal(MENU_SCENE)
+	_ending = false
 
 
 func _reset(p_mode: Mode) -> void:
@@ -195,7 +206,8 @@ func _sync_players(p: Dictionary) -> void:
 func _start(p_seed: int) -> void:
 	run_seed = p_seed
 	in_game = true
-	get_tree().change_scene_to_file(GAME_SCENE)
+	# Every machine loads now; the house comes up out of black.
+	Transition.cut_to(GAME_SCENE)
 
 
 func _local_address() -> String:

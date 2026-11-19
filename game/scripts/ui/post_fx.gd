@@ -30,6 +30,8 @@ func _process(_delta: float) -> void:
 		var d := p.global_position.distance_to(_entity.global_position)
 		near = pow(clampf(1.0 - d / Tuning.STATIC_RANGE, 0.0, 1.0), 2.0) * 0.55
 	_mat.set_shader_parameter("vhs", vhs)
+	_mat.set_shader_parameter("fx", Settings.vhs_fx())
+	_mat.set_shader_parameter("brightness", Settings.brightness())
 	_mat.set_shader_parameter("static_amount", near if cam.filming or spectating else 0.0)
 	_mat.set_shader_parameter("hit", 1.0 if hit else 0.0)
 	_mat.set_shader_parameter("dead", 1.0 if not spectating and cam.battery <= 0.0 and not hit else 0.0)

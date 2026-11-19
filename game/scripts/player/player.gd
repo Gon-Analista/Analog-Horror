@@ -22,6 +22,9 @@ var tint := Color(0.92, 0.5, 0.16)
 var is_local := true
 var alive := true
 var input_enabled := true
+## The pause menu is open (online the world keeps going; the player just
+## stops acting).
+var menu_open := false
 ## Interactable under the crosshair (has prompt(), on the interact layer).
 var focus: Node = null
 ## 0..1: the flashlight fails near the entity (set by Run).
@@ -65,7 +68,7 @@ func setup(id: int, p_name: String, p_tint: Color, local: bool) -> void:
 
 func _ready() -> void:
 	camera.current = is_local
-	camera.fov = Tuning.FOV
+	camera.fov = Settings.fov()
 	avatar = PlayerAvatar.new()
 	avatar.tint = tint
 	add_child(avatar)
@@ -86,10 +89,16 @@ func _ready() -> void:
 		_steps3d = AudioStreamPlayer3D.new()
 		_steps3d.stream = Sfx.get_stream("step")
 		_steps3d.unit_size = 3.0
+		_steps3d.bus = Settings.BUS_SFX
 		_steps3d.volume_db = -10.0
 		add_child(_steps3d)
 	_add_sync()
 	_snap_flashlight()
+
+
+## Takes input: in play, not taken, no menu open.
+func can_act() -> bool:
+	return input_enabled and alive and not menu_open
 
 
 ## Spawns and dev tours.
@@ -107,16 +116,17 @@ func set_view(yaw: float, pitch := 0.0) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_local:
 		return
+	if menu_open:
+		return
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
-	if event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		return
-	if not input_enabled or not alive:
+	if not can_act():
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Tuning.MOUSE_SENS
+		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Settings.mouse_sens()
+		if Settings.get_value("invert_y"):
+			m.y = -m.y
 		rotate_y(-m.x)
 		_pitch = clampf(_pitch - m.y, -1.4, 1.4)
 		head.rotation.x = _pitch
@@ -142,7 +152,7 @@ func _physics_process(delta: float) -> void:
 
 func _move_local(delta: float) -> void:
 	var wish := Vector3.ZERO
-	if input_enabled and alive:
+	if can_act():
 		var v := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		wish = transform.basis * Vector3(v.x, 0.0, v.y)
 	var speed := Tuning.WALK_SPEED

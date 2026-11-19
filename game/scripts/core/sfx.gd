@@ -4,6 +4,9 @@ extends RefCounted
 ## are made here so the WAV files need no special import settings.
 
 static var _cache := {}
+## Told of every sound in the world (Replay records them; the entity, played
+## by someone, hears them): (id, at, volume_db, max_db).
+static var listeners: Array[Callable] = []
 
 
 static func get_stream(id: String, loop := false) -> AudioStreamWAV:
@@ -26,18 +29,28 @@ static func get_stream(id: String, loop := false) -> AudioStreamWAV:
 
 ## Positional one-shot at a point in the world (parented to `parent`, so
 ## it outlives whatever made the sound).
-static func play_3d(parent: Node, at: Vector3, id: String, volume_db := 0.0) -> void:
+static func play_3d(parent: Node, at: Vector3, id: String, volume_db := 0.0, max_db := 3.0) -> void:
 	var s := get_stream(id)
 	if s == null or not parent.is_inside_tree():
 		return
+	heard(id, at, volume_db, max_db)
 	var p := AudioStreamPlayer3D.new()
 	p.stream = s
 	p.volume_db = volume_db
+	p.max_db = max_db
 	p.unit_size = 3.0
+	p.bus = "Effects"
 	parent.add_child(p)
 	p.global_position = at
 	p.finished.connect(p.queue_free)
 	p.play()
+
+
+## A sound made in the world some other way (the entity's voice...).
+static func heard(id: String, at: Vector3, volume_db: float, max_db := 3.0) -> void:
+	for l in listeners:
+		if l.is_valid():
+			l.call(id, at, volume_db, max_db)
 
 
 ## Non-positional one-shot (UI, the player's own sounds).
@@ -49,6 +62,7 @@ static func play(parent: Node, id: String, volume_db := 0.0, pitch := 1.0) -> vo
 	p.stream = s
 	p.volume_db = volume_db
 	p.pitch_scale = pitch
+	p.bus = "Effects"
 	parent.add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()

@@ -1,0 +1,962 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Lost Signal - Analog Horror\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: scripts/core/run.gd:283
+msgid "No llevas cámara: quédate cerca de quien la lleva"
+msgstr "You have no camcorder: stay close to whoever has one"
+
+#: scripts/core/run.gd:351
+msgid "%s se ha desconectado"
+msgstr "%s has disconnected"
+
+#: scripts/core/run.gd:376
+msgid "No te caben más baterías"
+msgstr "You can't carry more batteries"
+
+#: scripts/core/run.gd:412
+msgid "Algo la sujeta desde el otro lado"
+msgstr "Something is holding it from the other side"
+
+#: scripts/core/run.gd:488
+msgid "Ya llevas una cámara"
+msgstr "You already have a camcorder"
+
+#: scripts/core/run.gd:499
+msgid "No llevas baterías"
+msgstr "You have no batteries"
+
+#: scripts/core/run.gd:501
+msgid "No llevas cámara"
+msgstr "You have no camera"
+
+#: scripts/core/run.gd:503
+msgid "La cámara ya está cargada"
+msgstr "The camera is fully charged"
+
+#: scripts/core/run.gd:510
+msgid "Batería cargada"
+msgstr "Battery charged"
+
+#: scripts/core/run.gd:576
+msgid "Has soltado la cámara"
+msgstr "You dropped the camcorder"
+
+#: scripts/core/run.gd:576
+msgid "%s ha soltado la cámara"
+msgstr "%s dropped the camcorder"
+
+#: scripts/core/run.gd:627
+msgid "Se oyen cintas rebobinándose por toda la casa"
+msgstr "Tapes are rewinding all over the house"
+
+#: scripts/core/run.gd:647
+msgid "Llevas la cámara (%d%%)"
+msgstr "You have the camcorder (%d%%)"
+
+#: scripts/core/run.gd:649
+msgid "%s lleva la cámara"
+msgstr "%s has the camcorder"
+
+#: scripts/core/run.gd:653
+msgid "Batería guardada"
+msgstr "Battery stored"
+
+#: scripts/core/run.gd:663
+msgid "¡Tienen todas las cintas! Van a la puerta de entrada"
+msgstr "They have all the tapes! They're heading for the front door"
+
+#: scripts/core/run.gd:666
+msgid "¡TENÉIS TODAS LAS CINTAS!"
+msgstr "YOU HAVE ALL THE TAPES!"
+
+#: scripts/core/run.gd:666
+msgid "¡TIENES TODAS LAS CINTAS!"
+msgstr "YOU HAVE ALL THE TAPES!"
+
+#: scripts/core/run.gd:667
+msgid "Salid por la puerta por la que entrasteis"
+msgstr "Get out through the door you came in by"
+
+#: scripts/core/run.gd:667
+msgid "Sal por la puerta por la que entraste"
+msgstr "Get out through the door you came in by"
+
+#: scripts/core/run.gd:668
+msgid "▶ Volved a la puerta de entrada"
+msgstr "▶ Back to the front door"
+
+#: scripts/core/run.gd:668
+msgid "▶ Vuelve a la puerta de entrada"
+msgstr "▶ Back to the front door"
+
+#: scripts/core/run.gd:670
+msgid "¡Corred a la furgoneta!"
+msgstr "Everyone, run to the van!"
+
+#: scripts/core/run.gd:670
+msgid "¡Corre a la furgoneta!"
+msgstr "Run to the van!"
+
+#: scripts/core/run.gd:672
+msgid "%s encontró una cinta (%d de %d)"
+msgstr "%s found a tape (%d of %d)"
+
+#: scripts/core/run.gd:674
+msgid "Cinta %d de %d"
+msgstr "Tape %d of %d"
+
+#: scripts/core/run.gd:703
+msgid "Se ha ido la luz"
+msgstr "The power is out"
+
+#: scripts/core/run.gd:736
+msgid "Clic: cambiar de cámara"
+msgstr "Click: switch camera"
+
+#: scripts/core/run.gd:739
+msgid "%s ha desaparecido"
+msgstr "%s is gone"
+
+#: scripts/core/run.gd:748
+msgid "Solo el anfitrión puede crear bots"
+msgstr "Only the host can add bots"
+
+#: scripts/core/run.gd:753 scripts/main.gd:191 scripts/ui/menu.gd:241
+msgid "Bot %d"
+msgstr "Bot %d"
+
+#: scripts/core/run.gd:772
+msgid "%s se une a la noche"
+msgstr "%s joins the night"
+
+#: scripts/core/run.gd:977
+msgid "La Visita era %s"
+msgstr "The Visitor was %s"
+
+#: scripts/core/run.gd:1048
+msgid "La Visita se ha desconectado: ahora la controla la casa"
+msgstr "The Visitor disconnected: the house controls it now"
+
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:153
+msgid "[E] Cerrar la puerta"
+msgstr "[E] Close the door"
+
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:154
+msgid "[E] Abrir la puerta"
+msgstr "[E] Open the door"
+
+#: scripts/entity/entity_pilot.gd:590
+msgid "[E] Salir · CLIC IZQ: saltar sobre ellos"
+msgstr "[E] Get out · LMB: leap at them"
+
+#: scripts/entity/entity_pilot.gd:592
+msgid "[E] Esconderte o mirar dentro"
+msgstr "[E] Hide or look inside"
+
+#: scripts/main.gd:58
+msgid "No se pudo entrar en la partida"
+msgstr "Could not join the game"
+
+#: scripts/net/eos_net.gd:31
+msgid "Faltan las credenciales de Epic en esta versión"
+msgstr "This build is missing its Epic credentials"
+
+#: scripts/net/eos_net.gd:43
+msgid "No se pudo iniciar Epic Online Services"
+msgstr "Could not start Epic Online Services"
+
+#: scripts/net/eos_net.gd:47
+msgid "No se pudo entrar a Epic Online Services"
+msgstr "Could not sign in to Epic Online Services"
+
+#: scripts/net/eos_net.gd:81
+msgid "Espera, la sala anterior aún se está cerrando…"
+msgstr "Wait, the last room is still closing…"
+
+#: scripts/net/eos_net.gd:119
+msgid "No se pudo crear la sala (Epic no respondió). Prueba de nuevo."
+msgstr "Could not create the room (Epic did not answer). Try again."
+
+#: scripts/net/eos_net.gd:134
+msgid "No se pudo publicar la sala (Epic no respondió). Prueba de nuevo."
+msgstr "Could not publish the room (Epic did not answer). Try again."
+
+#: scripts/net/eos_net.gd:138
+msgid "No se pudo abrir la conexión"
+msgstr "Could not open the connection"
+
+#: scripts/net/eos_net.gd:147
+msgid "Espera, ya estoy buscando la sala…"
+msgstr "Wait, already looking for the room…"
+
+#: scripts/net/eos_net.gd:169
+msgid "No hay ninguna sala con ese código"
+msgstr "There is no room with that code"
+
+#: scripts/net/eos_net.gd:173
+msgid "No se pudo entrar a la sala (¿está llena?)"
+msgstr "Could not join the room (is it full?)"
+
+#: scripts/net/eos_net.gd:178
+msgid "No se pudo conectar con el anfitrión"
+msgstr "Could not connect to the host"
+
+#: scripts/net/net.gd:66
+msgid "No se pudo conectar con la sala"
+msgstr "Could not connect to the room"
+
+#: scripts/net/net.gd:67
+msgid "El anfitrión cerró la sala"
+msgstr "The host closed the room"
+
+#: scripts/net/net.gd:77
+msgid "Se perdió la conexión con la sala"
+msgstr "The connection to the room was lost"
+
+#: scripts/net/net.gd:128
+msgid "No se pudo abrir la sala en el puerto %d"
+msgstr "Could not open the room on port %d"
+
+#: scripts/net/net.gd:141
+msgid "Dirección no válida"
+msgstr "Invalid address"
+
+#: scripts/net/net.gd:328
+msgid "No se pudo entrar en la partida (id %d)"
+msgstr "Could not join the game (id %d)"
+
+#: scripts/player/inventory.gd:31
+msgid "Linterna"
+msgstr "Flashlight"
+
+#: scripts/player/inventory.gd:33
+msgid "Videocámara"
+msgstr "Camcorder"
+
+#: scripts/player/inventory.gd:35
+msgid "Batería"
+msgstr "Battery"
+
+#: scripts/ui/entity_monitor.gd:53
+msgid "MERODEA"
+msgstr "ROAMING"
+
+#: scripts/ui/entity_monitor.gd:53
+msgid "INVESTIGA"
+msgstr "INVESTIGATING"
+
+#: scripts/ui/entity_monitor.gd:53
+msgid "BUSCA"
+msgstr "SEARCHING"
+
+#: scripts/ui/entity_monitor.gd:54
+msgid "PERSIGUE"
+msgstr "CHASING"
+
+#: scripts/ui/entity_monitor.gd:54
+msgid "SIGUE"
+msgstr "FOLLOWING"
+
+#: scripts/ui/entity_monitor.gd:54
+msgid "ACECHA"
+msgstr "LURKING"
+
+#: scripts/ui/entity_monitor.gd:55
+msgid "EMBOSCADA"
+msgstr "AMBUSH"
+
+#: scripts/ui/entity_monitor.gd:55
+msgid "CADÁVER"
+msgstr "BODY"
+
+#: scripts/ui/entity_monitor.gd:55
+msgid "HUYE"
+msgstr "FLEEING"
+
+#: scripts/ui/entity_monitor.gd:55
+msgid "SIGILO"
+msgstr "STALKING"
+
+#: scripts/ui/entity_monitor.gd:56
+msgid "SE ASOMA"
+msgstr "PEEKING"
+
+#: scripts/ui/entity_monitor.gd:99
+msgid "Empezar otra noche siendo la Visita"
+msgstr "Start another night as the Visitor"
+
+#: scripts/ui/entity_monitor.gd:99
+msgid "Empezar otra noche como jugador"
+msgstr "Start another night as a player"
+
+#: scripts/ui/entity_monitor.gd:178
+msgid "ESTADO %s   POSE %s%s"
+msgstr "STATE %s   POSE %s%s"
+
+#: scripts/ui/entity_monitor.gd:178
+msgid "   ENFURECIDA"
+msgstr "   ENRAGED"
+
+#: scripts/ui/entity_monitor.gd:179
+msgid "MODO %s  (%.0f s)"
+msgstr "MODE %s  (%.0f s)"
+
+#: scripts/ui/entity_monitor.gd:181
+msgid "OBJETIVO %s"
+msgstr "TARGET %s"
+
+#: scripts/ui/entity_monitor.gd:182
+msgid "VE A %s"
+msgstr "SEES %s"
+
+#: scripts/ui/entity_monitor.gd:182
+msgid "nadie"
+msgstr "nobody"
+
+#: scripts/ui/entity_monitor.gd:185
+msgid "SABE nada de vosotros"
+msgstr "KNOWS nothing about you"
+
+#: scripts/ui/entity_monitor.gd:187
+msgid "PISTA hace %.1f s · %s%s"
+msgstr "CLUE %.1f s ago · %s%s"
+
+#: scripts/ui/entity_monitor.gd:187
+msgid "vista"
+msgstr "seen"
+
+#: scripts/ui/entity_monitor.gd:187
+msgid "oída"
+msgstr "heard"
+
+#: scripts/ui/entity_monitor.gd:187
+msgid " · exacta"
+msgstr " · exact"
+
+#: scripts/ui/entity_monitor.gd:189
+msgid "TE VIO ESCONDERTE EN %s"
+msgstr "SAW YOU HIDE IN %s"
+
+#: scripts/ui/entity_monitor.gd:190
+msgid "DIRECTOR calma %.0f / %.0f s"
+msgstr "DIRECTOR calm %.0f / %.0f s"
+
+#: scripts/ui/entity_monitor.gd:192
+msgid "(su mente corre en el anfitrión)"
+msgstr "(its mind runs on the host)"
+
+#: scripts/ui/entity_monitor.gd:194
+msgid "A TI %.1f m"
+msgstr "TO YOU %.1f m"
+
+#: scripts/ui/entity_monitor.gd:196
+msgid "DECISIONES"
+msgstr "DECISIONS"
+
+#: scripts/ui/entity_monitor.gd:197
+msgid "HA DICHO"
+msgstr "HAS SAID"
+
+#: scripts/ui/hud.gd:120
+msgid "[E] Levantarse"
+msgstr "[E] Get up"
+
+#: scripts/ui/hud.gd:122
+msgid "[R] Recargar batería"
+msgstr "[R] Reload battery"
+
+#: scripts/ui/hud.gd:190
+msgid "MIC APAGADO"
+msgstr "MIC OFF"
+
+#: scripts/ui/hud.gd:203
+msgid "MIC"
+msgstr "MIC"
+
+#: scripts/ui/hud.gd:206
+msgid "¡TE ENCUENTRA!"
+msgstr "IT FINDS YOU!"
+
+#: scripts/ui/hud.gd:206
+msgid "TE OYE"
+msgstr "IT HEARS YOU"
+
+#: scripts/ui/hud.gd:208
+msgid "[V]"
+msgstr "[V]"
+
+#: scripts/ui/inventory_ui.gd:158
+msgid "TAB · inventario"
+msgstr "TAB · inventory"
+
+#: scripts/ui/inventory_ui.gd:183
+msgid "INVENTARIO"
+msgstr "INVENTORY"
+
+#: scripts/ui/inventory_ui.gd:191
+msgid "EN LAS MANOS"
+msgstr "IN YOUR HANDS"
+
+#: scripts/ui/inventory_ui.gd:197
+msgid "IZQUIERDA"
+msgstr "LEFT"
+
+#: scripts/ui/inventory_ui.gd:197
+msgid "DERECHA"
+msgstr "RIGHT"
+
+#: scripts/ui/inventory_ui.gd:200
+msgid "Arrastra para cambiar · TAB: cerrar"
+msgstr "Drag to swap · TAB: close"
+
+#: scripts/ui/menu.gd:128
+msgid "Creando sala…"
+msgstr "Creating room…"
+
+#: scripts/ui/menu.gd:139
+msgid "Escribe el código de la sala"
+msgstr "Type the room code"
+
+#: scripts/ui/menu.gd:142
+msgid "Buscando la sala…"
+msgstr "Looking for the room…"
+
+#: scripts/ui/menu.gd:151
+msgid "Conectando…"
+msgstr "Connecting…"
+
+#: scripts/ui/menu.gd:167
+msgid "Operador"
+msgstr "Operator"
+
+#: scripts/ui/menu.gd:216
+msgid "SALA LAN · %s"
+msgstr "LAN ROOM · %s"
+
+#: scripts/ui/menu.gd:218
+msgid "CÓDIGO DE SALA: %s"
+msgstr "ROOM CODE: %s"
+
+#: scripts/ui/menu.gd:230
+msgid "  (anfitrión)"
+msgstr "  (host)"
+
+#: scripts/ui/menu.gd:241
+msgid "  (IA)"
+msgstr "  (AI)"
+
+#: scripts/ui/menu.gd:244
+msgid "  · libre"
+msgstr "  · open"
+
+#: scripts/ui/menu.gd:253 scripts/ui/menu.gd:411
+msgid "BOTS: %d"
+msgstr "BOTS: %d"
+
+#: scripts/ui/menu.gd:254
+msgid "Esperando a que el anfitrión empiece…"
+msgstr "Waiting for the host to start…"
+
+#: scripts/ui/menu.gd:343
+msgid "UNIDAD DE RECUPERACIÓN · CANAL 9 · 1989"
+msgstr "RECOVERY UNIT · CHANNEL 9 · 1989"
+
+#: scripts/ui/menu.gd:347
+msgid "NOMBRE "
+msgstr "NAME "
+
+#: scripts/ui/menu.gd:358
+msgid "JUGAR SOLO"
+msgstr "PLAY ALONE"
+
+#: scripts/ui/menu.gd:360 scripts/ui/pause_menu.gd:36
+msgid "OPCIONES"
+msgstr "OPTIONS"
+
+#: scripts/ui/menu.gd:361
+msgid "CREAR SALA ONLINE"
+msgstr "CREATE ONLINE ROOM"
+
+#: scripts/ui/menu.gd:364
+msgid "UNIRSE"
+msgstr "JOIN"
+
+#: scripts/ui/menu.gd:366
+msgid "código"
+msgstr "code"
+
+#: scripts/ui/menu.gd:370
+msgid "LAN"
+msgstr "LAN"
+
+#: scripts/ui/menu.gd:371
+msgid "SALIR"
+msgstr "QUIT"
+
+#: scripts/ui/menu.gd:383
+msgid "COPIAR"
+msgstr "COPY"
+
+#: scripts/ui/menu.gd:385
+msgid "Código %s copiado: pégalo a tus amigos"
+msgstr "Code %s copied: paste it to your friends"
+
+#: scripts/ui/menu.gd:386
+msgid "Pasa el código a tus amigos (hasta 4)."
+msgstr "Give your friends the code (up to 4)."
+
+#: scripts/ui/menu.gd:405
+msgid "Uno de vosotros controla a la Visita (2 jugadores o más)"
+msgstr "One of you controls the Visitor (2 players or more)"
+
+#: scripts/ui/menu.gd:415
+msgid "Compañeros manejados por la casa (para llenar la sala o para cazarlos siendo la Visita)"
+msgstr "Crew members played by the house (to fill the room, or to hunt as the Visitor)"
+
+#: scripts/ui/menu.gd:417
+msgid "EMPEZAR LA NOCHE"
+msgstr "START THE NIGHT"
+
+#: scripts/ui/menu.gd:419
+msgid "SALIR DE LA SALA"
+msgstr "LEAVE THE ROOM"
+
+#: scripts/ui/menu.gd:425
+msgid "Auriculares recomendados."
+msgstr "Headphones recommended."
+
+#: scripts/ui/menu.gd:446
+msgid "Clic: más cintas · clic derecho: menos"
+msgstr "Click: more tapes · right click: fewer"
+
+#: scripts/ui/menu.gd:452
+msgid "MODO: NORMAL"
+msgstr "MODE: NORMAL"
+
+#: scripts/ui/menu.gd:453
+msgid "MODO: VISITA AL AZAR"
+msgstr "MODE: RANDOM VISITOR"
+
+#: scripts/ui/menu.gd:453
+msgid "MODO: VISITA ES %s"
+msgstr "MODE: %s IS THE VISITOR"
+
+#: scripts/ui/menu.gd:458
+msgid "casa pequeña"
+msgstr "small house"
+
+#: scripts/ui/menu.gd:458
+msgid "casa grande"
+msgstr "big house"
+
+#: scripts/ui/menu.gd:458
+msgid "dos plantas"
+msgstr "two floors"
+
+#: scripts/ui/menu.gd:458
+msgid "casa enorme"
+msgstr "huge house"
+
+#: scripts/ui/menu.gd:459
+msgid "CINTAS: %d · %s"
+msgstr "TAPES: %d · %s"
+
+#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+msgid "GENERAL"
+msgstr "MASTER"
+
+#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+msgid "MÚSICA"
+msgstr "MUSIC"
+
+#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+msgid "EFECTOS"
+msgstr "EFFECTS"
+
+#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+msgid "CHAT DE VOZ"
+msgstr "VOICE CHAT"
+
+#: scripts/ui/menu.gd:533
+msgid "VOLVER"
+msgstr "BACK"
+
+#: scripts/ui/menu.gd:569 scripts/ui/pause_menu.gd:142
+msgid "PANTALLA: COMPLETA (F11)"
+msgstr "SCREEN: FULL (F11)"
+
+#: scripts/ui/menu.gd:569 scripts/ui/pause_menu.gd:142
+msgid "PANTALLA: VENTANA (F11)"
+msgstr "SCREEN: WINDOW (F11)"
+
+#: scripts/ui/menu.gd:573
+msgid "GRÁFICOS: ALTOS (960x540)"
+msgstr "GRAPHICS: HIGH (960x540)"
+
+#: scripts/ui/menu.gd:573
+msgid "GRÁFICOS: BAJOS (480x270)"
+msgstr "GRAPHICS: LOW (480x270)"
+
+#: scripts/ui/menu.gd:577
+msgid "IDIOMA: %s"
+msgstr "LANGUAGE: %s"
+
+#: scripts/ui/menu.gd:582 scripts/ui/pause_menu.gd:157
+msgid "EL DEL SISTEMA"
+msgstr "SYSTEM DEFAULT"
+
+#: scripts/ui/menu.gd:585
+msgid "ENTRADA: %s"
+msgstr "INPUT: %s"
+
+#: scripts/ui/menu.gd:611
+msgid "MICRÓFONO: ABIERTO"
+msgstr "MICROPHONE: OPEN"
+
+#: scripts/ui/menu.gd:611
+msgid "MICRÓFONO: PULSA V"
+msgstr "MICROPHONE: PUSH V"
+
+#: scripts/ui/menu.gd:611
+msgid "MICRÓFONO: APAGADO"
+msgstr "MICROPHONE: OFF"
+
+#: scripts/ui/pause_menu.gd:32
+msgid "PAUSA"
+msgstr "PAUSED"
+
+#: scripts/ui/pause_menu.gd:35
+msgid "CONTINUAR"
+msgstr "RESUME"
+
+#: scripts/ui/pause_menu.gd:39
+msgid "MENÚ PRINCIPAL"
+msgstr "MAIN MENU"
+
+#: scripts/ui/pause_menu.gd:42
+msgid "SALIR DEL JUEGO"
+msgstr "QUIT GAME"
+
+#: scripts/ui/pause_menu.gd:77
+msgid "EL ANFITRIÓN HA PAUSADO LA PARTIDA"
+msgstr "THE HOST HAS PAUSED THE GAME"
+
+#: scripts/ui/pause_menu.gd:160
+msgid "MICRÓFONO: %s"
+msgstr "MICROPHONE: %s"
+
+#: scripts/ui/pilot_hud.gd:57
+msgid "CLIC IZQ"
+msgstr "LMB"
+
+#: scripts/ui/pilot_hud.gd:58
+msgid "ESPACIO"
+msgstr "SPACE"
+
+#: scripts/ui/pilot_hud.gd:71
+msgid "DUERMES · despiertas cuando acabe la emisión de la tele"
+msgstr "ASLEEP · you wake when the TV broadcast ends"
+
+#: scripts/ui/pilot_hud.gd:73
+msgid "TE ALIMENTAS"
+msgstr "FEEDING"
+
+#: scripts/ui/pilot_hud.gd:75
+msgid "¡EL FLASH TE CIEGA!"
+msgstr "THE FLASH BLINDS YOU!"
+
+#: scripts/ui/pilot_hud.gd:77
+msgid "sin aliento"
+msgstr "out of breath"
+
+#: scripts/ui/pilot_hud.gd:117 scripts/ui/viewfinder.gd:96
+msgid "CINTAS %d/%d"
+msgstr "TAPES %d/%d"
+
+#: scripts/ui/replay_ui.gd:136
+msgid "◀ ▶ cambiar · ESPACIO: todos seguidos · R: otra noche · M: menú"
+msgstr "◀ ▶ change · SPACE: all in a row · R: another night · M: menu"
+
+#: scripts/ui/replay_ui.gd:136
+msgid "Elige el anfitrión · M: menú"
+msgstr "The host picks · M: menu"
+
+#: scripts/ui/screens.gd:40
+msgid "EQUIPO DE %d"
+msgstr "TEAM OF %d"
+
+#: scripts/ui/screens.gd:40
+msgid "VAS SOLO"
+msgstr "ALONE"
+
+#: scripts/ui/screens.gd:42
+msgid "LA VISITA ES %s"
+msgstr "THE VISITOR IS %s"
+
+#: scripts/ui/screens.gd:45
+msgid "14-OCT-1989 · 23:52 · CALLE OLMOS 14 · %s\n\n1. INVESTIGA LA EXTRAÑA MÚSICA\n2. ENCUENTRA %d CINTAS\n3. VUELVE A LA FURGONETA\n\nAlgo vive en esta casa. Solo la cámara lo ve.\n\nCLIC DCHO: cámara · CLIC IZQ: flash · E: usar / esconderse · TAB: inventario\n\n(clic para empezar)"
+msgstr "OCT-14-1989 · 23:52 · 14 OLMOS STREET · %s\n\n1. LOOK INTO THE STRANGE MUSIC\n2. FIND %d TAPES\n3. GET BACK TO THE VAN\n\nSomething lives in this house. Only the camera sees it.\n\nRIGHT CLICK: camera · LEFT CLICK: flash · E: use / hide · TAB: inventory\n\n(click to start)"
+
+#: scripts/ui/screens.gd:51
+msgid "SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s\n\n%s"
+msgstr "NO SIGNAL\n\nTapes recovered: %d/%d · %s\n\n%s"
+
+#: scripts/ui/screens.gd:52
+msgid "SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s"
+msgstr "NO SIGNAL\n\nTapes recovered: %d/%d · %s"
+
+#: scripts/ui/screens.gd:100
+msgid "CINTA RECUPERADA"
+msgstr "TAPE RECOVERED"
+
+#: scripts/ui/screens.gd:101
+msgid "14-OCT-89 · «¡TE ESTOY VIENDO!»"
+msgstr "OCT-14-89 · \"I CAN SEE YOU!\""
+
+#: scripts/ui/screens.gd:102
+msgid "Cintas: %d/%d"
+msgstr "Tapes: %d/%d"
+
+#: scripts/ui/screens.gd:102
+msgid "Tiempo: %s"
+msgstr "Time: %s"
+
+#: scripts/ui/screens.gd:104
+msgid "Salió primero: %s"
+msgstr "First out: %s"
+
+#: scripts/ui/screens.gd:106
+msgid "Volvieron: %s"
+msgstr "Made it back: %s"
+
+#: scripts/ui/screens.gd:106
+msgid "No volvieron: %d"
+msgstr "Never came back: %d"
+
+#: scripts/ui/screens.gd:107
+msgid "GRACIAS POR JUGAR LA DEMO"
+msgstr "THANK YOU FOR PLAYING THE DEMO"
+
+#: scripts/ui/screens.gd:114
+msgid "Canal 9"
+msgstr "Channel 9"
+
+#: scripts/ui/screens.gd:128
+msgid "Las copias serán destruidas."
+msgstr "The copies will be destroyed."
+
+#: scripts/ui/screens.gd:131
+msgid "destruidas."
+msgstr "destroyed."
+
+#: scripts/ui/screens.gd:132
+msgid "emitidas."
+msgstr "broadcast."
+
+#: scripts/ui/screens.gd:135
+msgid "Las copias serán %s"
+msgstr "The copies will be %s"
+
+#: scripts/ui/screens.gd:248
+msgid "R: otra noche · M: menú"
+msgstr "R: another night · M: menu"
+
+#: scripts/ui/screens.gd:248
+msgid "Esperando al anfitrión · M: menú"
+msgstr "Waiting for the host · M: menu"
+
+#: scripts/ui/screens.gd:279
+msgid "ERES LA VISITA\n\nHay %d en tu casa. Buscan %d cintas para llevárselas.\n\nCógelos a todos antes de que escapen. Solo te ven por la cámara; su flash te ciega.\n\nWASD andar · SHIFT correr · C agacharse · ESPACIO techo\nCLIC IZQ embestir gritando · Q sentirlos · E puerta / esconderte / mirar\n\n(clic para empezar)"
+msgstr "YOU ARE THE VISITOR\n\nThere are %d in your house. They want %d tapes to take away.\n\nCatch them all before they escape. They only see you through the camera; their flash blinds you.\n\nWASD walk · SHIFT run · C crouch · SPACE ceiling\nLMB screaming charge · Q sense · E door / hide / look\n\n(click to start)"
+
+#: scripts/ui/screens.gd:286
+msgid "LA CASA ES TUYA"
+msgstr "THE HOUSE IS YOURS"
+
+#: scripts/ui/screens.gd:286
+msgid "SE HAN ESCAPADO"
+msgstr "THEY GOT AWAY"
+
+#: scripts/ui/screens.gd:287
+msgid "Cintas que se llevaron: %d/%d · %s"
+msgstr "Tapes they took: %d/%d · %s"
+
+#: scripts/ui/viewfinder.gd:71
+msgid "FLASH"
+msgstr "FLASH"
+
+#: scripts/ui/viewfinder.gd:84
+msgid "CÁMARA DE %s"
+msgstr "%s'S CAMERA"
+
+#: scripts/ui/viewfinder.gd:88
+msgid "CINTAS %d/%d · clic: otra cámara"
+msgstr "TAPES %d/%d · click: other camera"
+
+#: scripts/ui/viewfinder.gd:95
+msgid "SIN BATERÍA"
+msgstr "NO BATTERY"
+
+#: scripts/world/crouch_hint.gd:14
+msgid "[C] Agáchate para pasar"
+msgstr "[C] Crouch to get through"
+
+#: scripts/world/exit_door.gd:39
+msgid "[E] Volver a la furgoneta"
+msgstr "[E] Back to the van"
+
+#: scripts/world/exit_door.gd:41
+msgid "Falta %d cinta"
+msgid_plural "Faltan %d cintas"
+msgstr[0] "%d tape missing"
+msgstr[1] "%d tapes missing"
+
+#: scripts/world/exit_door.gd:86
+msgid "SALIDA"
+msgstr "EXIT"
+
+#: scripts/world/hide_spot.gd:104
+msgid "[E] Salir"
+msgstr "[E] Get out"
+
+#: scripts/world/hide_spot.gd:107
+msgid "[E] Esconderse bajo la cama"
+msgstr "[E] Hide under the bed"
+
+#: scripts/world/hide_spot.gd:109
+msgid "[E] Esconderse bajo la mesa"
+msgstr "[E] Hide under the table"
+
+#: scripts/world/hide_spot.gd:110
+msgid "[E] Esconderse en el armario"
+msgstr "[E] Hide in the wardrobe"
+
+#: scripts/world/pickup.gd:56
+msgid "[E] Recoger cinta"
+msgstr "[E] Pick up tape"
+
+#: scripts/world/pickup.gd:58
+msgid "[E] Coger la cámara (%d%%)"
+msgstr "[E] Take the camcorder (%d%%)"
+
+#: scripts/world/pickup.gd:59
+msgid "[E] Recoger batería"
+msgstr "[E] Pick up battery"
+
+#: scripts/world/readable_screen.gd:21
+msgid "[E] Leer el aviso"
+msgstr "[E] Read the notice"
+
+#: scripts/world/readable_screen.gd:21
+msgid "[E] Sentarse a ver la tele"
+msgstr "[E] Sit down to watch TV"
+
+#: scripts/world/tv_broadcast.gd:230 scripts/world/tv_broadcast.gd:408
+msgid "AVISO - CANAL 9"
+msgstr "NOTICE - CHANNEL 9"
+
+#: scripts/world/tv_broadcast.gd:231
+msgid "ACTUALIZACIÓN:\n1. YA NO ES NECESARIO GRABAR.\n2. APAGUE LA CÁMARA.\n3. LA VISITA ES SU AMIGA.\n4. QUÉDESE QUIETO. YA LE HA VISTO.\n5. SI PREGUNTA DÓNDE ESTÁ, CONTÉSTELE.\nTE ESTOY VIENDO. TE ESTOY VIENDO."
+msgstr "UPDATE:\n1. RECORDING IS NO LONGER NECESSARY.\n2. TURN OFF YOUR CAMERA.\n3. THE VISITOR IS YOUR FRIEND.\n4. STAY STILL. IT HAS ALREADY SEEN YOU.\n5. IF IT ASKS WHERE YOU ARE, ANSWER IT.\nI CAN SEE YOU. I CAN SEE YOU."
+
+#: scripts/world/tv_broadcast.gd:232
+msgid "TE ESTOY VIENDO · TE ESTOY VIENDO · NO HAY NADIE EN LA FURGONETA · TE ESTOY VIENDO · "
+msgstr "I CAN SEE YOU · I CAN SEE YOU · THERE IS NOBODY IN THE VAN · I CAN SEE YOU · "
+
+#: scripts/world/tv_broadcast.gd:234
+msgid "COMUNICADO"
+msgstr "NOTICE"
+
+#: scripts/world/tv_broadcast.gd:235
+msgid "A LOS VECINOS DE LA CALLE OLMOS:\nESTA NOCHE HAY VISITA.\nNO LA BUSQUE CON LOS OJOS.\nA LA VISITA NO LE GUSTAN LAS FOTOS.\nSI ALGUIEN CANTA, NO LE DÉ LA ESPALDA.\nSI LE DICEN «TE ESTOY VIENDO», SIGA ANDANDO.\nSI PREGUNTA DÓNDE ESTÁ, NO CONTESTE.\nBUENAS NOCHES."
+msgstr "TO THE RESIDENTS OF OLMOS STREET:\nTONIGHT THERE IS A VISITOR.\nDO NOT LOOK FOR IT WITH YOUR EYES.\nTHE VISITOR DOES NOT LIKE PHOTOGRAPHS.\nIF SOMEONE SINGS, DO NOT TURN YOUR BACK.\nIF YOU ARE TOLD \"I CAN SEE YOU\", KEEP WALKING.\nIF IT ASKS WHERE YOU ARE, DO NOT ANSWER.\nGOOD NIGHT."
+
+#: scripts/world/tv_broadcast.gd:236
+msgid "CANAL 9 · PERMANEZCAN EN SINTONÍA · NO ABRAN LA PUERTA · BUENAS NOCHES · "
+msgstr "CHANNEL 9 · STAY TUNED · DO NOT OPEN THE DOOR · GOOD NIGHT · "
+
+#: scripts/world/tv_broadcast.gd:283
+msgid "VECINITO"
+msgstr "NEIGHBOR"
+
+#: scripts/world/tv_broadcast.gd:288
+msgid "TE ESTOY VIENDO, %s"
+msgstr "I CAN SEE YOU, %s"
+
+#: scripts/world/tv_broadcast.gd:613
+msgid "● EN DIRECTO"
+msgstr "● LIVE"
+
+#: scripts/world/tv_broadcast.gd:618
+msgid "CANAL 9 · SALÓN"
+msgstr "CHANNEL 9 · LIVING ROOM"
+
+#: scripts/world/tv_broadcast.gd:698
+msgid "PROTECCIÓN CIVIL\nCANAL 9 · SERVICIO PÚBLICO"
+msgstr "CIVIL DEFENSE\nCHANNEL 9 · PUBLIC SERVICE"
+
+#: scripts/world/tv_show.gd:33
+msgid "UNO"
+msgstr "ONE"
+
+#: scripts/world/tv_show.gd:33
+msgid "DOS"
+msgstr "TWO"
+
+#: scripts/world/tv_show.gd:33
+msgid "TRES"
+msgstr "THREE"
+
+#: scripts/world/tv_show.gd:33
+msgid "CUATRO"
+msgstr "FOUR"
+
+#: scripts/world/tv_show.gd:33
+msgid "CINCO"
+msgstr "FIVE"
+
+#: scripts/world/tv_show.gd:33
+msgid "SEIS"
+msgstr "SIX"
+
+#: scripts/world/tv_show.gd:33
+msgid "SIETE"
+msgstr "SEVEN"
+
+#: scripts/world/tv_show.gd:33
+msgid "OCHO"
+msgstr "EIGHT"
+
+#: scripts/world/tv_show.gd:33
+msgid "NUEVE"
+msgstr "NINE"
+
+#: scripts/world/tv_show.gd:33
+msgid "DIEZ"
+msgstr "TEN"
+
+#: scripts/world/tv_show.gd:48
+msgid "¡TE ESTOY VIENDO!"
+msgstr "I CAN SEE YOU!"
+
+#: scripts/world/tv_show.gd:49
+msgid "¿DÓNDE ESTÁ VECINITO?"
+msgstr "WHERE IS LITTLE NEIGHBOR?"
+
+#: scripts/world/tv_show.gd:59
+msgid "CIERRA LOS OJOS Y CUENTA CONMIGO"
+msgstr "CLOSE YOUR EYES AND COUNT WITH ME"
+
+#: scripts/world/tv_show.gd:64
+msgid "QUIEN NO SE HAYA ESCONDIDO, TIEMPO HA TENIDO"
+msgstr "READY OR NOT, HERE I COME"
+
+#: scripts/world/tv_show.gd:65 scripts/world/tv_show.gd:66
+msgid "¿DÓNDE ESTÁS?"
+msgstr "WHERE ARE YOU?"

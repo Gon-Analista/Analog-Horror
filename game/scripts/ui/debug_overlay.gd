@@ -18,11 +18,8 @@ func setup(player: Player, entity: Entity) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("debug_overlay"):
+	if event.is_action_pressed("debug_overlay") and OS.is_debug_build():  # (not in the released game)
 		visible = not visible
-	elif event.is_action_pressed("fullscreen"):
-		var full := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 func _process(delta: float) -> void:
@@ -40,5 +37,9 @@ func _process(delta: float) -> void:
 		Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000])
 	lines.append("vram %.0f MB  nodes %d" % [Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
 	if _entity and _player:
-		lines.append("entity %s  d=%.1f m  battery %d%%" % [Entity.State.keys()[_entity.state], _player.global_position.distance_to(_entity.global_position), int(_player.camcorder.battery)])
+		lines.append("entity %s %s  d=%.1f m  battery %d%%" % [Entity.State.keys()[_entity.state], Entity.Mode.keys()[_entity.mode],
+				_player.global_position.distance_to(_entity.global_position), int(_player.camcorder.battery)])
+		if multiplayer.is_server():
+			var age := _entity.clue_age()
+			lines.append("knows: %s" % ("nothing" if age > Tuning.MEMORY else "clue %.1f s old" % age))
 	text = "\n".join(lines)

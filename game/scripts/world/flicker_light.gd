@@ -11,6 +11,12 @@ var dead := false
 var disturbance := 0.0
 ## Emissive material of the fixture; dims with the light.
 var bulb: StandardMaterial3D
+## How bright this lamp is (rooms differ), and its cone onto the floor.
+var base_energy := 1.0
+var spot: SpotLight3D
+## A fluorescent tube (kitchen, bathroom): it stutters instead of dipping.
+var fluorescent := false
+var _stutter := 0.0
 var _t := 0.0
 var _dip := 0.0
 var _rng := RandomNumberGenerator.new()
@@ -25,8 +31,15 @@ func _process(delta: float) -> void:
 	var e := 0.0
 	if not dead:
 		_t += delta
-		e = ENERGY * (0.95 + 0.05 * sin(_t * 41.0) * sin(_t * 13.0))
-		if _dip > 0.0:
+		e = ENERGY * base_energy * (0.95 + 0.05 * sin(_t * 41.0) * sin(_t * 13.0))
+		if fluorescent:
+			# The tube catches and fails in quick stutters, now and then.
+			if _stutter > 0.0:
+				_stutter -= delta
+				e *= 0.15 if fmod(_t * 23.0, 1.0) < 0.5 else 1.0
+			elif _rng.randf() < delta * 0.05:
+				_stutter = _rng.randf_range(0.25, 0.9)
+		elif _dip > 0.0:
 			_dip -= delta
 			e *= 0.25
 		elif _rng.randf() < delta * 0.08:
@@ -35,6 +48,8 @@ func _process(delta: float) -> void:
 			e *= _rng.randf_range(0.0, 0.35)
 		if disturbance > 0.85:
 			e = 0.0
-	light_energy = e
+	light_energy = e * 0.7  # the room's soft fill...
+	if spot:
+		spot.light_energy = e * 1.9  # ...and the pool under the lamp
 	if bulb:
 		bulb.emission_energy_multiplier = e * BULB_GLOW

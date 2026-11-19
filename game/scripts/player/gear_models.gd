@@ -119,6 +119,86 @@ static func flashlight() -> Node3D:
 	return root
 
 
+## A camcorder battery pack, 1989: a ribbed grey slab with an orange band,
+## brass contacts at one end and a little green charge light (the child
+## named "Led"). About 11 cm long, lying flat, contacts towards -Z.
+static func battery() -> Node3D:
+	var root := Node3D.new()
+	root.name = "BatteryModel"
+	var shell := StandardMaterial3D.new()
+	shell.albedo_color = Color(0.2, 0.22, 0.26)
+	shell.roughness = 0.45
+	shell.metallic = 0.15
+	var body := _box(Vector3(0.072, 0.032, 0.112), shell)
+	body.position.y = 0.016
+	root.add_child(body)
+	for i in 5:  # the grip ribs on top
+		var rib := _box(Vector3(0.062, 0.003, 0.005), flat(Color(0.27, 0.29, 0.33)))
+		rib.position = Vector3(0.0, 0.0335, 0.012 + i * 0.009)
+		root.add_child(rib)
+	var band := _box(Vector3(0.0735, 0.0335, 0.022), flat(Color(0.85, 0.5, 0.15), 0.08))
+	band.position = Vector3(0.0, 0.016, -0.022)
+	root.add_child(band)
+	var brass := StandardMaterial3D.new()
+	brass.albedo_color = Color(0.8, 0.65, 0.3)
+	brass.metallic = 0.9
+	brass.roughness = 0.3
+	for x: float in [-0.018, 0.018]:
+		var contact := _box(Vector3(0.01, 0.008, 0.004), brass)
+		contact.position = Vector3(x, 0.02, -0.057)
+		root.add_child(contact)
+	var led := _box(Vector3(0.006, 0.003, 0.006), flat(Color(0.3, 1.0, 0.45), 2.5))
+	led.name = "Led"
+	led.position = Vector3(0.025, 0.0335, 0.045)
+	root.add_child(led)
+	return root
+
+
+## A VHS cassette, lying flat: the black shell, the clear window on top
+## with its two white reels, the paper label on the spine (towards +Z).
+static func tape() -> Node3D:
+	var root := Node3D.new()
+	root.name = "TapeModel"
+	var plastic := StandardMaterial3D.new()
+	plastic.albedo_color = Color(0.05, 0.05, 0.055)
+	plastic.roughness = 0.4
+	var shell := _box(Vector3(0.188, 0.025, 0.104), plastic)
+	shell.position.y = 0.0125
+	root.add_child(shell)
+	var window := _box(Vector3(0.1, 0.002, 0.04), flat(Color(0.16, 0.16, 0.18)))
+	window.position = Vector3(0.0, 0.0255, 0.004)
+	root.add_child(window)
+	for x: float in [-0.03, 0.03]:
+		var reel := _cyl(0.014, 0.014, 0.003, flat(Color(0.85, 0.85, 0.82)))
+		reel.position = Vector3(x, 0.0262, 0.004)
+		root.add_child(reel)
+		var hub := _cyl(0.005, 0.005, 0.0035, flat(Color(0.1, 0.1, 0.1)))
+		hub.position = Vector3(x, 0.0265, 0.004)
+		root.add_child(hub)
+	var paper := StandardMaterial3D.new()
+	paper.albedo_texture = load("res://assets/textures/tape_label.png")
+	paper.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	paper.emission_enabled = true  # a faint glow: something there, in the dark
+	paper.emission_texture = paper.albedo_texture
+	paper.emission_energy_multiplier = 0.12
+	var top_label := MeshInstance3D.new()
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.16, 0.026)
+	top_label.mesh = quad
+	top_label.material_override = paper
+	top_label.rotation.x = -PI / 2
+	top_label.position = Vector3(0.0, 0.0258, -0.034)
+	root.add_child(top_label)
+	var spine := MeshInstance3D.new()
+	var sq := QuadMesh.new()
+	sq.size = Vector2(0.15, 0.018)
+	spine.mesh = sq
+	spine.material_override = paper
+	spine.position = Vector3(0.0, 0.0125, 0.0525)
+	root.add_child(spine)
+	return root
+
+
 static func _box(size: Vector3, m: Material) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var b := BoxMesh.new()

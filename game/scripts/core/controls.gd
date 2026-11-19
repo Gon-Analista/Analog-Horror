@@ -10,14 +10,20 @@ const KEYS := {
 	"move_right": [KEY_D],
 	"sprint": [KEY_SHIFT],
 	"crouch": [KEY_C],
+	"jump": [KEY_SPACE],
+	"drop_camera": [KEY_G],
+	"push_to_talk": [KEY_V],
 	"interact": [KEY_E],
 	"flashlight": [KEY_F],
+	"inventory": [KEY_TAB],
+	"reload": [KEY_R],
 	"restart": [KEY_R],
 	"debug_overlay": [KEY_F3],
 	"fullscreen": [KEY_F11],
 }
 const MOUSE := {
 	"film": MOUSE_BUTTON_RIGHT,
+	"flash": MOUSE_BUTTON_LEFT,
 }
 
 

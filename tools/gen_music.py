@@ -6,7 +6,7 @@ drags, dropouts, saturation, hiss, low-pass, a room around it.
 
   menu_theme      "Fin de emisión": slow e-piano chords, a pad, the show's
                   melody far away on a bell; nostalgic and wrong. ~60 s loop
-  show_theme      ¡Hola, Vecinitos! as broadcast: bouncy bass, glockenspiel,
+  show_theme      ¡Te estoy viendo! as broadcast: bouncy bass, glockenspiel,
                   e-piano stabs, soft drums, the host's greeting. 16 s loop
   jingle          the same theme in the empty house: music box and e-piano
                   through a dying tape and a big room (the entity's song)
@@ -191,8 +191,8 @@ def show_theme() -> np.ndarray:
         for i, m in enumerate(MELODY):
             if m is not None:
                 tr.add(bell(hz(m + 12), 1.2), rep * 4 * bar + i * beat * 0.5, 0.9)
-    seg = [("_", 0.05), ("o", 0.18), ("l", 0.05), ("a", 0.22), ("_", 0.06), ("v", 0.05), ("e", 0.14),
-           ("s", 0.08), ("i", 0.13), ("n", 0.05), ("i", 0.13), ("t", 0.04), ("o", 0.2), ("s", 0.12), ("_", 0.1)]
+    seg = [("_", 0.05), ("t", 0.04), ("e", 0.14), ("s", 0.08), ("t", 0.04), ("o", 0.14), ("i", 0.1), ("_", 0.05),
+           ("v", 0.05), ("i", 0.08), ("e", 0.14), ("n", 0.05), ("t", 0.03), ("o", 0.24), ("_", 0.1)]
     host = formant_voice(seg, [(0, 190), (0.25, 240), (0.5, 210), (0.7, 250), (0.9, 220), (1, 200)])
     tr.add(normalize(host, 1), 0.1, 0.55)
     x = normalize(tr.buf, 0.8)

@@ -12,11 +12,15 @@ var _run: Run
 var _tapes := 0
 var _needed := 0
 var _t := 0.0
+var _white := 0.0
+var _scare := 0.0
 
 
 func setup(player: Player, run: Run) -> void:
 	_player = player
 	_run = run
+	run.flash.connect(func() -> void: _white = 1.0)
+	run.scared.connect(func() -> void: _scare = 1.5)
 	run.tapes_changed.connect(func(got: int, needed: int) -> void:
 		_tapes = got
 		_needed = needed)
@@ -24,6 +28,8 @@ func setup(player: Player, run: Run) -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	_white = maxf(0.0, _white - delta * 3.5)
+	_scare = maxf(0.0, _scare - delta)
 	queue_redraw()
 
 
@@ -45,6 +51,29 @@ func _draw() -> void:
 		var sy := 1.0 if c.y < h * 0.5 else -1.0
 		draw_line(c, c + Vector2(l * sx, 0), WHITE)
 		draw_line(c, c + Vector2(0, l * sy), WHITE)
+	if _white > 0.0:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, _white * 0.9))
+	if _scare > 0.0:
+		# Cuts: a frame of red, a frame of black, torn bars.
+		var phase := int(_scare * 16.0) % 4
+		if phase == 0:
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.7, 0.0, 0.0, 0.45 * minf(1.0, _scare)))
+		elif phase == 2:
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55 * minf(1.0, _scare)))
+		for i in 3:
+			var y := fmod(_t * 900.0 + i * 97.0, size.y)
+			draw_rect(Rect2(0, y, size.x, 3 + i * 2), Color(1, 1, 1, 0.25))
+	if not spectating:
+		# The flash: ready, or recharging.
+		var ready := cam.flash_cooldown <= 0.0 and cam.battery >= (Tuning.FLASH_COST if Net.is_solo() else Tuning.FLASH_COST_COOP)
+		var fx := w - m - 64.0
+		var fy := h - m - 30.0
+		draw_string(font, Vector2(fx, fy), tr("FLASH"), HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE if ready else Color(0.6, 0.6, 0.58))
+		if not ready:
+			var k := 1.0 - cam.flash_cooldown / Tuning.FLASH_COOLDOWN
+			draw_rect(Rect2(fx + 34, fy - 7, 26 * clampf(k, 0.0, 1.0), 4), WHITE)
+		else:
+			draw_circle(Vector2(fx + 40, fy - 5), 2.5, Color(1.0, 0.9, 0.4))
 	var mid := Vector2(w, h) * 0.5
 	draw_line(mid - Vector2(4, 0), mid + Vector2(4, 0), WHITE)
 	draw_line(mid - Vector2(0, 4), mid + Vector2(0, 4), WHITE)
@@ -75,6 +104,11 @@ func _draw() -> void:
 	for i in segments:
 		if not low:
 			draw_rect(Rect2(bx + 2 + i * 5, top - 6, 4, 5), WHITE)
+
+	var spare := p.inventory.count("battery")
+	if spare > 0:  # the spares in the bag, under it
+		var text := "+%d" % spare
+		draw_string(font, Vector2(w - m - 2 - font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE).x, top + 11), text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, WHITE)
 
 	var secs := int(cam.tape_time)
 	var counter := "%d:%02d:%02d" % [secs / 3600, (secs / 60) % 60, secs % 60]

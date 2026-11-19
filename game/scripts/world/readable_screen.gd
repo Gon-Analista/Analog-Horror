@@ -18,4 +18,4 @@ func _ready() -> void:
 
 
 func prompt() -> String:
-	return tr("[E] Leer el aviso") if tv.is_showing_text() else tr("[E] Ver la tele")
+	return tr("[E] Leer el aviso") if tv.is_showing_text() else tr("[E] Sentarse a ver la tele")

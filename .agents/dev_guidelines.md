@@ -14,8 +14,10 @@ Estas reglas orientan cambios de código, escenas, contenido y recursos. Léelas
 
 - El proyecto de Godot está en `game/`; abre y ejecuta esa carpeta, que contiene `project.godot`. La raíz guarda documentación (`.agents/`, informe) y herramientas (`tools/`).
 - Usa Godot 4.7.2 y GDScript salvo que el usuario decida cambiar la tecnología. Tipado estático (`var x: int`, retornos tipados) siempre que ayude a evitar inferencias ambiguas.
-- Organización: `game/scenes/` (escenas; `dev/` para pruebas), `game/scripts/core/` (estado de la partida, entrada, audio), `world/` (casa, objetos, luces), `player/`, `entity/`, `ui/` (presentación), `net/` (red y EOS), `dev/` (pruebas automáticas), `game/shaders/`, `game/assets/` (texturas, audio), `game/data/` (balance y mapas), `game/locale/` (traducciones). El detalle de cada archivo está en `project_context.md` («Tecnología»).
-- Los nodos que un diseñador querría ajustar en el editor (cámara, linterna, entorno, sonidos de la entidad) viven en escenas `.tscn`. Lo que se genera a partir de datos (la casa desde el mapa ASCII, los placeholders de primitivas) se construye por código.
+- Organización: `game/scenes/` (escenas; `dev/` para pruebas), `game/scripts/core/` (estado de la partida, entrada, audio), `world/` (casa, objetos, luces), `player/`, `entity/`, `ui/` (presentación), `net/` (red y EOS), `dev/` (pruebas automáticas), `game/shaders/`, `game/assets/` (texturas, audio), `game/data/` (balance), `game/locale/` (traducciones). El detalle de cada archivo está en `project_context.md` («Tecnología»).
+- Los nodos que un diseñador querría ajustar en el editor (cámara, linterna, entorno, sonidos de la entidad) viven en escenas `.tscn`. Lo que se genera a partir de datos (la casa desde `HouseGenerator`/`HouseLayout`, los placeholders de primitivas) se construye por código.
+- **La Visita no hace trampa:** lo que sabe sale de sus sentidos (`Entity._sense`); solo el `Director` conoce las posiciones reales y nunca las da exactas (emboscada en un sitio previsto o pista vaga). Cualquier captura pasa por `Entity._try_catch` (distancia, misma planta, no escondido y línea libre en los dos sentidos) o por `_check_spot`.
+- **Casa generada:** todo lo que se coloca (cintas, pilas, cámaras soltadas, cadáveres, puntos de vista de pruebas) se pide al `HouseLayout`/`Level` como casilla transitable (`is_walkable`, `nearest_walkable`, `Run._floor_spot`); nunca posiciones fijas en metros, porque cada noche la casa es otra. Si añades una regla al generador, añádela también a `HouseLayout.validate()` o a la comprobación de `--smoke` (100 casas).
 - Cada sistema tiene una responsabilidad concreta: jugador, interacción, tareas/procedimiento, anomalías, director de tensión, red, voz, UI. No crees un `main.gd` que lo haga todo.
 - Haz cambios locales y coherentes con los patrones ya usados. No reformatees ni renombres archivos ajenos al cambio.
 - Usa rutas `res://` / `user://`. No dejes rutas absolutas del PC en runtime.
@@ -105,3 +107,23 @@ Un cambio está listo cuando cumple su objetivo dentro del juego, **funciona en 
 - Formato: traducir la plantilla y después formatear: `tr("Turno %s") % valor`, nunca `tr("Turno %s" % valor)`. No concatenar fragmentos traducidos; una sola plantilla con marcadores. Plurales con `tr_n`.
 - El texto diegético (manuales, alertas, carteles) también se traduce. Si está horneado en una textura, generar una variante por idioma con *translation remaps*, o mejor dibujarlo en tiempo real.
 - Las voces grabadas o sintetizadas necesitan versión por idioma o subtítulos; planificarlo al añadir cada línea.
+
+## Textos e idiomas
+
+- Todo texto que vea el jugador va con `tr("...")` (o `tr_n` para plurales), escrito en español: el español es la clave. Listas de textos que se traducen después: marca la línea con `# i18n`.
+- Al añadir o cambiar textos: `python tools/i18n.py` y traduce lo nuevo en `game/locale/en.po` (y cualquier otro `.po`). `python tools/i18n.py --check` debe quedar sin faltantes. Cada `tr("...")` en **una sola línea** (saltos como `\n`): el extractor no ve cadenas partidas en varias líneas.
+- **Mejores momentos:** un sonido nuevo del mundo que no pase por `Sfx.play_3d` debe avisar con `Sfx.heard()` para salir en las repeticiones; un momento nuevo digno de clip se marca en el anfitrión con `Run._moment(kind, jugador)` y se añade a `Replay.KINDS` (puntuación, segundos antes y después) y a `Replay.title()`.
+- **La Visita jugable:** toda mecánica nueva de la Visita debe funcionar también con `entity.is_piloted()` (sin mente propia: la IA no corre). Si es algo que la IA decide, decide qué hace el jugador-Visita (un control en `EntityPilot`, la validación en el anfitrión en `Run`) o sáltalo con `is_piloted()`. En su máquina la Visita no se dibuja (`piloted_here`).
+- Al lanzar pruebas (`--smoke`, `--shots`, `--intro-shot`...) pasa `--log-file` a un archivo del scratchpad: si no, rotan y borran los registros de `user://logs` que el usuario necesita para diagnosticar cuelgues.
+- Nada de texto dentro de imágenes; si es inevitable, una variante por idioma con `translation_remaps`.
+
+## Publicar
+
+- **Publicar (ver `project_context.md`, «Actualizaciones dentro del juego»):** las versiones normales van como **parche**: `python tools/release.py patch <ver> --push` (antes, sus notas en `tools/release_notes.json`, la más nueva primero, cortas, de lo que ve el jugador, `t` new/up/fix, en es y en). **Build completa** (`release.py full --push`) solo si cambia algo que un parche no puede traer o para «resetear» un parche que pesa demasiado. Preguntar antes de cada publicación (parche, build o broadcast).
+- **Actualizaciones, reglas que no se rompen:**
+  - `game/autoload/updater.gd` nunca nombra clases del juego (`class_name`): cargaría su script y sus dependencias desde la base antes de montar el parche, y el parche dejaría de aplicar código sin avisar. Solo clases del motor (FileAccess, OS, ProjectSettings, JSON…). La ventana se carga por ruta.
+  - No se puede parchear: `project.godot` (autoloads, input, traducciones registradas, escena principal, opciones de exportación), la versión de Godot, el propio `updater.gd` y las DLL. (`scenes/boot.tscn` y el resto de escenas y scripts sí se parchean: se cargan después de montar el parche.) Eso exige build completa; `release.py patch` se niega si `project.godot` cambió (`--force` solo si el cambio no afecta en ejecución).
+  - Si `release.py patch` se niega, no seguir con el resto de la publicación (subir la versión y `full --push`) hasta entender por qué: los jugadores de las bases viejas se quedarían sin puente.
+  - Un parche **no** cambia `config/version` (identifica la base); lleva su propia versión, mayor que la base y que el parche publicado.
+  - Build completa nueva N sin mandar a todos a itch (puente): primero publicar su contenido como parche N de la base actual; luego subir `config/version` a N y `full --push`.
+  - Antivirus con escaneo HTTPS (Avast) pueden impedir que se vea la ventana: ahí el parche se instala a mano (copiar el `.pck` a `user://patches/` y escribir `state.json`).

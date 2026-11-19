@@ -10,20 +10,24 @@ config_version=5
 
 [application]
 
-config/name="¡Hola, Vecinitos!"
-config/description="Terror analógico cooperativo online en primera persona."
-config/version="0.1.0"
-run/main_scene="res://scenes/menu.tscn"
+config/name="Lost Signal - Analog Horror"
+config/description="Online co-op first-person analog horror."
+config/version="0.4.3"
+run/main_scene="res://scenes/boot.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
+boot_splash/bg_color=Color(0.0156863, 0.0156863, 0.0235294, 1)
+boot_splash/use_filter=false
+boot_splash/image="res://assets/branding/splash.png"
 config/icon="res://assets/branding/icon.png"
 config/windows_native_icon="res://assets/branding/icon.ico"
-boot_splash/bg_color=Color(0.0156863, 0.0156863, 0.0235294, 1)
-boot_splash/image="res://assets/branding/splash.png"
-boot_splash/fullsize=true
-boot_splash/use_filter=false
+
+[audio]
+
+driver/enable_input=true
 
 [autoload]
 
+Updater="*res://autoload/updater.gd"
 EOSGRuntime="*res://addons/epic-online-services-godot/runtime.gd"
 HPlatform="*res://addons/epic-online-services-godot/heos/hplatform.gd"
 HAuth="*res://addons/epic-online-services-godot/heos/hauth.gd"
@@ -36,11 +40,17 @@ HP2P="*res://addons/epic-online-services-godot/heos/hp2p.gd"
 HSessions="*res://addons/epic-online-services-godot/heos/hsessions.gd"
 EosNet="*res://scripts/net/eos_net.gd"
 Net="*res://scripts/net/net.gd"
+Settings="*res://scripts/core/settings.gd"
+
+[debug]
+
+file_logging/max_log_files=20
 
 [display]
 
 window/size/viewport_width=480
 window/size/viewport_height=270
+window/size/mode=3
 window/size/window_width_override=1440
 window/size/window_height_override=810
 window/stretch/mode="canvas_items"
@@ -61,6 +71,14 @@ texture={
 "detect_3d/compress_to": 0,
 "mipmaps/generate": true
 }
+
+[internationalization]
+
+locale/translation_remaps={
+"res://assets/textures/tv_show.png": PackedStringArray("res://assets/textures/tv_show.en.png:en")
+}
+locale/translations=PackedStringArray("res://locale/en.po")
+locale/fallback="es"
 
 [rendering]
 

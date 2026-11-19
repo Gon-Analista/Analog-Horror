@@ -1,11 +1,18 @@
 class_name Pickup
 extends Area3D
-## A tape or a battery lying in the house. On the interact layer so the
-## player's ray finds it; Run decides what picking it up does.
+## A tape, a battery or a camcorder lying in the house. On the interact
+## layer so the player's ray finds it; Run decides what picking it up does.
+## A camcorder keeps its battery charge; one dropped by someone taken by the
+## entity keeps recording on the floor (red light on).
 
-enum Kind { TAPE, BATTERY }
+enum Kind { TAPE, BATTERY, CAMERA }
 
 var kind := Kind.TAPE
+## CAMERA: charge left (0-100) and whether it was left by a victim.
+var battery := 100.0
+var recording := false
+var _led: Node3D
+var _glow: OmniLight3D
 
 
 static func create(p_kind: Kind) -> Pickup:
@@ -15,6 +22,7 @@ static func create(p_kind: Kind) -> Pickup:
 
 
 func _ready() -> void:
+	add_to_group("pickups")
 	collision_layer = Tuning.LAYER_INTERACT
 	collision_mask = 0
 	monitoring = false
@@ -24,10 +32,13 @@ func _ready() -> void:
 	shape.shape = box
 	shape.position.y = 0.12
 	add_child(shape)
-	if kind == Kind.TAPE:
+	if kind == Kind.CAMERA:
+		_build_camera()
+	elif kind == Kind.TAPE:
 		_build_tape()
 		# It is rewinding: you can find it by ear.
 		var whir := AudioStreamPlayer3D.new()
+		whir.bus = "Effects"
 		whir.stream = Sfx.get_stream("tape_whir", true)
 		whir.volume_db = -14.0
 		whir.unit_size = 1.2
@@ -40,49 +51,52 @@ func _ready() -> void:
 
 
 func prompt() -> String:
-	return tr("[E] Recoger cinta") if kind == Kind.TAPE else tr("[E] Recoger batería")
+	match kind:
+		Kind.TAPE:
+			return tr("[E] Recoger cinta")
+		Kind.CAMERA:
+			return tr("[E] Coger la cámara (%d%%)") % int(battery)
+	return tr("[E] Recoger batería")
+
+
+func _build_camera() -> void:
+	var cam := GearModels.camcorder()
+	cam.position.y = 0.06
+	cam.rotation = Vector3(0.0, randf() * TAU, PI / 2 if recording else 0.0)
+	add_child(cam)
+	if recording:
+		(cam.get_node("Tally") as Node3D).visible = true
+		var glow := OmniLight3D.new()
+		glow.light_color = Color(1.0, 0.1, 0.05)
+		glow.light_energy = 0.4
+		glow.omni_range = 1.2
+		glow.position.y = 0.15
+		add_child(glow)
 
 
 func _build_tape() -> void:
-	var shell := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(0.19, 0.026, 0.105)
-	shell.mesh = box
-	var plastic := StandardMaterial3D.new()
-	plastic.albedo_color = Color(0.05, 0.05, 0.05)
-	plastic.roughness = 0.5
-	shell.material_override = plastic
-	shell.position.y = 0.013
-	add_child(shell)
-	var label := MeshInstance3D.new()
-	var quad := QuadMesh.new()
-	quad.size = Vector2(0.15, 0.075)
-	label.mesh = quad
-	label.rotation.x = -PI / 2
-	label.position.y = 0.0265
-	var paper := StandardMaterial3D.new()
-	paper.albedo_texture = load("res://assets/textures/tape_label.png")
-	paper.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	# A faint glow so a tape reads as "something there" in the dark.
-	paper.emission_enabled = true
-	paper.emission_texture = paper.albedo_texture
-	paper.emission_energy_multiplier = 0.12
-	label.material_override = paper
-	add_child(label)
+	var model := GearModels.tape()
+	model.rotation.y = randf() * TAU
+	add_child(model)
 
 
 func _build_battery() -> void:
-	var cell := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(0.07, 0.045, 0.12)
-	cell.mesh = box
-	var m := StandardMaterial3D.new()
-	m.albedo_color = Color(0.15, 0.2, 0.32)
-	m.metallic = 0.3
-	m.roughness = 0.4
-	m.emission_enabled = true
-	m.emission = Color(0.2, 0.35, 0.6)
-	m.emission_energy_multiplier = 0.1
-	cell.material_override = m
-	cell.position.y = 0.023
-	add_child(cell)
+	var model := GearModels.battery()
+	model.rotation.y = randf() * TAU
+	add_child(model)
+	# Its charge light blinks, slowly: easy to spot across a dark room.
+	_led = model.get_node("Led")
+	var glow := OmniLight3D.new()
+	glow.light_color = Color(0.3, 1.0, 0.45)
+	glow.light_energy = 0.15
+	glow.omni_range = 0.6
+	glow.position.y = 0.08
+	add_child(glow)
+	_glow = glow
+
+
+func _process(_delta: float) -> void:
+	if _led:
+		var on := fmod(Time.get_ticks_msec() / 1000.0 + get_instance_id() % 7, 2.0) < 0.25
+		_led.visible = on
+		_glow.visible = on

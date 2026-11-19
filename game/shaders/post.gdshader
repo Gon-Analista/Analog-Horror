@@ -17,6 +17,7 @@ uniform float gain = 2.4;           // camcorder low-light gain
 uniform float static_amount = 0.0;  // entity proximity
 uniform float hit = 0.0;            // capture: full interference
 uniform float dead = 0.0;           // battery empty: no picture
+uniform float line_px = 1.0;        // screen pixels per tape line (270 lines a picture)
 
 const float BAYER[16] = float[](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0,
 		3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
@@ -28,6 +29,7 @@ float hash(vec2 p) {
 void fragment() {
 	vec2 uv = SCREEN_UV;
 	vec2 px = floor(FRAGCOORD.xy);
+	vec2 line = floor(FRAGCOORD.xy / line_px);  // the tape's own grid: scanlines, dropouts
 	float t = TIME;
 	float noise_amt = clamp(static_amount + hit, 0.0, 1.0);
 
@@ -51,8 +53,8 @@ void fragment() {
 		col = mix(col, lifted, vhs);
 		float g = hash(px + fract(t * 7.13) * 91.7) - 0.5;
 		col += g * (0.07 * vhs + 0.6 * noise_amt);
-		col *= 1.0 - 0.16 * vhs * mod(px.y, 2.0);
-		float bars = step(0.62, hash(vec2(floor(px.y / 3.0), floor(t * 30.0)))) * noise_amt;
+		col *= 1.0 - 0.16 * vhs * mod(line.y, 2.0);
+		float bars = step(0.62, hash(vec2(floor(line.y / 3.0), floor(t * 30.0)))) * noise_amt;
 		col = mix(col, vec3(hash(px * 1.31 + t)), bars * 0.7);
 		col = mix(col, vec3(hash(px + t) * 0.08), dead * vhs);
 	}

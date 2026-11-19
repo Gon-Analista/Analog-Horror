@@ -1,8 +1,10 @@
 class_name ShotTour
 extends Node
-## Dev: a fixed camera tour that saves screenshots (window resolution, UI
-## included) and quits, to review the look without playing:
-##   godot --path game -- --shots <absolute dir>
+## Dev: a camera tour of the generated house that saves screenshots (window
+## resolution, UI included) and quits, to review the look without playing:
+##   godot --path game -- --shots <absolute dir> [--seed N] [--tapes N]
+## It finds its own viewpoints (rooms by type, the stairs, a straight run,
+## the boarded doorways), so it works on any house; the map is printed too.
 
 
 func run_tour(main: Node, dir: String) -> void:
@@ -10,58 +12,132 @@ func run_tour(main: Node, dir: String) -> void:
 	var player: Player = main.player
 	var entity: Entity = main.entity
 	var run: Run = main.run
+	var level: Level = run.level
 	entity.set_physics_process(false)
+	_print_map(level.layout)
 	await _wait(1.5)
 
-	await _pose_shot(player, Vector2(15.5, 11.5), PI / 2, 0.0, dir, "01_hallway")
-	await _pose_shot(player, Vector2(12.6, 2.6), PI * 0.88, -0.22, dir, "02_living")
+	await _room_shot(player, level, "hall", dir, "01_hallway")
+	await _room_shot(player, level, "living", dir, "02_living")
 	# Watching the show, then the alert cutting in.
 	var tv := run.tv
 	var front := tv.global_position - tv.global_transform.basis.z * 1.3
-	player.global_position = Vector3(front.x, 0, front.z)
+	player.global_position = Vector3(front.x, level.center(level.cell_of(front)).y, front.z)
 	player.set_view(tv.global_rotation.y + PI, -0.2)
 	for child in tv.get_children():
 		if child is ReadableScreen:
 			run._on_interact(child)
+	# The programme, then each step of it going wrong (by how long it has
+	# been watched), then the alert; then the broadcast turned, and a hijack.
+	var at := func(w: float) -> void:
+		while tv.watched < w:
+			await get_tree().process_frame
 	await _wait(1.0)
 	await _shot(dir, "03_tv_show")
-	await _wait(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.65 - 1.0)
-	await _shot(dir, "03b_tv_going_wrong")
-	await _wait(Tuning.TV_DISTURB_TIME * 0.35 + TvBroadcast.INTERRUPT_TIME + 0.5)
+	await at.call(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.35)
+	await _shot(dir, "03b_tv_stare")
+	await at.call(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.5)
+	await _shot(dir, "03c_tv_live")
+	await at.call(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.62)
+	await _shot(dir, "03d_tv_dark")
+	await at.call(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.84)
+	await _shot(dir, "03e_tv_live_close")
+	tv._feed_vp.get_texture().get_image().save_png(dir.path_join("03e2_feed_raw.png"))
+	await at.call(Tuning.TV_DISTURB_AT + Tuning.TV_DISTURB_TIME * 0.95)
+	await _shot(dir, "03f_tv_live_runs")
+	await _wait(TvBroadcast.INTERRUPT_TIME + 1.5)
 	await _shot(dir, "04_tv_alert")
 	run._on_interact(null)
+	await _wait(0.5)
+	await _shot(dir, "04b_tv_alert_room")
+	tv.set_corrupted()
+	await _wait(1.0)
+	await _shot(dir, "04c_tv_corrupt")
+	tv._hijack_in = 0.0
+	await _wait(0.35)
+	await _shot(dir, "04d_tv_hijack")
 	entity.state = Entity.State.STALKING  # woken by the alert; keep it still for the tour
-	await _pose_shot(player, Vector2(3.5, 2.2), PI * 0.85, -0.2, dir, "05_kitchen")
-	await _pose_shot(player, Vector2(5.0, 8.4), PI * 0.62, 0.0, dir, "06_kid_room")
-	await _pose_shot(player, Vector2(19.2, 3.2), PI * 0.4, -0.1, dir, "07_bedroom")
+	# The monitor (Alt+F1), as the entity wanders.
+	entity.set_physics_process(true)
+	var monitor: EntityMonitor = main.get_node("UILayer").get_children().filter(func(n: Node) -> bool: return n is EntityMonitor)[0]
+	var key := InputEventKey.new()
+	key.keycode = KEY_F1
+	key.alt_pressed = true
+	key.pressed = true
+	monitor._input(key)
+	await _wait(3.0)
+	await _shot(dir, "40_monitor")
+	monitor._input(key)
+	entity.set_physics_process(false)
+	await _room_shot(player, level, "kitchen", dir, "05_kitchen")
+	await _room_shot(player, level, "kid", dir, "06_kid_room")
+	await _room_shot(player, level, "bedroom", dir, "07_bedroom", 0)
+	await _room_shot(player, level, "bathroom", dir, "07b_bathroom")
+	await _room_shot(player, level, "storage", dir, "07c_storage")
+	for t: String in ["study", "laundry", "playroom", "sewing", "pantry", "dining"]:  # (whichever this house has)
+		await _room_shot(player, level, t, dir, "07t_" + t)
 
-	# The entity 4 m ahead in the hallway: naked eye, then through the camcorder.
-	entity.global_position = Vector3(10.5, 0, 11.5)
-	await _pose_shot(player, Vector2(6.5, 11.5), -PI / 2, 0.05, dir, "08_naked_eye")
+	# The stairs, from below and from the landing above.
+	if not level.layout.stairs.is_empty():
+		var s: Dictionary = level.layout.stairs[0]
+		var bottom: Vector3i = s.bottom
+		var top: Vector3i = s.top
+		var d: Vector2i = s.dir
+		await _look_shot(player, level, bottom + Vector3i(0, 0, 1), level.center(top) + Vector3.UP * 1.2, dir, "07d_stairs_up")
+		var above := top + Vector3i(d.x, 0, d.y)
+		if not level.is_walkable(above):
+			above = top
+		await _look_shot(player, level, above, level.center(bottom), dir, "07e_stairs_down")
+		await _room_shot(player, level, "bedroom", dir, "07f_upstairs", 1)
+
+	# The entity 4 m ahead along a straight run: naked eye, then filmed.
+	var line := level.find_line(7)
+	var start: Vector3i = line[0]
+	var ld: Vector2i = line[1]
+	var ahead := func(n: int) -> Vector3: return level.center(start + Vector3i(ld.x * n, 0, ld.y * n))
+	entity.global_position = ahead.call(5)
+	await _look_shot(player, level, start, ahead.call(6) + Vector3.UP * 1.3, dir, "08_naked_eye")
 	player.camcorder.force_held = true
 	await _wait(0.8)
 	await _shot(dir, "09_camcorder")
-	entity.global_position = Vector3(8.0, 0, 11.5)
+	# Out of battery with two spares: the hint, through the viewfinder and not.
+	var seen := Settings.reload_hint_seen
+	Settings.reload_hint_seen = false
+	player.inventory.add_to_bag("battery")
+	player.inventory.add_to_bag("battery")
+	player.camcorder.battery = 0.0
+	await _wait(0.4)
+	await _shot(dir, "09b_reload_hint")
+	player.camcorder.force_held = false
+	await _wait(0.8)
+	await _shot(dir, "09c_reload_hint_naked")
+	player.camcorder.force_held = true
+	player.inventory.remove("battery")
+	player.inventory.remove("battery")
+	player.camcorder.battery = 100.0
+	Settings.reload_hint_seen = seen
+	Settings.save()
+	await _wait(0.5)
+	entity.global_position = ahead.call(2)
 	await _wait(0.4)
 	await _shot(dir, "10_camcorder_close")
 	player.camcorder.force_held = false
 
 	# First-person hands, the camcorder going up, and a teammate.
-	entity.global_position = Vector3(20.5, 0, 2.5)
-	await _pose_shot(player, Vector2(4.5, 11.5), -PI / 2, -0.05, dir, "11_hands")
+	entity.global_position = level.center(level.spots_of("E")[0])
+	await _look_shot(player, level, start, ahead.call(6) + Vector3.UP * 1.3, dir, "11_hands")
 	player.camcorder.force_held = true
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
+	for i in 3:
+		await get_tree().process_frame
 	await _shot(dir, "12_raising")
 	player.camcorder.force_held = false
 	await _wait(0.5)
 	var mate := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
 	mate.setup(2, "Lucía", Net.COLORS[1], false)
 	main.world.add_child(mate)
-	mate.global_position = Vector3(7.0, 0, 11.6)
+	mate.global_position = ahead.call(2) + Vector3(0.1, 0, 0.1)
 	mate.net_pos = mate.global_position
-	mate.net_yaw = PI / 2 + 0.3
+	mate.net_yaw = atan2(-ld.x, -ld.y) + PI + 0.3
 	mate.rotation.y = mate.net_yaw
 	mate.net_pitch = -0.1
 	await _wait(0.6)
@@ -72,26 +148,307 @@ func run_tour(main: Node, dir: String) -> void:
 	await _wait(0.7)
 	await _shot(dir, "14_teammate_filming")
 	mate.queue_free()
-	await _pose_shot(player, Vector2(9.5, 11.6), PI, 0.05, dir, "15_exit")
-	player._set_crouch(true)
-	player.crouching = true
-	await _pose_shot(player, Vector2(3.5, 11.4), 0.0, 0.15, dir, "16_boards_crouched")
-	# The entity squeezing under the boards (kid room door), on camera.
-	player._set_crouch(false)
-	player.crouching = false
-	entity.global_position = Vector3(3.5, 0, 10.5)
-	await _pose_shot(player, Vector2(3.5, 12.6), 0.0, -0.1, dir, "17_crawl_naked")
+	var exit: Vector3i = level.spots_of("X")[0]
+	await _look_shot(player, level, level.spots_of("P")[0] + Vector3i(-2, 0, -1), level.center(exit) + Vector3.UP * 1.1, dir, "15_exit")
+
+	# A boarded doorway, crouched; then the entity squeezing under it.
+	var boards := level.spots_of("U")
+	if not boards.is_empty():
+		var b: Vector3i = boards[0]
+		var side := Vector2i.ZERO
+		for d in Level.DIRS:
+			if level.is_walkable(b + Vector3i(d.x, 0, d.y)) and level.is_walkable(b + Vector3i(d.x * 2, 0, d.y * 2)):
+				side = d
+				break
+		var stand := b + Vector3i(side.x * 2, 0, side.y * 2)
+		player._set_crouch(true)
+		player.crouching = true
+		await _look_shot(player, level, stand, level.center(b) + Vector3.UP * 0.5, dir, "16_boards_crouched")
+		player._set_crouch(false)
+		player.crouching = false
+		entity.global_position = level.center(b) + Vector3(side.x, 0, side.y) * 0.1
+		await _look_shot(player, level, stand, level.center(b) + Vector3.UP * 0.4, dir, "17_crawl_naked")
+		player.camcorder.force_held = true
+		await _wait(0.6)
+		await _shot(dir, "18_crawl_camcorder")
+		player.camcorder.force_held = false
+
+	# Lurking: behind a corner near you, only the head leaning into the frame.
+	player.global_position = level.center(start)
+	entity.target = player
+	var tc := level.nearest_walkable(level.cell_of(player.global_position))
+	if entity._pick_corner(tc, [player.camera.global_position], player.camera.global_position, 3, 8):
+		entity.pose = Entity.Pose.TILT
+		entity.global_position = level.center(entity._hide) + entity._hide_dir * 0.38
+		await _look_shot(player, level, start, entity.global_position + Vector3.UP * 1.6, dir, "24_lurk_naked")
+		player.camcorder.force_held = true
+		await _wait(0.6)
+		await _shot(dir, "25_lurk_camcorder")
+		entity.pose = Entity.Pose.STRETCH  # found out: the neck grows at you
+		await _wait(0.3)
+		await _shot(dir, "25c_found_stretch")
+		player.camcorder.force_held = false
+		entity.pose = Entity.Pose.STAND
+	else:
+		print("TOUR no corner to lurk behind near ", start)
+
+	# On the ceiling, over the way you will walk.
+	entity.on_ceiling = true
+	entity.global_position = ahead.call(3)
+	await _look_shot(player, level, start, ahead.call(3) + Vector3.UP * 2.4, dir, "32_ceiling_naked")
 	player.camcorder.force_held = true
 	await _wait(0.6)
-	await _shot(dir, "18_crawl_camcorder")
+	await _shot(dir, "33_ceiling_camcorder")
 	player.camcorder.force_held = false
+	entity.on_ceiling = false
+
+	# On all fours, coming at you down the corridor; walking; the flash.
+	entity.mode = Entity.Mode.CHASE
+	player.camcorder.force_held = true
+	await _look_shot(player, level, start, ahead.call(5) + Vector3.UP * 0.8, dir, "34_pre_gallop")
+	var from5: Vector3 = ahead.call(6)
+	var to5: Vector3 = ahead.call(2)
+	for i in 40:
+		entity.global_position = from5.lerp(to5, i / 40.0)
+		await get_tree().process_frame
+	await _shot(dir, "35_gallop_camcorder")
+	entity.mode = Entity.Mode.WANDER
+	for i in 40:
+		entity.global_position = to5.lerp(from5, i / 80.0)
+		await get_tree().process_frame
+	await _shot(dir, "36_walk_camcorder")
+	run._on_flash()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await _shot(dir, "37_flash")
+	await get_tree().create_timer(0.3).timeout
+	await _shot(dir, "37b_vanish")
+	await get_tree().create_timer(0.3).timeout
+	await _shot(dir, "37c_vanish")
+	entity.vanishing = false  # (back for the rest of the tour)
+	entity.gone = false
+	player.camcorder.force_held = false
+	await _wait(0.5)
+
 	entity.enraged = true
-	entity.global_position = Vector3(7.5, 0, 11.5)
-	await _pose_shot(player, Vector2(3.5, 11.5), -PI / 2, 0.05, dir, "19_enraged_naked")
+	entity.global_position = ahead.call(4)
+	await _look_shot(player, level, start, ahead.call(6) + Vector3.UP * 1.3, dir, "19_enraged_naked")
 	player.camcorder.force_held = true
 	await _wait(0.6)
 	await _shot(dir, "20_enraged_camcorder")
 	player.camcorder.force_held = false
+	entity.enraged = false
+
+	# Found hiding: it leans in and shows its face (under a bed, in a wardrobe).
+	for kind: int in [HideSpot.Kind.BED, HideSpot.Kind.WARDROBE]:
+		var spot: HideSpot = null
+		for sp in level.hide_spots:
+			if sp.kind == kind:
+				spot = sp
+		if spot == null:
+			continue
+		var tag := "bed" if kind == HideSpot.Kind.BED else "wardrobe"
+		player.global_position = level.center(spot.access)
+		player.hide_in(spot)
+		await _wait(0.4)
+		await _shot(dir, "25b_hidden_%s" % tag)
+		entity._peek_into(spot, player)
+		await _wait(0.5)
+		await _shot(dir, "26_peek_%s_naked" % tag)
+		player.camcorder.force_held = true
+		await _wait(0.8)
+		await _shot(dir, "27_peek_%s_camcorder" % tag)
+		player.camcorder.force_held = false
+		player.leave_hide()
+		entity.mode = Entity.Mode.WANDER
+		entity.pose = Entity.Pose.STAND
+		await _wait(0.4)
+
+	# A teammate taken (the entity invisible: lifted by nothing), and the
+	# hands of someone without a camcorder.
+	entity.global_position = ahead.call(5)
+	var victim := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+	victim.setup(3, "Marco", Net.COLORS[2], false)
+	main.world.add_child(victim)
+	victim.global_position = ahead.call(4)
+	victim.net_pos = victim.global_position
+	victim.net_yaw = atan2(-ld.x, -ld.y)
+	await _look_shot(player, level, start, ahead.call(5) + Vector3.UP * 1.2, dir, "22a_teammate_before")
+	victim.alive = false
+	victim.avatar.play_death(entity.global_position)
+	await _wait(1.0)
+	await _shot(dir, "22b_teammate_taken")
+	player.has_camera = false
+	await _wait(0.5)
+	await _shot(dir, "23_no_camera_hands")
+	player.has_camera = true
+	victim.queue_free()
+
+	# What is left of them: the body, dragged off and thrown (alone it slides
+	# and flies by itself; through the camcorder, it is in its hands).
+	var body := Corpse.new()
+	body.setup(3, Net.COLORS[2])
+	level.add_child(body)
+	body.global_position = ahead.call(3) + Vector3.UP * 0.14
+	entity.global_position = ahead.call(3) + Vector3(ld.x, 0, ld.y) * 0.7
+	entity.pose = Entity.Pose.CROUCH
+	await _look_shot(player, level, start, ahead.call(3), dir, "26_body")
+	player.camcorder.force_held = true
+	await _wait(0.6)
+	await _shot(dir, "27_body_camcorder")
+	player.camcorder.force_held = false
+	body.throw_to(ahead.call(1))
+	await _wait(Corpse.THROW_TIME * 0.45)
+	await _shot(dir, "28_body_thrown")
+	await _wait(1.0)
+	await _shot(dir, "29_body_landed")
+	entity.pose = Entity.Pose.STAND
+
+	# Hiding: under a bed, under a table, in a wardrobe; and it looking in.
+	body.queue_free()
+	for kind: HideSpot.Kind in [HideSpot.Kind.BED, HideSpot.Kind.TABLE, HideSpot.Kind.WARDROBE]:
+		for s: HideSpot in level.hide_spots:
+			if s.kind != kind:
+				continue
+			player.global_position = level.center(s.access)
+			player.hide_in(s)
+			entity.pose = Entity.Pose.STAND
+			entity.global_position = level.center(s.access) + s.facing * 1.2
+			await _wait(0.8)
+			var tag: String = ["bed", "table", "wardrobe"][kind]
+			await _shot(dir, "30_hide_%s" % tag)
+			if kind == HideSpot.Kind.BED:
+				# It bends down to look under the bed: on camera...
+				entity.pose = Entity.Pose.CROUCH
+				entity.global_position = level.center(s.access) + s.facing * 0.2
+				player.camcorder.force_held = true
+				await _wait(0.8)
+				await _shot(dir, "31_hide_bed_it_looks")
+				player.camcorder.force_held = false
+				await _wait(0.4)
+			player.leave_hide()
+			break
+	entity.pose = Entity.Pose.STAND
+
+	# The crew: the four of them, side by side, facing the camera.
+	var crew: Array[Player] = []
+	for i in 4:
+		var m := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+		m.setup(10 + i, ["Operador", "Sonido", "Reportero", "Becario"][i], Net.COLORS[i], false)
+		main.world.add_child(m)
+		var at2: Vector3 = ahead.call(2) + Vector3(ld.y, 0, -ld.x) * (i - 1.5) * 0.55
+		m.global_position = at2
+		m.net_pos = at2
+		var cam_at: Vector3 = level.center(start)
+		m.look_at(Vector3(cam_at.x, at2.y, cam_at.z), Vector3.UP)
+		m.net_yaw = m.rotation.y
+		crew.append(m)
+	crew[1].voice_level = 1.0
+	crew[3].disturbance = 0.9
+	await _look_shot(player, level, start, ahead.call(2) + Vector3.UP * 1.25, dir, "41_crew")
+	player.global_position = level.center(start) + Vector3(ld.x, 0, ld.y) * 1.0
+	await _wait(0.4)
+	await _shot(dir, "41b_crew_close")
+	player.camcorder.force_held = true
+	await _wait(0.5)
+	await _shot(dir, "42_crew_camcorder")
+	player.camcorder.force_held = false
+	for m in crew:
+		m.queue_free()
+
+	# The toolbar, the inventory, the hands swapped, reaching for a battery
+	# and putting it in, and a battery and a tape on the floor.
+	var inv_ui: InventoryUI = null
+	for child in main.get_node("UILayer").get_children():
+		if child is InventoryUI:
+			inv_ui = child
+	inv_ui._poke()
+	await _room_shot(player, level, "living", dir, "50_toolbar")
+	inv_ui._toggle(true)
+	await _wait(0.4)
+	await _shot(dir, "51_inventory")
+	inv_ui._toggle(false)
+	player.inventory.swap("left", "right")
+	await _wait(0.4)
+	await _shot(dir, "52_hands_swapped")
+	player.inventory.swap("left", "right")
+	await get_tree().process_frame
+	player.viewmodel.play_grab("battery")
+	await _wait(ViewModel.GRAB_TIME * 0.55)
+	await _shot(dir, "53_grab")
+	await _wait(ViewModel.GRAB_TIME * 0.45 + ViewModel.INSERT_TIME * 0.35)
+	await _shot(dir, "54_battery_insert")
+	await _wait(0.6)
+	var floor_at: Vector3 = ahead.call(1)
+	for k in 2:
+		var item := Pickup.create(Pickup.Kind.BATTERY if k == 0 else Pickup.Kind.TAPE)
+		level.add_child(item)
+		item.global_position = floor_at + Vector3(ld.y, 0, -ld.x) * (k * 0.35 - 0.17)
+	player.light_on = true
+	await _look_shot(player, level, start, floor_at, dir, "55_pickups")
+
+	# Furniture from the front: the sofa (from the TV), a wardrobe, a counter.
+	for ch: String in ["s", "w", "k", "b"]:
+		var cells := level.layout.find_all(ch)
+		if cells.is_empty():
+			continue
+		var c: Vector3i = cells[0]
+		var facing: Vector2i = -level._against_wall(Rect2i(c.x, c.z, 1, 1), c.y) if ch != "s" else -level._away_from_tv(Rect2i(c.x, c.z, 1, 1))
+		var stand := level.nearest_walkable(c + Vector3i(facing.x * 3, 0, facing.y * 3))
+		await _look_shot(player, level, stand, level.center(c) + Vector3.UP * 0.6, dir, "56_furniture_" + ch)
+
+	# Doors: a plain one and one with a broken window over it, shut, then open.
+	var shown := {}
+	for door: Door in level.doors:
+		var kind := "transom" if door.transom else "full"
+		if shown.has(kind):
+			continue
+		shown[kind] = true
+		door.set_open(false)
+		door.amount = 0.0
+		door._apply()
+		var stand := level.nearest_walkable(door.cell + Vector3i(door.axis.x, 0, door.axis.y) * door.face * 2)
+		player.light_on = true
+		await _look_shot(player, level, stand, level.center(door.cell) + Vector3.UP * (1.9 if door.transom else 1.1), dir, "57_door_%s" % kind)
+		door.set_open(true)
+		await _wait(0.8)
+		await _shot(dir, "58_door_%s_open" % kind)
+
+	# Your own body, looking down (standing, then walking).
+	await _room_shot(player, level, "living", dir, "59a_tmp")
+	player.set_view(player.rotation.y, -1.35)
+	await _wait(0.5)
+	await _shot(dir, "59_own_body")
+	player.set_view(player.rotation.y, -0.75)
+	await _wait(0.3)
+	await _shot(dir, "59b_own_body_ahead")
+
+	# A teamhider hidden under the bed and under a table: you see them there.
+	for kind2: int in [HideSpot.Kind.BED, HideSpot.Kind.TABLE]:
+		var sp2: HideSpot = null
+		for sp in level.hide_spots:
+			if sp.kind == kind2:
+				sp2 = sp
+		if sp2 == null:
+			continue
+		var hider := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+		hider.setup(20 + kind2, "Escondido", Net.COLORS[1], false)
+		main.world.add_child(hider)
+		hider.global_position = sp2.inside
+		hider.net_pos = sp2.inside
+		hider.net_yaw = atan2(-sp2.facing.x, -sp2.facing.z)
+		hider.rotation.y = hider.net_yaw
+		hider.net_hide = String(sp2.name)
+		var from_c := level.nearest_walkable(sp2.access + Vector3i(roundi(sp2.facing.x) * 2, 0, roundi(sp2.facing.z) * 2))
+		player.light_on = true
+		await _look_shot(player, level, from_c, sp2.inside + Vector3.UP * 0.2, dir, "60_hidden_%s" % ("bed" if kind2 == HideSpot.Kind.BED else "table"))
+		hider.queue_free()
+
+	# The last tape: what to do now, then the line that stays.
+	run.objective.emit(tr("¡TIENES TODAS LAS CINTAS!"), tr("Sal por la puerta por la que entraste"), tr("▶ Vuelve a la puerta de entrada"))
+	await _room_shot(player, level, "hall", dir, "62_objective")
+	await _wait(6.2)  # (Hud.OBJECTIVE_TIME)
+	await _shot(dir, "62b_objective_reminder")
 	main.screens.show_escaped(5, 5, 372.0, 2, "Lucía", PackedStringArray(["Lucía"]), true)
 	await _wait(10.0)
 	await _shot(dir, "21_win")
@@ -103,11 +460,43 @@ func run_tour(main: Node, dir: String) -> void:
 	get_tree().quit()
 
 
-func _pose_shot(player: Player, at: Vector2, yaw: float, pitch: float, dir: String, shot_name: String) -> void:
-	player.global_position = Vector3(at.x, 0.0, at.y)
-	player.set_view(yaw, pitch)
+## From the walkable cell of the room farthest from its middle, looking at
+## the middle: the whole room in frame.
+func _room_shot(player: Player, level: Level, type: String, dir: String, shot_name: String, on_floor := -1) -> void:
+	for r: Dictionary in level.layout.rooms:
+		if r.type != type or (on_floor >= 0 and r.floor != on_floor):
+			continue
+		var rect: Rect2i = r.rect
+		var f: int = r.floor
+		var mid := Vector3(rect.position.x + rect.size.x * 0.5, f * Level.FLOOR_H, rect.position.y + rect.size.y * 0.5)
+		var best := Vector3i(-1, -1, -1)
+		for z in range(rect.position.y, rect.end.y):
+			for x in range(rect.position.x, rect.end.x):
+				var c := Vector3i(x, f, z)
+				if level.is_walkable(c) and (best.x < 0 or level.center(c).distance_to(mid) > level.center(best).distance_to(mid)):
+					best = c
+		if best.x >= 0:
+			await _look_shot(player, level, best, mid + Vector3.UP * 0.9, dir, shot_name)
+		return
+
+
+func _look_shot(player: Player, level: Level, from: Vector3i, at: Vector3, dir: String, shot_name: String) -> void:
+	var eye := level.center(from) + Vector3.UP * 1.6
+	var to := at - eye
+	player.global_position = level.center(from)
+	player.set_view(atan2(-to.x, -to.z), clampf(atan2(to.y, Vector2(to.x, to.z).length()), -0.8, 0.8))
 	await _wait(0.7)
 	await _shot(dir, shot_name)
+
+
+func _print_map(L: HouseLayout) -> void:
+	for f in L.floors:
+		print("MAP floor %d (%dx%d)" % [f, L.width, L.depth])
+		for z in L.depth:
+			var row := ""
+			for x in L.width:
+				row += L.char_at(Vector3i(x, f, z))
+			print("MAP ", row)
 
 
 func _shot(dir: String, shot_name: String) -> void:

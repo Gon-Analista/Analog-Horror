@@ -1,0 +1,20 @@
+[
+  {"version": "0.4.3", "items": [
+    {"t": "new", "es": "Casas más grandes con habitaciones nuevas: despacho con pasillos de estanterías, lavadero, cuarto de juegos, cuarto de costura, despensa y más.", "en": "Bigger houses with new rooms: a study with aisles of bookcases, a laundry, a playroom, a sewing room, a pantry and more."},
+    {"t": "up", "es": "Al coger la última cinta, un aviso claro: sal por la puerta por la que entraste.", "en": "When you take the last tape, a clear message: get out through the door you came in by."},
+    {"t": "fix", "es": "Los sonidos más fuertes de la Visita, más bajos.", "en": "The Visitor's loudest sounds are quieter."}
+  ]},
+  {"version": "0.4.2", "items": [
+    {"t": "new", "es": "Las baterías se guardan en el inventario: con R pones una en la cámara cuando quieras.", "en": "Batteries are stored in your inventory: press R to put one in the camera whenever you want."},
+    {"t": "up", "es": "Algo más de baterías por la casa, según su tamaño.", "en": "A few more batteries around the house, depending on its size."}
+  ]},
+  {"version": "0.4.1", "items": [
+    {"t": "up", "es": "La Visita es ahora siempre la 3D, para todos.", "en": "The Visitor is now always the 3D one, for everyone."},
+    {"t": "up", "es": "Fuera las herramientas de prueba de la versión pública.", "en": "Test tools removed from the public version."}
+  ]},
+  {"version": "0.4.0", "items": [
+    {"t": "new", "es": "El juego se actualiza solo: al abrirlo te avisa si hay una versión nueva y la instala sin bajar todo otra vez.", "en": "The game updates itself: when you open it, it tells you about a new version and installs it without downloading everything again."},
+    {"t": "new", "es": "Pantalla de carga al arrancar.", "en": "A loading screen at startup."},
+    {"t": "fix", "es": "Jugando de Visita, el ratón vuelve tras Alt+Tab y el Espacio te sube al techo.", "en": "Playing the Visitor, the mouse comes back after Alt+Tab and Space takes you up to the ceiling."}
+  ]}
+]

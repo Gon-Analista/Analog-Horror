@@ -206,7 +206,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Tuning.MOUSE_SENS
+		var m: Vector2 = (event as InputEventMouseMotion).screen_relative * Settings.look_scale()
 		yaw = wrapf(yaw - m.x, -PI, PI)
 		pitch = clampf(pitch - m.y, -1.45, 1.3)
 		return

@@ -1,7 +1,7 @@
 extends Node
 ## The player's settings (autoload `Settings`): full screen, the volumes
-## (general, music, effects, voice chat), the entity's look, the mic mode
-## and the language (the system's the first time: Spanish for Spanish,
+## (general, music, effects, voice chat), the entity's look, the mic mode,
+## mouse look (sensitivity, inverted Y), fewer flashes and the language (the system's the first time: Spanish for Spanish,
 ## English for anything without a translation of its own). Saved in user://settings.cfg and applied at start. F11 toggles
 ## full screen anywhere. The game opens in full screen unless the player
 ## chose a window.
@@ -25,6 +25,17 @@ var graphics := "high"
 var language := ""
 ## The "[R]" hint for the first camcorder that runs out has been shown.
 var reload_hint_seen := false
+## Mouse look: a multiplier on Tuning.MOUSE_SENS, and the vertical axis
+## turned over.
+var mouse_sens := 1.0
+var invert_y := false
+## Fewer flashes: the static, the hits and the white of the flash are
+## toned down (photosensitivity). Local presentation only.
+var reduce_flashes := false
+## The flashing-lights notice on the first start has been shown.
+var photosensitivity_seen := false
+const SENS_MIN := 0.25
+const SENS_MAX := 2.5
 ## The language the game is written in (its texts are the keys).
 const SOURCE_LANGUAGE := "es"
 ## Each language's name in itself, for the options. (A new language with
@@ -136,6 +147,33 @@ func render_scale() -> int:
 	return 1 if graphics == "low" else 2
 
 
+## The mouse-look factor to multiply a mouse motion by (x, y), with the
+## player's sensitivity and the inverted vertical axis.
+func look_scale() -> Vector2:
+	var k := Tuning.MOUSE_SENS * mouse_sens
+	return Vector2(k, -k if invert_y else k)
+
+
+func set_mouse_sens(value: float) -> void:
+	mouse_sens = clampf(value, SENS_MIN, SENS_MAX)
+	save()
+
+
+func set_invert_y(on: bool) -> void:
+	invert_y = on
+	save()
+
+
+func set_reduce_flashes(on: bool) -> void:
+	reduce_flashes = on
+	save()
+
+
+## How strong a flash or burst of static is drawn (1 = as designed).
+func flash_scale() -> float:
+	return 0.35 if reduce_flashes else 1.0
+
+
 func set_graphics(value: String) -> void:
 	graphics = value
 	save()
@@ -171,6 +209,10 @@ func save() -> void:
 	cfg.set_value("game", "language", language)
 	cfg.set_value("display", "graphics", graphics)
 	cfg.set_value("game", "reload_hint_seen", reload_hint_seen)
+	cfg.set_value("controls", "mouse_sens", mouse_sens)
+	cfg.set_value("controls", "invert_y", invert_y)
+	cfg.set_value("display", "reduce_flashes", reduce_flashes)
+	cfg.set_value("display", "photosensitivity_seen", photosensitivity_seen)
 	cfg.save(PATH)
 
 
@@ -187,6 +229,10 @@ func _load() -> void:
 	language = str(cfg.get_value("game", "language", ""))
 	graphics = str(cfg.get_value("display", "graphics", "high"))
 	reload_hint_seen = bool(cfg.get_value("game", "reload_hint_seen", false))
+	mouse_sens = clampf(float(cfg.get_value("controls", "mouse_sens", 1.0)), SENS_MIN, SENS_MAX)
+	invert_y = bool(cfg.get_value("controls", "invert_y", false))
+	reduce_flashes = bool(cfg.get_value("display", "reduce_flashes", false))
+	photosensitivity_seen = bool(cfg.get_value("display", "photosensitivity_seen", false))
 	if player_name != "":
 		Net.my_name = player_name
 

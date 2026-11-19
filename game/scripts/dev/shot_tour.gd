@@ -18,6 +18,19 @@ func run_tour(main: Node, dir: String) -> void:
 	await _wait(1.5)
 
 	await _room_shot(player, level, "hall", dir, "01_hallway")
+	# The pause menu with its options (and the controls and accessibility).
+	for child in main.get_node("UILayer").get_children():
+		if child is PauseMenu:
+			var pause := child as PauseMenu
+			pause.open()
+			pause._options.visible = true
+			pause._centre()
+			await _wait(0.5)
+			await _shot(dir, "01b_pause")
+			pause.close()
+	if OS.get_cmdline_user_args().has("--pause-only"):  # dev: just that one
+		get_tree().quit()
+		return
 	await _room_shot(player, level, "living", dir, "02_living")
 	# Watching the show, then the alert cutting in.
 	var tv := run.tv

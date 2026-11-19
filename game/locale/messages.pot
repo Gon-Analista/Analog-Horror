@@ -127,7 +127,7 @@ msgstr ""
 msgid "Solo el anfitrión puede crear bots"
 msgstr ""
 
-#: scripts/core/run.gd:753 scripts/main.gd:191 scripts/ui/menu.gd:241
+#: scripts/core/run.gd:753 scripts/main.gd:191 scripts/ui/menu.gd:286
 msgid "Bot %d"
 msgstr ""
 
@@ -227,7 +227,7 @@ msgstr ""
 msgid "Dirección no válida"
 msgstr ""
 
-#: scripts/net/net.gd:328
+#: scripts/net/net.gd:329
 msgid "No se pudo entrar en la partida (id %d)"
 msgstr ""
 
@@ -241,6 +241,42 @@ msgstr ""
 
 #: scripts/player/inventory.gd:35
 msgid "Batería"
+msgstr ""
+
+#: scripts/ui/access_options.gd:13
+msgid "SENSIBILIDAD"
+msgstr ""
+
+#: scripts/ui/access_options.gd:40
+msgid "Menos ruido de imagen, destellos y cortes de color (fotosensibilidad)"
+msgstr ""
+
+#: scripts/ui/access_options.gd:45
+msgid "EJE Y: INVERTIDO"
+msgstr ""
+
+#: scripts/ui/access_options.gd:45
+msgid "EJE Y: NORMAL"
+msgstr ""
+
+#: scripts/ui/access_options.gd:49
+msgid "MENOS DESTELLOS: SÍ"
+msgstr ""
+
+#: scripts/ui/access_options.gd:49
+msgid "MENOS DESTELLOS: NO"
+msgstr ""
+
+#: scripts/ui/boot.gd:123
+msgid "AVISO DE FOTOSENSIBILIDAD"
+msgstr ""
+
+#: scripts/ui/boot.gd:128
+msgid "Este juego tiene luces que parpadean, destellos y ruido de imagen intermitente que pueden afectar a personas con epilepsia fotosensible.\nEn OPCIONES > CONTROLES Y ACCESIBILIDAD puedes activar «MENOS DESTELLOS»."
+msgstr ""
+
+#: scripts/ui/boot.gd:129
+msgid "(pulsa una tecla para seguir)"
 msgstr ""
 
 #: scripts/ui/entity_monitor.gd:53
@@ -371,23 +407,23 @@ msgstr ""
 msgid "[R] Recargar batería"
 msgstr ""
 
-#: scripts/ui/hud.gd:190
+#: scripts/ui/hud.gd:193
 msgid "MIC APAGADO"
 msgstr ""
 
-#: scripts/ui/hud.gd:203
+#: scripts/ui/hud.gd:206
 msgid "MIC"
 msgstr ""
 
-#: scripts/ui/hud.gd:206
+#: scripts/ui/hud.gd:209
 msgid "¡TE ENCUENTRA!"
 msgstr ""
 
-#: scripts/ui/hud.gd:206
+#: scripts/ui/hud.gd:209
 msgid "TE OYE"
 msgstr ""
 
-#: scripts/ui/hud.gd:208
+#: scripts/ui/hud.gd:211
 msgid "[V]"
 msgstr ""
 
@@ -415,239 +451,279 @@ msgstr ""
 msgid "Arrastra para cambiar · TAB: cerrar"
 msgstr ""
 
-#: scripts/ui/menu.gd:128
+#: scripts/ui/menu.gd:171
 msgid "Creando sala…"
 msgstr ""
 
-#: scripts/ui/menu.gd:139
+#: scripts/ui/menu.gd:182
 msgid "Escribe el código de la sala"
 msgstr ""
 
-#: scripts/ui/menu.gd:142
+#: scripts/ui/menu.gd:185
 msgid "Buscando la sala…"
 msgstr ""
 
-#: scripts/ui/menu.gd:151
+#: scripts/ui/menu.gd:194
 msgid "Conectando…"
 msgstr ""
 
-#: scripts/ui/menu.gd:167
+#: scripts/ui/menu.gd:210
 msgid "Operador"
 msgstr ""
 
-#: scripts/ui/menu.gd:216
+#: scripts/ui/menu.gd:261
 msgid "SALA LAN · %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:218
+#: scripts/ui/menu.gd:263
 msgid "CÓDIGO DE SALA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:230
+#: scripts/ui/menu.gd:275
 msgid "  (anfitrión)"
 msgstr ""
 
-#: scripts/ui/menu.gd:241
+#: scripts/ui/menu.gd:286
 msgid "  (IA)"
 msgstr ""
 
-#: scripts/ui/menu.gd:244
+#: scripts/ui/menu.gd:289
 msgid "  · libre"
 msgstr ""
 
-#: scripts/ui/menu.gd:253 scripts/ui/menu.gd:411
+#: scripts/ui/menu.gd:298 scripts/ui/menu.gd:459
 msgid "BOTS: %d"
 msgstr ""
 
-#: scripts/ui/menu.gd:254
+#: scripts/ui/menu.gd:299
 msgid "Esperando a que el anfitrión empiece…"
 msgstr ""
 
-#: scripts/ui/menu.gd:343
+#: scripts/ui/menu.gd:388
 msgid "UNIDAD DE RECUPERACIÓN · CANAL 9 · 1989"
 msgstr ""
 
-#: scripts/ui/menu.gd:347
+#: scripts/ui/menu.gd:392
 msgid "NOMBRE "
 msgstr ""
 
-#: scripts/ui/menu.gd:358
+#: scripts/ui/menu.gd:403
 msgid "JUGAR SOLO"
 msgstr ""
 
-#: scripts/ui/menu.gd:360 scripts/ui/pause_menu.gd:36
+#: scripts/ui/menu.gd:405 scripts/ui/pause_menu.gd:38
 msgid "OPCIONES"
 msgstr ""
 
-#: scripts/ui/menu.gd:361
+#: scripts/ui/menu.gd:406
 msgid "CREAR SALA ONLINE"
 msgstr ""
 
-#: scripts/ui/menu.gd:364
+#: scripts/ui/menu.gd:409
 msgid "UNIRSE"
 msgstr ""
 
-#: scripts/ui/menu.gd:366
+#: scripts/ui/menu.gd:411
 msgid "código"
 msgstr ""
 
-#: scripts/ui/menu.gd:370
+#: scripts/ui/menu.gd:415
 msgid "LAN"
 msgstr ""
 
-#: scripts/ui/menu.gd:371
-msgid "SALIR"
-msgstr ""
-
-#: scripts/ui/menu.gd:383
-msgid "COPIAR"
-msgstr ""
-
-#: scripts/ui/menu.gd:385
-msgid "Código %s copiado: pégalo a tus amigos"
-msgstr ""
-
-#: scripts/ui/menu.gd:386
-msgid "Pasa el código a tus amigos (hasta 4)."
-msgstr ""
-
-#: scripts/ui/menu.gd:405
-msgid "Uno de vosotros controla a la Visita (2 jugadores o más)"
-msgstr ""
-
-#: scripts/ui/menu.gd:415
-msgid "Compañeros manejados por la casa (para llenar la sala o para cazarlos siendo la Visita)"
+#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:639
+msgid "CRÉDITOS"
 msgstr ""
 
 #: scripts/ui/menu.gd:417
+msgid "SALIR"
+msgstr ""
+
+#: scripts/ui/menu.gd:431
+msgid "COPIAR"
+msgstr ""
+
+#: scripts/ui/menu.gd:433
+msgid "Código %s copiado: pégalo a tus amigos"
+msgstr ""
+
+#: scripts/ui/menu.gd:434
+msgid "Pasa el código a tus amigos (hasta 4)."
+msgstr ""
+
+#: scripts/ui/menu.gd:453
+msgid "Uno de vosotros controla a la Visita (2 jugadores o más)"
+msgstr ""
+
+#: scripts/ui/menu.gd:463
+msgid "Compañeros manejados por la casa (para llenar la sala o para cazarlos siendo la Visita)"
+msgstr ""
+
+#: scripts/ui/menu.gd:465
 msgid "EMPEZAR LA NOCHE"
 msgstr ""
 
-#: scripts/ui/menu.gd:419
+#: scripts/ui/menu.gd:467
 msgid "SALIR DE LA SALA"
 msgstr ""
 
-#: scripts/ui/menu.gd:425
+#: scripts/ui/menu.gd:473
 msgid "Auriculares recomendados."
 msgstr ""
 
-#: scripts/ui/menu.gd:446
+#: scripts/ui/menu.gd:494
 msgid "Clic: más cintas · clic derecho: menos"
 msgstr ""
 
-#: scripts/ui/menu.gd:452
+#: scripts/ui/menu.gd:500
 msgid "MODO: NORMAL"
 msgstr ""
 
-#: scripts/ui/menu.gd:453
+#: scripts/ui/menu.gd:501
 msgid "MODO: VISITA AL AZAR"
 msgstr ""
 
-#: scripts/ui/menu.gd:453
+#: scripts/ui/menu.gd:501
 msgid "MODO: VISITA ES %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:458
+#: scripts/ui/menu.gd:506
 msgid "casa pequeña"
 msgstr ""
 
-#: scripts/ui/menu.gd:458
+#: scripts/ui/menu.gd:506
 msgid "casa grande"
 msgstr ""
 
-#: scripts/ui/menu.gd:458
+#: scripts/ui/menu.gd:506
 msgid "dos plantas"
 msgstr ""
 
-#: scripts/ui/menu.gd:458
+#: scripts/ui/menu.gd:506
 msgid "casa enorme"
 msgstr ""
 
-#: scripts/ui/menu.gd:459
+#: scripts/ui/menu.gd:507
 msgid "CINTAS: %d · %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
 msgid "GENERAL"
 msgstr ""
 
-#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
 msgid "MÚSICA"
 msgstr ""
 
-#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
 msgid "EFECTOS"
 msgstr ""
 
-#: scripts/ui/menu.gd:473 scripts/ui/pause_menu.gd:53
+#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
 msgid "CHAT DE VOZ"
 msgstr ""
 
-#: scripts/ui/menu.gd:533
+#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:621 scripts/ui/menu.gd:656
 msgid "VOLVER"
 msgstr ""
 
-#: scripts/ui/menu.gd:569 scripts/ui/pause_menu.gd:142
+#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:615
+msgid "CONTROLES Y ACCESIBILIDAD"
+msgstr ""
+
+#: scripts/ui/menu.gd:618
+msgid "WASD moverse · RATÓN mirar · SHIFT correr\nC agacharse · E usar · F linterna · R pilas\nCLIC DCHO cámara · CLIC IZQ flash\nTAB inventario · V hablar · ESC pausa"
+msgstr ""
+
+#: scripts/ui/menu.gd:642
+msgid "UN JUEGO DE"
+msgstr ""
+
+#: scripts/ui/menu.gd:643
+msgid "MÚSICA Y SONIDO"
+msgstr ""
+
+#: scripts/ui/menu.gd:643
+msgid "síntesis propia"
+msgstr ""
+
+#: scripts/ui/menu.gd:644
+msgid "MOTOR"
+msgstr ""
+
+#: scripts/ui/menu.gd:645
+msgid "ONLINE"
+msgstr ""
+
+#: scripts/ui/menu.gd:646
+msgid "FUENTE"
+msgstr ""
+
+#: scripts/ui/menu.gd:654
+msgid "Gracias por grabar con nosotros."
+msgstr ""
+
+#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
 msgid "PANTALLA: COMPLETA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:569 scripts/ui/pause_menu.gd:142
+#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
 msgid "PANTALLA: VENTANA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:573
+#: scripts/ui/menu.gd:695
 msgid "GRÁFICOS: ALTOS (960x540)"
 msgstr ""
 
-#: scripts/ui/menu.gd:573
+#: scripts/ui/menu.gd:695
 msgid "GRÁFICOS: BAJOS (480x270)"
 msgstr ""
 
-#: scripts/ui/menu.gd:577
+#: scripts/ui/menu.gd:699
 msgid "IDIOMA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:582 scripts/ui/pause_menu.gd:157
+#: scripts/ui/menu.gd:704 scripts/ui/pause_menu.gd:166
 msgid "EL DEL SISTEMA"
 msgstr ""
 
-#: scripts/ui/menu.gd:585
+#: scripts/ui/menu.gd:707
 msgid "ENTRADA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:611
+#: scripts/ui/menu.gd:733
 msgid "MICRÓFONO: ABIERTO"
 msgstr ""
 
-#: scripts/ui/menu.gd:611
+#: scripts/ui/menu.gd:733
 msgid "MICRÓFONO: PULSA V"
 msgstr ""
 
-#: scripts/ui/menu.gd:611
+#: scripts/ui/menu.gd:733
 msgid "MICRÓFONO: APAGADO"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:32
+#: scripts/ui/pause_menu.gd:34
 msgid "PAUSA"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:35
+#: scripts/ui/pause_menu.gd:37
 msgid "CONTINUAR"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:39
+#: scripts/ui/pause_menu.gd:41
 msgid "MENÚ PRINCIPAL"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:42
+#: scripts/ui/pause_menu.gd:44
 msgid "SALIR DEL JUEGO"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:77
+#: scripts/ui/pause_menu.gd:79
 msgid "EL ANFITRIÓN HA PAUSADO LA PARTIDA"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:160
+#: scripts/ui/pause_menu.gd:169
 msgid "MICRÓFONO: %s"
 msgstr ""
 
@@ -675,7 +751,7 @@ msgstr ""
 msgid "sin aliento"
 msgstr ""
 
-#: scripts/ui/pilot_hud.gd:117 scripts/ui/viewfinder.gd:96
+#: scripts/ui/pilot_hud.gd:117 scripts/ui/viewfinder.gd:98
 msgid "CINTAS %d/%d"
 msgstr ""
 
@@ -787,19 +863,19 @@ msgstr ""
 msgid "Cintas que se llevaron: %d/%d · %s"
 msgstr ""
 
-#: scripts/ui/viewfinder.gd:71
+#: scripts/ui/viewfinder.gd:73
 msgid "FLASH"
 msgstr ""
 
-#: scripts/ui/viewfinder.gd:84
+#: scripts/ui/viewfinder.gd:86
 msgid "CÁMARA DE %s"
 msgstr ""
 
-#: scripts/ui/viewfinder.gd:88
+#: scripts/ui/viewfinder.gd:90
 msgid "CINTAS %d/%d · clic: otra cámara"
 msgstr ""
 
-#: scripts/ui/viewfinder.gd:95
+#: scripts/ui/viewfinder.gd:97
 msgid "SIN BATERÍA"
 msgstr ""
 

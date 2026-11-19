@@ -156,7 +156,10 @@ func _draw() -> void:
 	# A friend's flash in the eyes: white, fading, with a purple afterimage.
 	if _run and _run.dazzle > 0.0:
 		var k := _run.dazzle
-		draw_rect(Rect2(Vector2.ZERO, size), Color(1.0, 1.0, 0.97, clampf(k * 1.3, 0.0, 1.0)))
+		# (Fewer flashes: still blinding, but grey instead of a white burst.)
+		var glare := Color(1.0, 1.0, 0.97) if not Settings.reduce_flashes else Color(0.42, 0.42, 0.4)
+		glare.a = clampf(k * 1.3, 0.0, 1.0)
+		draw_rect(Rect2(Vector2.ZERO, size), glare)
 		draw_circle(size * 0.5, 40.0 + 30.0 * (1.0 - k), Color(0.6, 0.3, 0.8, 0.35 * k))
 	if _player == null or not _player.input_enabled or _player.camcorder.raise > 0.5:
 		return

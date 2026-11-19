@@ -127,6 +127,9 @@ func _build_panel(level: Level, body: Node3D, along: Vector3, n: Vector3, h: flo
 			_part(level, body, "wood_trim", c, _sized(along, WIDTH - 0.2, 0.008, pr.y - pr.x))
 		var knob := along * (WIDTH - 0.08) + Vector3.UP * 0.95 + out * side * (THICK * 0.5 + 0.03)
 		_part(level, body, "brass", knob, Vector3(0.05, 0.05, 0.05))
+	# One mesh per leaf (three materials), shared by the leaves of the same
+	# size and orientation.
+	MeshMerge.merge_children(body, [], "door %s %s %.2f" % [along.round(), out.round(), h], "Leaf")
 
 
 func _part(level: Level, parent: Node3D, key: String, at: Vector3, size: Vector3) -> void:

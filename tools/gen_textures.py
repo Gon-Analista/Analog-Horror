@@ -1,4 +1,4 @@
-"""Generates the house's pixel-art textures (64 px per metre) into
+"""Generates the house's pixel-art textures (128 px per metre) into
 game/assets/textures. Deterministic (same seed, same output): they exist to
 find the art style and will be replaced by hand-made art once it is set.
 
@@ -55,9 +55,12 @@ def shade(arr: np.ndarray, m: np.ndarray) -> np.ndarray:
     return arr * m[..., None]
 
 
-# 64 px per metre (was 32): the game now renders at 960x540, so the house
-# carries twice the detail. Every surface tiles seamlessly.
-K = 2            # detail factor over the original 32 px/m layouts
+# 128 px per metre (32 at first, then 64): with the "high" graphics the house
+# is drawn at 960x540 and a wall a metre away covers ~350 px of height, so
+# 64 px/m showed as big blocks up close. Still pixel art (nearest filter,
+# posterised colours); mipmaps keep the far and the "low" view as before.
+# Every surface tiles seamlessly.
+K = 4            # detail factor over the original 32 px/m layouts
 PPM = 32 * K     # pixels per metre
 
 
@@ -146,7 +149,7 @@ def aged_wall(img: np.ndarray, skirting: bool = True) -> np.ndarray:
 
 
 def wallpaper(base=(0.34, 0.40, 0.31), motif=(0.56, 0.50, 0.30), kind: str = "damask") -> np.ndarray:
-    """2 m wide x 2.6 m tall at 64 px/m."""
+    """2 m wide x 2.6 m tall at PPM px/m."""
     h, w = 84 * K, 64 * K
     y, x = grid(h, w)
     img = rgb(base, h, w)
@@ -324,7 +327,7 @@ def ceiling() -> np.ndarray:
 
 
 def small(base, pattern: str) -> np.ndarray:
-    """Furniture and clothes: 1 m of material at 64 px per metre."""
+    """Furniture and clothes: 1 m of material at PPM px per metre."""
     h, w = 32 * K, 32 * K
     y, x = grid(h, w)
     img = rgb(base, h, w)

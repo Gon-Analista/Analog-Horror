@@ -3,7 +3,8 @@ extends RefCounted
 ## Low-poly models of the crew's gear, shared by the first-person view and
 ## the avatar the others see: the 1989 VHS camcorder and the flashlight.
 ## Built from primitives with pixel textures (placeholders with the final
-## silhouette).
+## silhouette), then merged into one mesh per model (MeshMerge): the parts
+## that light up or move stay apart, by name.
 
 static var _mats := {}
 
@@ -77,6 +78,7 @@ static func camcorder() -> Node3D:
 	tally.position = Vector3(0.03, 0.05, -0.1)
 	tally.visible = false
 	root.add_child(tally)
+	MeshMerge.merge_children(root, ["Tally"], "camcorder")
 	return root
 
 
@@ -116,6 +118,7 @@ static func flashlight() -> Node3D:
 	lens.rotation.x = PI / 2
 	lens.position.z = -0.115
 	root.add_child(lens)
+	MeshMerge.merge_children(root, ["Lamp"], "flashlight")
 	return root
 
 
@@ -151,6 +154,7 @@ static func battery() -> Node3D:
 	led.name = "Led"
 	led.position = Vector3(0.025, 0.0335, 0.045)
 	root.add_child(led)
+	MeshMerge.merge_children(root, ["Led"], "battery")
 	return root
 
 
@@ -196,6 +200,7 @@ static func tape() -> Node3D:
 	spine.material_override = paper
 	spine.position = Vector3(0.0, 0.0125, 0.0525)
 	root.add_child(spine)
+	MeshMerge.merge_children(root, [], "tape")
 	return root
 
 

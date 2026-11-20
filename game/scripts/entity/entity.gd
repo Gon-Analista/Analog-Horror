@@ -273,6 +273,8 @@ var _sprite: Sprite3D
 ## In 3D (Net.entity_style 2): the puppet instead of the drawing, and what it
 ## was last told (Replay records it): [pose, cycle, yaw, ceiling, tint, size, jerky].
 var _model: EntityModel
+## Its soot: the aura (camcorder only) and the marks it leaves on the floor.
+var _soot: EntitySoot
 var model_args: Array = []
 var _model_yaw := 0.0
 var _model_last := Vector3.ZERO
@@ -288,6 +290,9 @@ var _breath := AudioStreamPlayer3D.new()
 
 func _ready() -> void:
 	_build_sprite()
+	_soot = EntitySoot.new()
+	_soot.name = "Soot"
+	add_child(_soot)
 	jingle.stream = Sfx.get_stream("jingle", true)
 	jingle.play()
 	drone.stream = Sfx.get_stream("drone", true)
@@ -666,6 +671,7 @@ func _strategic_cell() -> Vector3i:
 @rpc("authority", "call_local", "reliable")
 func _vanish_fx(at: Vector3) -> void:
 	_vanish_t = 0.0
+	_soot.scorch(at)
 	Sfx.play_3d(get_parent(), at + Vector3.UP * 1.2, "static", -12.0)  # (a tear, not a blast: it was far too loud)
 	var ash := CPUParticles3D.new()
 	ash.one_shot = true
@@ -2236,6 +2242,9 @@ func _present(delta: float) -> void:
 	_face.visible = on_ceiling and _sprite.visible
 	if is_3d():
 		_present_model(shown_pose, running, shown, delta)
+	var here := state != State.DORMANT and not gone
+	_soot.drive(delta, global_position, here and not piloted_here, here and not vanishing, state == State.FROZEN,
+			shown_pose in [Pose.CRAWL, Pose.GALLOP], on_ceiling, enraged, sneaking, _model if is_3d() else null)
 	if on_ceiling:
 		pass
 	elif _sprite.region_enabled:

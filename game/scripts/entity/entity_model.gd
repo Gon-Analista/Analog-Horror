@@ -570,6 +570,27 @@ func _face_for(p: int, aware: bool, talking: bool, eye: Vector3) -> String:
 
 ## Moves the whole puppet so its face is at `at` (Vector3.INF: back to its
 ## feet). For the lunge and the hiding place, where the face must be.
+## Where its soot boils off (EntitySoot), in the world: the head, the
+## spine, every joint of the long limbs, the hands and the feet. Fills
+## `into` (sized by EntitySoot) so nothing is allocated each time.
+func soot_points(into: PackedVector3Array) -> void:
+	var at := [_head.to_global(Vector3(0, 0.15, 0)), _neck.global_position, _spine.to_global(Vector3(0, 0.2, 0)),
+			_spine.to_global(Vector3(0, 0.5, 0)), _root.global_position]
+	for i in 2:
+		at.append(_arm[i].global_position)
+		at.append(_fore[i].global_position)
+		at.append(_hand[i].to_global(Vector3(0, -0.12, 0)))
+		at.append(_hand[i].to_global(Vector3(0, -0.3, 0)))  # the long fingers
+		at.append(_fore2[i].global_position)
+		at.append(_shin[i].global_position)
+		at.append(_shin[i].to_global(Vector3(0, -0.44, -0.06)))  # the feet
+	for i in mini(at.size(), into.size()):
+		into[i] = at[i]
+
+
+const SOOT_POINTS := 19
+
+
 func anchor_face(at: Vector3) -> void:
 	if at == Vector3.INF:
 		return

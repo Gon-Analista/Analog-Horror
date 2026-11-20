@@ -43,6 +43,17 @@ const TRANSOM_CHANCE := 0.85     # of those, with a broken window over them (the
 const DOOR_OPEN_CHANCE := 0.45   # doors that start open
 const FLASH_BLIND_TIME := 2.2    # a friend's flash in your eyes: white for this long
 const ENTITY_SONG := false        # its music box tune near it (off for now: user 2026-10-26; the code stays)
+# Its soot (EntitySoot): an aura only the camcorder sees, and marks on the floor.
+## The marks on the floor are seen with the naked eye too: the one trace it
+## leaves in the real world, like the bodies (a proposal: false keeps them
+## for the camcorder only).
+const SOOT_NAKED_EYE := true
+const SOOT_SETTLE := 1.4          # a print shows this long after it passed (where it was, not where it is)...
+const SOOT_LIFE := 50.0           # ...and is gone after this long
+const SOOT_MARKS := 56            # prints on the floor at once (the oldest go first)
+const SOOT_STEP := 0.62           # one footprint every this many metres walking...
+const SOOT_HAND_STEP := 0.8       # ...one handprint on all fours
+const SOOT_AURA := 128            # smoke puffs alive at once around it
 const VOICE_THROW_CHANCE := 0.0   # its voice coming from another room (off: it was confusing)
 const HIDDEN_VOICE_RAW := 22      # hidden, a voice this loud (mic RMS x1000) gives you away; quieter does not
 const PEEK_TIME := 2.0           # found hiding: it shows its face this long before it takes you

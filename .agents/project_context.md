@@ -102,6 +102,12 @@ Fusión de las tres direcciones propuestas: **«Solo la cámara la ve»** + **la
   - Se desvanece con la distancia en vez de con la luz: es un dibujo que no pertenece al mundo.
   - Proyecta sombra solo cuando la ves por la cámara.
   - La versión final debería dibujarse a mano con el mismo lenguaje (tinta, máscara, guantes, boca que baja) y más poses.
+- **Hollín de la Visita (2026-11-20, `EntitySoot`):** lo que queda de la cinta quemada de la que salió.
+  - **Aura (solo por la cámara, capa visual 2):** humo de hollín que sale de la cabeza, la espalda y cada articulación de los brazos y piernas del muñeco 3D (`EntityModel.soot_points`), copos negros que caen y una mancha de sombra en el suelo bajo ella (en el techo si está colgada). Mientras la graban, el humo se queda casi quieto. Furiosa, echa más. `GPUParticles3D` + `shaders/entity_soot.gdshader` (ruido que se deshace en jirones, suave contra paredes y suelo).
+  - **Huellas (también a simple vista, propuesta, `Tuning.SOOT_NAKED_EYE`):** pies largos de dedos con garra; a gatas, manos enormes; y una salpicadura quemada donde el flash la deshace. Aparecen `SOOT_SETTLE` (1,4 s) después de pasar, nunca donde está ahora, y se borran en `SOOT_LIFE` (50 s). Un fondo de decals reutilizados (`SOOT_MARKS`).
+  - **Red:** solo presentación, cada máquina la deriva de lo que ya se replica (posición, estado, pose, modo); nada nuevo por la red.
+  - **Coste:** los decals no son llamadas de dibujo; el aura son ~7 llamadas solo con la cámara levantada. El filtro de decals se pone en código (`RenderingServer.decals_set_filter`, nearest) y no en `project.godot`, para poder publicarlo como parche.
+  - Texturas: `python tools/gen_soot.py` (requiere scipy). Capturas: `--shots <dir> --soot-only`.
 
 ## Sonido y música
 

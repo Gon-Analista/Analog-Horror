@@ -30,6 +30,9 @@ func run_tour(main: Node, dir: String) -> void:
 			pause.close()
 	if OS.get_cmdline_user_args().has("--pause-only"):  # dev: just that one
 		get_tree().quit()
+	if OS.get_cmdline_user_args().has("--soot-only"):  # dev: just the soot
+		await soot_shots(main, dir)
+		get_tree().quit()
 		return
 	await _room_shot(player, level, "living", dir, "02_living")
 	# Watching the show, then the alert cutting in.
@@ -520,3 +523,95 @@ func _shot(dir: String, shot_name: String) -> void:
 
 func _wait(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
+
+
+
+## The Visita's soot (EntitySoot): its trail seen with the naked eye, the
+## aura through the camcorder (walking, held still while filmed, close),
+## the handprints on all fours, the scorch the flash leaves, the ceiling.
+##   godot --path game -- --shots <dir> --soot-only
+func soot_shots(main: Node, dir: String) -> void:
+	var player: Player = main.player
+	var entity: Entity = main.entity
+	var run: Run = main.run
+	var level: Level = run.level
+	entity.state = Entity.State.STALKING
+	var line := level.find_line(8)
+	var start: Vector3i = line[0]
+	var ld: Vector2i = line[1]
+	var ahead := func(n: float) -> Vector3: return level.center(start) + Vector3(ld.x, 0, ld.y) * n
+	player.global_position = level.center(start)
+	# It walks away from you down the corridor, then waits at the end.
+	entity.mode = Entity.Mode.WANDER
+	entity.pose = Entity.Pose.STAND
+	for i in 150:
+		entity.global_position = ahead.call(1.2).lerp(ahead.call(6.5), i / 150.0)
+		await get_tree().process_frame
+	await _wait(Tuning.SOOT_SETTLE + 1.0)
+	await _look_shot(player, level, start, ahead.call(2.6), dir, "soot_01_trail_naked")
+	player.camcorder.force_held = true
+	await _wait(1.2)
+	await _shot(dir, "soot_02_trail_camcorder")
+	await _clean_shot(main, dir, "soot_02_trail_camcorder_clean")
+	# Close, filmed: frozen, its smoke hanging round it.
+	entity.global_position = ahead.call(3.6)
+	await _look_shot(player, level, start, ahead.call(3.6) + Vector3.UP * 1.1, dir, "soot_03_aura_close")
+	await _clean_shot(main, dir, "soot_03_aura_close_clean")
+	entity.state = Entity.State.FROZEN
+	await _wait(1.5)
+	await _shot(dir, "soot_04_aura_frozen")
+	# What the aura costs (filmed, close): draw calls with it and without.
+	var draws := Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+	entity._soot._smoke.visible = false
+	entity._soot._flakes.visible = false
+	await _wait(0.3)
+	print("SOOT draws with=%d without=%d fps=%d" % [draws, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Engine.get_frames_per_second()])
+	entity._soot._smoke.visible = true
+	entity._soot._flakes.visible = true
+	await _clean_shot(main, dir, "soot_04_aura_frozen_clean")
+	entity.state = Entity.State.STALKING
+	entity.enraged = true
+	await _wait(1.5)
+	await _shot(dir, "soot_05_aura_enraged")
+	await _clean_shot(main, dir, "soot_05_aura_enraged_clean")
+	entity.enraged = false
+	# On all fours, running from you: handprints.
+	entity.mode = Entity.Mode.FLEE
+	for i in 90:
+		entity.global_position = ahead.call(3.6).lerp(ahead.call(7.5), i / 90.0)
+		await get_tree().process_frame
+	entity.mode = Entity.Mode.WANDER
+	player.camcorder.force_held = false
+	await _wait(Tuning.SOOT_SETTLE + 0.8)
+	await _look_shot(player, level, start, ahead.call(3.6), dir, "soot_06_hands_naked")
+	# The flash: it comes apart and leaves a burnt splash.
+	entity.global_position = ahead.call(3.0)
+	player.camcorder.force_held = true
+	await _wait(0.8)
+	run._on_flash()
+	await _wait(1.6)
+	await _shot(dir, "soot_07_scorch_camcorder")
+	await _clean_shot(main, dir, "soot_07_scorch_camcorder_clean")
+	player.camcorder.force_held = false
+	await _wait(0.6)
+	await _shot(dir, "soot_08_scorch_naked")
+	entity.vanishing = false
+	entity.gone = false
+	# On the ceiling: its shadow spread up there round it.
+	entity.on_ceiling = true
+	entity.global_position = ahead.call(3.0)
+	player.camcorder.force_held = true
+	await _look_shot(player, level, start, ahead.call(3.0) + Vector3.UP * 2.3, dir, "soot_09_ceiling")
+	await _clean_shot(main, dir, "soot_09_ceiling_clean")
+	entity.on_ceiling = false
+	player.camcorder.force_held = false
+	print("SOOT shots done")
+
+
+## The same picture without the tape (no post-process): to judge the effect itself.
+func _clean_shot(main: Node, dir: String, shot_name: String) -> void:
+	var post := main.get_node("WorldView/World/PostLayer/PostFX") as CanvasItem
+	post.visible = false
+	await get_tree().process_frame
+	await _shot(dir, shot_name)
+	post.visible = true

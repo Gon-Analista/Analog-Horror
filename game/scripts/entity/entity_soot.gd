@@ -184,6 +184,10 @@ func _build_aura() -> void:
 	sm.albedo_color = Color(0.03, 0.025, 0.025)
 	sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	sm.alpha_scissor_threshold = 0.5
+	# (Never a black square drifting across the lens: gone when close.)
+	sm.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
+	sm.distance_fade_min_distance = 0.6
+	sm.distance_fade_max_distance = 1.4
 	speck.material = sm
 	_flakes = _particles(20, 3.2, fm, speck)
 	# The stain of shadow under it (only through the camcorder).

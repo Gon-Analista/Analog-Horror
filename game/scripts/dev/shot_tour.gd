@@ -30,6 +30,10 @@ func run_tour(main: Node, dir: String) -> void:
 			pause.close()
 	if OS.get_cmdline_user_args().has("--pause-only"):  # dev: just that one
 		get_tree().quit()
+	if OS.get_cmdline_user_args().has("--house-only"):  # dev: windows, rooms, materials
+		await house_shots(main, dir)
+		get_tree().quit()
+		return
 	if OS.get_cmdline_user_args().has("--soot-only"):  # dev: just the soot
 		await soot_shots(main, dir)
 		get_tree().quit()
@@ -524,6 +528,47 @@ func _shot(dir: String, shot_name: String) -> void:
 func _wait(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
 
+
+
+## The house itself, to judge its geometry and materials: two windows (from
+## across the room and close), a few rooms, and the first window opened.
+##   godot --path game -- --shots <dir> --house-only
+func house_shots(main: Node, dir: String) -> void:
+	var player: Player = main.player
+	var level: Level = main.run.level
+	var shown := 0
+	var windows: Array[Vector3i] = []
+	for z in level.depth:
+		for x in level.width:
+			if level.char_at(Vector3i(x, 0, z)) == "W":
+				windows.append(Vector3i(x, 0, z))
+	for c: Vector3i in windows:
+		if c.y != 0 or shown >= 2:
+			continue
+		var inward := Vector3i.ZERO
+		for d in Level.DIRS:
+			if level.is_walkable(c + Vector3i(d.x, 0, d.y)):
+				inward = Vector3i(d.x, 0, d.y)
+		if inward == Vector3i.ZERO:
+			continue
+		var far := c + inward
+		for k in range(2, 4):
+			if level.is_walkable(c + inward * k):
+				far = c + inward * k
+		var at := level.center(c) - Vector3(inward) * 0.5 + Vector3.UP * 1.35
+		await _look_shot(player, level, far, at, dir, "h%d_window_far" % shown)
+		await _look_shot(player, level, c + inward, at + Vector3.UP * 0.1, dir, "h%d_window_close" % shown)
+		if shown == 0 and level.has_method("window_at") and level.call("window_at", c) != null:
+			var w: Node = level.call("window_at", c)
+			w.call("set_open", true)
+			await _wait(1.6)
+			await _shot(dir, "h%d_window_open" % shown)
+			await _look_shot(player, level, far, at, dir, "h%d_window_open_far" % shown)
+			w.call("set_open", false)
+		shown += 1
+	for t: String in ["hall", "living", "kitchen", "bedroom", "bathroom"]:
+		await _room_shot(player, level, t, dir, "r_" + t)
+	print("HOUSE shots done")
 
 
 ## The Visita's soot (EntitySoot): its trail seen with the naked eye, the

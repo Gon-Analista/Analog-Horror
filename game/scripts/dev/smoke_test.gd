@@ -232,6 +232,7 @@ func run_smoke(main: Node) -> void:
 	await _check_replay(main, run, player, entity)
 	await _check_voice(main, player)
 	await _check_doors(main, run, player, entity)
+	await _check_windows(run, player)
 	# Translations: English loaded and complete for what the menu shows;
 	# Spanish (the source) shows the text itself.
 	var was := TranslationServer.get_locale()
@@ -881,6 +882,43 @@ func _check_replay(main: Node, run: Run, player: Player, entity: Entity) -> void
 			has_catch and cam_ok and entity.visible and player.visible and not rp.playing and main.world.get_camera_3d() != rp._camera,
 			"clips=%d catch=%s cam=%s frames=%d" % [rp.clips.size(), has_catch, cam_ok, rp._frames.size()])
 	_check("best moments: your own voice is heard in your clip", heard_db > -40.0, "voice bus peak %.1f dB" % heard_db)
+
+
+## Windows: real openings you see out of; E opens and closes the sash (not
+## twice in a row), it slides up, the entity hears it, and open or shut
+## nobody gets out through it.
+func _check_windows(run: Run, player: Player) -> void:
+	var level := run.level
+	_check("windows: the house has sash windows in its outside walls", not level.windows.is_empty(),
+			"%d windows" % level.windows.size())
+	if level.windows.is_empty():
+		return
+	var was_phase := run.phase
+	var was_alive := player.alive
+	run.phase = Run.Phase.PLAYING
+	player.alive = true
+	var w: HouseWindow = level.windows[0]
+	var room := w.cell + Vector3i(w.inward.x, 0, w.inward.y)
+	player.global_position = level.center(room)
+	run._request_window(String(w.name))
+	var opened := w.is_open
+	run._request_window(String(w.name))
+	var spam_ignored := w.is_open
+	await _wait(HouseWindow.SLIDE_TIME + HouseWindow.COOLDOWN + 0.1)
+	var lifted: bool = w.amount >= 1.0 and (w.get_node("Sash") as Node3D).position.y > HouseWindow.LIFT * 0.9
+	# Out through the gap under the lifted sash: something solid stops you.
+	var from := level.center(room) + Vector3.UP * (HouseWindow.SILL_Y + 0.2)
+	var out := Vector3(-w.inward.x, 0, -w.inward.y)
+	var q := PhysicsRayQueryParameters3D.create(from, from + out * 2.5, Tuning.LAYER_WORLD)
+	var blocked := not player.get_world_3d().direct_space_state.intersect_ray(q).is_empty()
+	run._request_window(String(w.name))
+	var closed := not w.is_open
+	await _wait(HouseWindow.SLIDE_TIME + HouseWindow.COOLDOWN + 0.1)
+	_check("windows: E opens and closes a window, but not twice in a row; open, nobody climbs out",
+			opened and spam_ignored and lifted and blocked and closed and w.amount <= 0.0,
+			"opened=%s spam_ignored=%s lifted=%s blocked=%s closed=%s" % [opened, spam_ignored, lifted, blocked, closed])
+	run.phase = was_phase
+	player.alive = was_alive
 
 
 ## Doors: E opens and closes them (not spammable, not on anyone, not with

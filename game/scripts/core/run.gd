@@ -388,6 +388,24 @@ func _on_interact(target: Node) -> void:
 		_request_escape.rpc_id(1)
 	elif target is Door:
 		_request_door.rpc_id(1, String(target.name))
+	elif target is HouseWindow:
+		_request_window.rpc_id(1, String(target.name))
+
+
+## Host: open or close a window (not while it slides or right after). It
+## scrapes: the entity hears it.
+@rpc("any_peer", "call_local", "reliable")
+func _request_window(window_name: String) -> void:
+	if not multiplayer.is_server() or phase != Phase.PLAYING:
+		return
+	var w := level.get_node_or_null(window_name) as HouseWindow
+	var who: Player = players.get(_sender())
+	if w == null or who == null or not who.alive or not w.ready_to_move():
+		return
+	if who.global_position.distance_to(w.global_position) > Tuning.INTERACT_RANGE + 1.2:
+		return
+	w.set_open.rpc(not w.is_open)
+	entity.hear(w.global_position + Vector3.UP * 1.3, Tuning.NOISE_PICKUP)
 
 
 ## Host: open or close a door, unless it is swinging or was just used, or

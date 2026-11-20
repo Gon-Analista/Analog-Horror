@@ -41,7 +41,7 @@ const MATERIAL_LOOK := {
 	"wood_dark": [0.55, 1.6],
 	"wood_trim": [0.5, 1.6],
 	"door_exit": [0.55, 1.6],
-	"window": [0.35, 1.2],
+	"window_frame": [0.6, 1.4],   # old gloss paint, chipped
 	"brass": [0.35, 0.8],
 	"plastic": [0.5, 0.6],
 	"wallpaper*": [0.88, 0.8],   # damp, peeling paper
@@ -70,6 +70,11 @@ var lamps: Array[FlickerLight] = []
 var moons: Array[SpotLight3D] = []
 ## Beds, tables and wardrobes you can hide in (Hide<n>, in build order).
 var hide_spots: Array[HideSpot] = []
+## Sash windows in the outside walls (Window<n>, in build order); cell -> HouseWindow.
+var windows: Array[HouseWindow] = []
+var _window_at := {}
+## [cell, inward, torn curtain] of each window, made after the walls.
+var _window_plan: Array = []
 ## Doors in the doorways (Door<n>, in build order); cell -> Door.
 var doors: Array[Door] = []
 var _door_at := {}
@@ -101,9 +106,12 @@ func build(p_layout: HouseLayout, decor_seed := 14) -> void:
 		_build_stairs(s)
 	_build_furniture()
 	_build_decor()
+	_build_facade()
 	_commit()
+	_build_outside()
 	add_child(_furniture_body)
 	_build_doors(decor_seed)
+	_build_windows()
 
 
 ## Most doorways get a door, some left open; over some there is a transom
@@ -198,6 +206,20 @@ func _add_transom(c: Vector3i, plan: Dictionary) -> void:
 
 func door_at(c: Vector3i) -> Door:
 	return _door_at.get(c)
+
+
+func window_at(c: Vector3i) -> HouseWindow:
+	return _window_at.get(c)
+
+
+func _build_windows() -> void:
+	for plan: Array in _window_plan:
+		var w := HouseWindow.new()
+		w.name = "Window%d" % windows.size()
+		w.setup(plan[0], plan[1], plan[2])
+		add_child(w)
+		windows.append(w)
+		_window_at[plan[0]] = w
 
 
 # --- grid queries (the layout answers) ------------------------------------------
@@ -336,13 +358,17 @@ func _build_cell(c: Vector3i) -> void:
 			var n := _n(c, d)
 			if not layout.inside(n) or _is_solid(char_at(n)):
 				continue
-			var key := "door_exit" if ch == "X" else ("window" if ch == "W" else _wall_key(n))
+			var key := "door_exit" if ch == "X" else _wall_key(n)
 			# Into the stairwell the wall goes up through the slab.
 			var top := base + (FLOOR_H if char_at(n) == "S" and c.y == 0 else HEIGHT)
-			_wall_face(c, d, base, top, key, base)
 			if ch == "W":
+				_add_window(c, d, key)
 				_add_moonlight(c, d)
-			elif ch == "#" and key.begins_with("wallpaper") and _decor.randf() < PHOTO_CHANCE:
+			else:
+				_wall_face(c, d, base, top, key, base)
+			if ch != "X":
+				_add_wall_trim(c, d, base, top, key)
+			if ch == "#" and key.begins_with("wallpaper") and _decor.randf() < PHOTO_CHANCE:
 				_add_photo(c, d)
 		if ch == "X":
 			_add_spot(ch, c)
@@ -395,14 +421,19 @@ func _add_spot(ch: String, c: Vector3i) -> void:
 ## Vertical face on the side `d` of cell `c`, seen from the neighbour, from
 ## height y0 to y1 (world); `base` is the floor the texture starts at.
 func _wall_face(c: Vector3i, d: Vector2i, y0: float, y1: float, key: String, base: float) -> void:
+	_wall_part(c, d, -0.5, 0.5, y0, y1, key, base)
+
+
+## Part of that face: from u0 to u1 across it (-0.5 .. 0.5 is all of it).
+func _wall_part(c: Vector3i, d: Vector2i, u0: float, u1: float, y0: float, y1: float, key: String, base: float) -> void:
 	var n := Vector3(d.x, 0, d.y)
 	var mid := Vector3((c.x + 0.5) * CELL, 0.0, (c.z + 0.5) * CELL) + n * CELL * 0.5
 	var along := Vector3(-d.y, 0, d.x)
-	var a := mid - along * CELL * 0.5
-	var b := mid + along * CELL * 0.5
+	var a := mid + along * CELL * u0
+	var b := mid + along * CELL * u1
 	var ua: float
 	var ub: float
-	if key == "door_exit" or key == "window":
+	if key == "door_exit":
 		ua = 0.0
 		ub = 1.0
 	else:
@@ -553,6 +584,8 @@ func _wall_sheet(key: String, mid: Vector3, n: Vector3, w: float, h: float, uv_r
 func mat(key: String) -> StandardMaterial3D:
 	if _mats.has(key):
 		return _mats[key]
+	if key == "glass":
+		return HouseWindow.glass_material()
 	var m := StandardMaterial3D.new()
 	var path := "res://assets/textures/%s.png" % key
 	var tex := load(path) as Texture2D
@@ -640,7 +673,8 @@ func _commit() -> void:
 	# material.
 	var merged := SurfaceTool.new()
 	for i in arch.get_surface_count():
-		merged.append_from(arch, i, Transform3D.IDENTITY)
+		if arch.surface_get_name(i) != "glass":  # (the moon comes through it)
+			merged.append_from(arch, i, Transform3D.IDENTITY)
 	var caster := MeshInstance3D.new()
 	caster.name = "HouseShadow"
 	caster.mesh = merged.commit()
@@ -1344,3 +1378,219 @@ func _add_moonlight(c: Vector3i, d: Vector2i) -> void:
 	moons.append(spot)
 	spot.global_position = window - n * 0.8 + Vector3.UP * 2.4
 	spot.look_at(window + n * 2.2 + Vector3.UP * 0.1, Vector3.UP)
+
+
+
+# --- windows, trim and the outside ------------------------------------------------
+
+## A sash window in the wall face of cell `c` seen from side `d`: the wall
+## round a real opening, its plaster reveal (the wall shows REVEAL deep),
+## the box frame, the upper sash and its glass, the casing, the inside sill
+## and apron, a curtain rod and, under some, a radiator. The lower sash
+## and the curtains are the HouseWindow (they move); the opening is blocked
+## (nobody climbs out).
+func _add_window(c: Vector3i, d: Vector2i, wall_key: String) -> void:
+	var base := c.y * FLOOR_H
+	var W := HouseWindow
+	var hw := W.HALF_W
+	_wall_part(c, d, -0.5, 0.5, base, base + W.SILL_Y, wall_key, base)
+	_wall_part(c, d, -0.5, 0.5, base + W.HEAD_Y, base + HEIGHT, wall_key, base)
+	_wall_part(c, d, -0.5, -hw, base + W.SILL_Y, base + W.HEAD_Y, wall_key, base)
+	_wall_part(c, d, hw, 0.5, base + W.SILL_Y, base + W.HEAD_Y, wall_key, base)
+	var n := Vector3(d.x, 0, d.y)
+	var along := Vector3(-d.y, 0, d.x)
+	var o := center(c) + n * CELL * 0.5
+	# local (across, up, into the room) -> world
+	var at := func(u: float, y: float, z: float) -> Vector3:
+		return o + along * u + Vector3.UP * y + n * z
+	var size := func(su: float, sy: float, sz: float) -> Vector3:
+		return Vector3(absf(along.x) * su + absf(n.x) * sz, sy, absf(along.z) * su + absf(n.z) * sz)
+	var box := func(key: String, u: float, y: float, z: float, su: float, sy: float, sz: float) -> void:
+		_box(key, at.call(u, y, z), size.call(su, sy, sz))
+	# The reveal: plaster on the jambs, the soffit and under the sill.
+	var r := W.REVEAL
+	for s: float in [-1.0, 1.0]:
+		_quad("ceiling", [at.call(s * hw, W.SILL_Y, 0.0), at.call(s * hw, W.SILL_Y, -r), at.call(s * hw, W.HEAD_Y, -r), at.call(s * hw, W.HEAD_Y, 0.0)],
+				[Vector2(0, 1.2), Vector2(r, 1.2), Vector2(r, 0), Vector2(0, 0)], -along * s)
+	_quad("ceiling", [at.call(-hw, W.HEAD_Y, 0.0), at.call(hw, W.HEAD_Y, 0.0), at.call(hw, W.HEAD_Y, -r), at.call(-hw, W.HEAD_Y, -r)],
+			[Vector2(0, 0), Vector2(0.84, 0), Vector2(0.84, r), Vector2(0, r)], Vector3.DOWN)
+	_quad("ceiling", [at.call(-hw, W.SILL_Y, 0.0), at.call(hw, W.SILL_Y, 0.0), at.call(hw, W.SILL_Y, -r), at.call(-hw, W.SILL_Y, -r)],
+			[Vector2(0, 0), Vector2(0.84, 0), Vector2(0.84, r), Vector2(0, r)], Vector3.UP)
+	# The box frame the sashes run in, and the sill outside, sloping off.
+	var fz := -(W.LOWER_DEPTH + W.UPPER_DEPTH) * 0.5
+	var fd := W.UPPER_DEPTH - W.LOWER_DEPTH + W.SASH_THICK + 0.04
+	for s: float in [-1.0, 1.0]:
+		box.call("window_frame", s * (hw - 0.025), (W.SILL_Y + W.HEAD_Y) * 0.5, fz, 0.05, W.HEAD_Y - W.SILL_Y, fd)
+	box.call("window_frame", 0.0, W.HEAD_Y - 0.025, fz, hw * 2.0, 0.05, fd)
+	box.call("window_frame", 0.0, W.SILL_Y + 0.02, fz, hw * 2.0, 0.04, fd)
+	box.call("window_frame", 0.0, W.SILL_Y - 0.01, -r - 0.02, hw * 2.0 + 0.12, 0.05, 0.16)
+	# The upper sash (it stays put).
+	var frame := func(p: Vector3, sz: Vector3) -> void:
+		box.call("window_frame", p.x, p.y, p.z - W.UPPER_DEPTH, sz.x, sz.y, sz.z)
+	var pane := func(x0: float, x1: float, y0: float, y1: float) -> void:
+		var z := -W.UPPER_DEPTH
+		_quad("glass", [at.call(x0, y0, z), at.call(x1, y0, z), at.call(x1, y1, z), at.call(x0, y1, z)],
+				[Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0)], n)
+	W.add_sash(frame, pane, W.SASH_TOP - W.SASH_H, false)
+	# Inside: the casing round the opening (proud of the wall, a cap on the
+	# head), the sill board you could lean on and the apron under it.
+	for s: float in [-1.0, 1.0]:
+		box.call("window_frame", s * (hw + 0.035), (W.SILL_Y + W.HEAD_Y + 0.08) * 0.5, 0.01, 0.07, W.HEAD_Y + 0.08 - W.SILL_Y, 0.02)
+	box.call("window_frame", 0.0, W.HEAD_Y + 0.045, 0.011, hw * 2.0 + 0.16, 0.09, 0.022)
+	box.call("window_frame", 0.0, W.HEAD_Y + 0.1, 0.018, hw * 2.0 + 0.2, 0.022, 0.036)
+	box.call("window_frame", 0.0, W.SILL_Y - 0.018, -0.03, hw * 2.0 + 0.2, 0.036, 0.2)
+	box.call("window_frame", 0.0, W.SILL_Y - 0.08, 0.01, hw * 2.0 + 0.1, 0.09, 0.02)
+	# The curtain rod on two brackets, a knob at each end.
+	box.call("wood_dark", 0.0, W.ROD_Y + 0.02, W.CURTAIN_OUT, hw * 2.0 + 0.5, 0.025, 0.025)
+	for s: float in [-1.0, 1.0]:
+		box.call("brass", s * (hw + 0.27), W.ROD_Y + 0.02, W.CURTAIN_OUT, 0.045, 0.045, 0.045)
+		box.call("brass", s * (hw + 0.18), W.ROD_Y + 0.02, W.CURTAIN_OUT * 0.5, 0.02, 0.02, W.CURTAIN_OUT)
+	# A cast-iron radiator under about half of them.
+	var room := c + Vector3i(d.x, 0, d.y)
+	if is_walkable(room) and _decor.randf() < 0.5:
+		var cols := 9
+		var rw := 0.66
+		for k in cols:
+			var u := -rw * 0.5 + (k + 0.5) * rw / cols
+			box.call("enamel", u, 0.1 + 0.25, 0.1, rw / cols - 0.018, 0.5, 0.11)
+		box.call("enamel", 0.0, 0.14, 0.1, rw, 0.035, 0.07)
+		box.call("enamel", 0.0, 0.56, 0.1, rw, 0.035, 0.07)
+		for s: float in [-1.0, 1.0]:
+			box.call("enamel", s * (rw * 0.5 - 0.04), 0.05, 0.1, 0.05, 0.1, 0.09)
+		box.call("brass", rw * 0.5 + 0.03, 0.2, 0.1, 0.05, 0.03, 0.03)  # the valve
+		var rshape := CollisionShape3D.new()
+		var rbox := BoxShape3D.new()
+		rbox.size = size.call(rw, 0.6, 0.14)
+		rshape.shape = rbox
+		rshape.position = at.call(0.0, 0.3, 0.1)
+		_furniture_body.add_child(rshape)
+	# Nobody climbs out: the opening is shut to bodies even when it is open.
+	var shape := CollisionShape3D.new()
+	var block := BoxShape3D.new()
+	block.size = size.call(hw * 2.0, W.HEAD_Y - W.SILL_Y, 0.08)
+	shape.shape = block
+	shape.position = at.call(0.0, (W.SILL_Y + W.HEAD_Y) * 0.5, -W.UPPER_DEPTH)
+	_furniture_body.add_child(shape)
+	_window_plan.append([c, d, _decor.randf() < 0.3])
+
+
+## The skirting board at the foot of a wall face (wallpapered walls; the
+## tiles go down to the floor) and a plaster cornice where it meets the
+## ceiling. A touch longer than the face, so outside corners close.
+func _add_wall_trim(c: Vector3i, d: Vector2i, base: float, top: float, key: String) -> void:
+	var n := Vector3(d.x, 0, d.y)
+	var along := Vector3(-d.y, 0, d.x)
+	var o := center(c) + n * CELL * 0.5
+	var size := func(su: float, sy: float, sz: float) -> Vector3:
+		return Vector3(absf(along.x) * su + absf(n.x) * sz, sy, absf(along.z) * su + absf(n.z) * sz)
+	if key.begins_with("wallpaper"):
+		_box("wood_dark", o + n * 0.011 + Vector3.UP * 0.095, size.call(CELL + 0.044, 0.19, 0.022))
+		_box("wood_dark", o + n * 0.016 + Vector3.UP * 0.192, size.call(CELL + 0.064, 0.016, 0.032))
+	if is_equal_approx(top, base + HEIGHT):
+		_box("ceiling", o + n * 0.02 + Vector3.UP * (top - 0.045), size.call(CELL + 0.08, 0.09, 0.04))
+		_box("ceiling", o + n * 0.033 + Vector3.UP * (top - 0.012), size.call(CELL + 0.13, 0.024, 0.066))
+
+
+## What the windows look out on: the house's outer walls (the wall shows
+## HouseWindow.REVEAL deep), the lawn round it and, OUTSIDE_FAR away all
+## round, the night (trees, a fence, the neighbours' lit window, the sky)
+## and the lawn (the grass at the foot of the same picture).
+## Unlit and dim (the moon is in the texture); a node of its own, so the
+## occlusion culling skips it when no window is in view.
+const OUTSIDE_FAR := 9.0
+const OUTSIDE_TEX := 16.0   # metres covered by outside.png each way
+const GROUND_Y := -0.3
+
+
+func _build_outside() -> void:
+	var st_far := SurfaceTool.new()
+	st_far.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var w := width * CELL
+	var dp := depth * CELL
+	var R := OUTSIDE_FAR
+	var top := GROUND_Y + OUTSIDE_TEX
+	var ring := [Vector3(-R, 0, -R), Vector3(w + R, 0, -R), Vector3(w + R, 0, dp + R), Vector3(-R, 0, dp + R)]
+	var u := 0.0
+	for i in 4:
+		var a: Vector3 = ring[i]
+		var b: Vector3 = ring[(i + 1) % 4]
+		var len := a.distance_to(b) / OUTSIDE_TEX
+		var p := [a + Vector3.UP * GROUND_Y, b + Vector3.UP * GROUND_Y, b + Vector3.UP * top, a + Vector3.UP * top]
+		var uv := [Vector2(u, 1), Vector2(u + len, 1), Vector2(u + len, 0), Vector2(u, 0)]
+		var inward := ((Vector3(w * 0.5, 0, dp * 0.5) - (a + b) * 0.5) * Vector3(1, 0, 1)).normalized()
+		_quad_into(st_far, p, uv, inward)
+		u += len
+	# The lawn: the grass at the foot of the same picture (one draw call).
+	var g := [Vector3(-R, GROUND_Y, -R), Vector3(w + R, GROUND_Y, -R), Vector3(w + R, GROUND_Y, dp + R), Vector3(-R, GROUND_Y, dp + R)]
+	_quad_into(st_far, g, g.map(func(v: Vector3) -> Vector2: return Vector2(v.x / OUTSIDE_TEX, 0.996)), Vector3.UP)
+	var mesh := ArrayMesh.new()
+	st_far.commit(mesh)
+	mesh.surface_set_material(0, _night_material("outside"))
+	var mi := MeshInstance3D.new()
+	mi.name = "Outside"
+	mi.mesh = mesh
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+
+
+## The house's outer walls, seen only through the windows (the wall shows
+## HouseWindow.REVEAL deep there), with a hole at each window; part of the
+## house mesh (its dark wood surface: no draw call of its own).
+func _build_facade() -> void:
+	var r := HouseWindow.REVEAL
+	for f in floors:
+		var y0 := f * FLOOR_H + (GROUND_Y if f == 0 else 0.0)
+		var y1 := (f + 1) * FLOOR_H
+		for side in 4:
+			var count := width if side < 2 else depth
+			for k in count:
+				var cc: Vector3i
+				var d: Vector2i  # into the house
+				match side:
+					0: cc = Vector3i(k, f, 0); d = Vector2i(0, 1)
+					1: cc = Vector3i(k, f, depth - 1); d = Vector2i(0, -1)
+					2: cc = Vector3i(0, f, k); d = Vector2i(1, 0)
+					_: cc = Vector3i(width - 1, f, k); d = Vector2i(-1, 0)
+				var n := Vector3(d.x, 0, d.y)
+				var along := Vector3(-d.y, 0, d.x)
+				var o := center(cc) + n * (CELL * 0.5 - r)
+				o.y = 0.0
+				# Clipped at the corners, where two outer walls meet.
+				var lo := -0.5
+				var hi := 0.5
+				if k == 0:
+					lo = 0.5 - r
+				if k == count - 1:
+					hi = -0.5 + r
+				var faces: Array = []
+				if char_at(cc) == "W":
+					var hw := HouseWindow.HALF_W
+					var base := f * FLOOR_H
+					faces = [[lo, hi, y0, base + HouseWindow.SILL_Y], [lo, hi, base + HouseWindow.HEAD_Y, y1],
+							[lo, -hw, base + HouseWindow.SILL_Y, base + HouseWindow.HEAD_Y], [hw, hi, base + HouseWindow.SILL_Y, base + HouseWindow.HEAD_Y]]
+				else:
+					faces = [[lo, hi, y0, y1]]
+				for fc: Array in faces:
+					var a := o + along * float(fc[0])
+					var b := o + along * float(fc[1])
+					_quad("wood_dark", [a + Vector3.UP * fc[2], b + Vector3.UP * fc[2], b + Vector3.UP * fc[3], a + Vector3.UP * fc[3]],
+							[Vector2(0, fc[2]), Vector2(1, fc[2]), Vector2(1, fc[3]), Vector2(0, fc[3])], -n)
+
+
+func _night_material(key: String) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = load("res://assets/textures/%s.png" % key)
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS
+	m.texture_repeat = true
+	return m
+
+
+static func _quad_into(st: SurfaceTool, p: Array, uv: Array, n: Vector3) -> void:
+	var order := [0, 1, 2, 0, 2, 3]
+	if ((p[1] as Vector3) - p[0]).cross((p[2] as Vector3) - p[0]).dot(n) > 0.0:
+		order = [0, 2, 1, 0, 3, 2]
+	for i: int in order:
+		st.set_normal(n)
+		st.set_uv(uv[i])
+		st.add_vertex(p[i])

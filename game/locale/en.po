@@ -19,135 +19,135 @@ msgstr "%s has disconnected"
 msgid "No te caben más baterías"
 msgstr "You can't carry more batteries"
 
-#: scripts/core/run.gd:412
+#: scripts/core/run.gd:430
 msgid "Algo la sujeta desde el otro lado"
 msgstr "Something is holding it from the other side"
 
-#: scripts/core/run.gd:488
+#: scripts/core/run.gd:506
 msgid "Ya llevas una cámara"
 msgstr "You already have a camcorder"
 
-#: scripts/core/run.gd:499
+#: scripts/core/run.gd:517
 msgid "No llevas baterías"
 msgstr "You have no batteries"
 
-#: scripts/core/run.gd:501
+#: scripts/core/run.gd:519
 msgid "No llevas cámara"
 msgstr "You have no camera"
 
-#: scripts/core/run.gd:503
+#: scripts/core/run.gd:521
 msgid "La cámara ya está cargada"
 msgstr "The camera is fully charged"
 
-#: scripts/core/run.gd:510
+#: scripts/core/run.gd:528
 msgid "Batería cargada"
 msgstr "Battery charged"
 
-#: scripts/core/run.gd:576
+#: scripts/core/run.gd:594
 msgid "Has soltado la cámara"
 msgstr "You dropped the camcorder"
 
-#: scripts/core/run.gd:576
+#: scripts/core/run.gd:594
 msgid "%s ha soltado la cámara"
 msgstr "%s dropped the camcorder"
 
-#: scripts/core/run.gd:627
+#: scripts/core/run.gd:645
 msgid "Se oyen cintas rebobinándose por toda la casa"
 msgstr "Tapes are rewinding all over the house"
 
-#: scripts/core/run.gd:647
+#: scripts/core/run.gd:665
 msgid "Llevas la cámara (%d%%)"
 msgstr "You have the camcorder (%d%%)"
 
-#: scripts/core/run.gd:649
+#: scripts/core/run.gd:667
 msgid "%s lleva la cámara"
 msgstr "%s has the camcorder"
 
-#: scripts/core/run.gd:653
+#: scripts/core/run.gd:671
 msgid "Batería guardada"
 msgstr "Battery stored"
 
-#: scripts/core/run.gd:663
+#: scripts/core/run.gd:681
 msgid "¡Tienen todas las cintas! Van a la puerta de entrada"
 msgstr "They have all the tapes! They're heading for the front door"
 
-#: scripts/core/run.gd:666
+#: scripts/core/run.gd:684
 msgid "¡TENÉIS TODAS LAS CINTAS!"
 msgstr "YOU HAVE ALL THE TAPES!"
 
-#: scripts/core/run.gd:666
+#: scripts/core/run.gd:684
 msgid "¡TIENES TODAS LAS CINTAS!"
 msgstr "YOU HAVE ALL THE TAPES!"
 
-#: scripts/core/run.gd:667
+#: scripts/core/run.gd:685
 msgid "Salid por la puerta por la que entrasteis"
 msgstr "Get out through the door you came in by"
 
-#: scripts/core/run.gd:667
+#: scripts/core/run.gd:685
 msgid "Sal por la puerta por la que entraste"
 msgstr "Get out through the door you came in by"
 
-#: scripts/core/run.gd:668
+#: scripts/core/run.gd:686
 msgid "▶ Volved a la puerta de entrada"
 msgstr "▶ Back to the front door"
 
-#: scripts/core/run.gd:668
+#: scripts/core/run.gd:686
 msgid "▶ Vuelve a la puerta de entrada"
 msgstr "▶ Back to the front door"
 
-#: scripts/core/run.gd:670
+#: scripts/core/run.gd:688
 msgid "¡Corred a la furgoneta!"
 msgstr "Everyone, run to the van!"
 
-#: scripts/core/run.gd:670
+#: scripts/core/run.gd:688
 msgid "¡Corre a la furgoneta!"
 msgstr "Run to the van!"
 
-#: scripts/core/run.gd:672
+#: scripts/core/run.gd:690
 msgid "%s encontró una cinta (%d de %d)"
 msgstr "%s found a tape (%d of %d)"
 
-#: scripts/core/run.gd:674
+#: scripts/core/run.gd:692
 msgid "Cinta %d de %d"
 msgstr "Tape %d of %d"
 
-#: scripts/core/run.gd:703
+#: scripts/core/run.gd:721
 msgid "Se ha ido la luz"
 msgstr "The power is out"
 
-#: scripts/core/run.gd:736
+#: scripts/core/run.gd:754
 msgid "Clic: cambiar de cámara"
 msgstr "Click: switch camera"
 
-#: scripts/core/run.gd:739
+#: scripts/core/run.gd:757
 msgid "%s ha desaparecido"
 msgstr "%s is gone"
 
-#: scripts/core/run.gd:748
+#: scripts/core/run.gd:766
 msgid "Solo el anfitrión puede crear bots"
 msgstr "Only the host can add bots"
 
-#: scripts/core/run.gd:753 scripts/main.gd:191 scripts/ui/menu.gd:286
+#: scripts/core/run.gd:771 scripts/main.gd:191 scripts/ui/menu.gd:286
 msgid "Bot %d"
 msgstr "Bot %d"
 
-#: scripts/core/run.gd:772
+#: scripts/core/run.gd:790
 msgid "%s se une a la noche"
 msgstr "%s joins the night"
 
-#: scripts/core/run.gd:977
+#: scripts/core/run.gd:995
 msgid "La Visita era %s"
 msgstr "The Visitor was %s"
 
-#: scripts/core/run.gd:1048
+#: scripts/core/run.gd:1066
 msgid "La Visita se ha desconectado: ahora la controla la casa"
 msgstr "The Visitor disconnected: the house controls it now"
 
-#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:153
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:156
 msgid "[E] Cerrar la puerta"
 msgstr "[E] Close the door"
 
-#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:154
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:157
 msgid "[E] Abrir la puerta"
 msgstr "[E] Open the door"
 
@@ -531,7 +531,7 @@ msgstr "code"
 msgid "LAN"
 msgstr "LAN"
 
-#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:639
+#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:634
 msgid "CRÉDITOS"
 msgstr "CREDITS"
 
@@ -623,83 +623,83 @@ msgstr "EFFECTS"
 msgid "CHAT DE VOZ"
 msgstr "VOICE CHAT"
 
-#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:621 scripts/ui/menu.gd:656
+#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:616 scripts/ui/menu.gd:651
 msgid "VOLVER"
 msgstr "BACK"
 
-#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:615
+#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:610
 msgid "CONTROLES Y ACCESIBILIDAD"
 msgstr "CONTROLS & ACCESSIBILITY"
 
-#: scripts/ui/menu.gd:618
+#: scripts/ui/menu.gd:613
 msgid "WASD moverse · RATÓN mirar · SHIFT correr\nC agacharse · E usar · F linterna · R pilas\nCLIC DCHO cámara · CLIC IZQ flash\nTAB inventario · V hablar · ESC pausa"
 msgstr "WASD move · MOUSE look · SHIFT run\nC crouch · E use · F flashlight · R batteries\nRIGHT CLICK camera · LEFT CLICK flash\nTAB inventory · V talk · ESC pause"
 
-#: scripts/ui/menu.gd:642
+#: scripts/ui/menu.gd:637
 msgid "UN JUEGO DE"
 msgstr "A GAME BY"
 
-#: scripts/ui/menu.gd:643
+#: scripts/ui/menu.gd:638
 msgid "MÚSICA Y SONIDO"
 msgstr "MUSIC AND SOUND"
 
-#: scripts/ui/menu.gd:643
+#: scripts/ui/menu.gd:638
 msgid "síntesis propia"
 msgstr "original, synthesized"
 
-#: scripts/ui/menu.gd:644
+#: scripts/ui/menu.gd:639
 msgid "MOTOR"
 msgstr "ENGINE"
 
-#: scripts/ui/menu.gd:645
+#: scripts/ui/menu.gd:640
 msgid "ONLINE"
 msgstr "ONLINE"
 
-#: scripts/ui/menu.gd:646
+#: scripts/ui/menu.gd:641
 msgid "FUENTE"
 msgstr "FONT"
 
-#: scripts/ui/menu.gd:654
+#: scripts/ui/menu.gd:649
 msgid "Gracias por grabar con nosotros."
 msgstr "Thank you for recording with us."
 
-#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
+#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: COMPLETA (F11)"
 msgstr "SCREEN: FULL (F11)"
 
-#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
+#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: VENTANA (F11)"
 msgstr "SCREEN: WINDOW (F11)"
 
-#: scripts/ui/menu.gd:695
+#: scripts/ui/menu.gd:671
 msgid "GRÁFICOS: ALTOS (960x540)"
 msgstr "GRAPHICS: HIGH (960x540)"
 
-#: scripts/ui/menu.gd:695
+#: scripts/ui/menu.gd:671
 msgid "GRÁFICOS: BAJOS (480x270)"
 msgstr "GRAPHICS: LOW (480x270)"
 
-#: scripts/ui/menu.gd:699
+#: scripts/ui/menu.gd:675
 msgid "IDIOMA: %s"
 msgstr "LANGUAGE: %s"
 
-#: scripts/ui/menu.gd:704 scripts/ui/pause_menu.gd:166
+#: scripts/ui/menu.gd:680 scripts/ui/pause_menu.gd:172
 msgid "EL DEL SISTEMA"
 msgstr "SYSTEM DEFAULT"
 
-#: scripts/ui/menu.gd:707
+#: scripts/ui/menu.gd:683
 msgid "ENTRADA: %s"
 msgstr "INPUT: %s"
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: ABIERTO"
 msgstr "MICROPHONE: OPEN"
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: PULSA V"
 msgstr "MICROPHONE: PUSH V"
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: APAGADO"
 msgstr "MICROPHONE: OFF"
 
@@ -719,11 +719,11 @@ msgstr "MAIN MENU"
 msgid "SALIR DEL JUEGO"
 msgstr "QUIT GAME"
 
-#: scripts/ui/pause_menu.gd:79
+#: scripts/ui/pause_menu.gd:85
 msgid "EL ANFITRIÓN HA PAUSADO LA PARTIDA"
 msgstr "THE HOST HAS PAUSED THE GAME"
 
-#: scripts/ui/pause_menu.gd:169
+#: scripts/ui/pause_menu.gd:175
 msgid "MICRÓFONO: %s"
 msgstr "MICROPHONE: %s"
 
@@ -897,21 +897,29 @@ msgstr[1] "%d tapes missing"
 msgid "SALIDA"
 msgstr "EXIT"
 
-#: scripts/world/hide_spot.gd:104
+#: scripts/world/hide_spot.gd:105
 msgid "[E] Salir"
 msgstr "[E] Get out"
 
-#: scripts/world/hide_spot.gd:107
+#: scripts/world/hide_spot.gd:108
 msgid "[E] Esconderse bajo la cama"
 msgstr "[E] Hide under the bed"
 
-#: scripts/world/hide_spot.gd:109
+#: scripts/world/hide_spot.gd:110
 msgid "[E] Esconderse bajo la mesa"
 msgstr "[E] Hide under the table"
 
-#: scripts/world/hide_spot.gd:110
+#: scripts/world/hide_spot.gd:111
 msgid "[E] Esconderse en el armario"
 msgstr "[E] Hide in the wardrobe"
+
+#: scripts/world/house_window.gd:109
+msgid "[E] Cerrar la ventana"
+msgstr "[E] Close the window"
+
+#: scripts/world/house_window.gd:110
+msgid "[E] Abrir la ventana"
+msgstr "[E] Open the window"
 
 #: scripts/world/pickup.gd:56
 msgid "[E] Recoger cinta"
@@ -965,15 +973,15 @@ msgstr "NEIGHBOR"
 msgid "TE ESTOY VIENDO, %s"
 msgstr "I CAN SEE YOU, %s"
 
-#: scripts/world/tv_broadcast.gd:613
+#: scripts/world/tv_broadcast.gd:620
 msgid "● EN DIRECTO"
 msgstr "● LIVE"
 
-#: scripts/world/tv_broadcast.gd:618
+#: scripts/world/tv_broadcast.gd:625
 msgid "CANAL 9 · SALÓN"
 msgstr "CHANNEL 9 · LIVING ROOM"
 
-#: scripts/world/tv_broadcast.gd:698
+#: scripts/world/tv_broadcast.gd:705
 msgid "PROTECCIÓN CIVIL\nCANAL 9 · SERVICIO PÚBLICO"
 msgstr "CIVIL DEFENSE\nCHANNEL 9 · PUBLIC SERVICE"
 

@@ -141,6 +141,48 @@ def power_down() -> np.ndarray:
     return fade(normalize(hum + clack + thump, 0.85), 5)
 
 
+def window_slide() -> np.ndarray:
+    """An old sash pushed up: wood dragging in its runners in jerks, the
+    glass buzzing in its putty, a knock as it stops."""
+    t = t_axis(0.9)
+    jerks = 0.5 + 0.5 * np.sign(np.sin(2 * np.pi * (5 + 4 * t) * t))
+    drag = lowpass(noise(0.9), 0.08) * jerks * np.clip(1 - t / 0.75, 0, 1)
+    squeal = np.sin(2 * np.pi * (620 + 140 * np.sin(t * 9)) * t) * 0.18 * (np.sin(t * 23) > 0.4) * np.clip(1 - t / 0.7, 0, 1)
+    rattle = lowpass(noise(0.9), 0.5) * 0.25 * (np.sin(2 * np.pi * 31 * t) > 0.6)
+    knock = np.zeros_like(t)
+    k0 = int(0.74 * SR)
+    kt = t[: len(t) - k0]
+    knock[k0:] = np.sin(2 * np.pi * 140 * kt) * np.exp(-kt * 38) * 1.2 + lowpass(noise(len(kt) / SR), 0.3) * np.exp(-kt * 60)
+    return fade(normalize(drag + squeal + rattle + knock, 0.7), 8)
+
+
+def window_shut() -> np.ndarray:
+    """The sash brought down: a shorter drag, then a bang and the panes
+    rattling in the frame."""
+    t = t_axis(0.7)
+    drag = lowpass(noise(0.7), 0.1) * np.clip(1 - t / 0.35, 0, 1)
+    bang = np.zeros_like(t)
+    k0 = int(0.33 * SR)
+    kt = t[: len(t) - k0]
+    bang[k0:] = np.sin(2 * np.pi * 110 * kt) * np.exp(-kt * 25) * 1.4 + lowpass(noise(len(kt) / SR), 0.4) * np.exp(-kt * 30)
+    bang[k0:] += np.sin(2 * np.pi * 1900 * kt) * 0.15 * np.exp(-kt * 12) * (np.sin(2 * np.pi * 37 * kt) > 0)
+    return fade(normalize(drag * 0.5 + bang, 0.75), 6)
+
+
+def wind_draft() -> np.ndarray:
+    """Night air through an open window (loops): low rushing wind that
+    swells and falls, a whistle in the gap now and then."""
+    secs = 6.0
+    t = t_axis(secs)
+    rush = lowpass(lowpass(noise(secs), 0.03), 0.05)
+    swell = 0.55 + 0.45 * np.sin(2 * np.pi * t / secs) * np.sin(2 * np.pi * 2 * t / secs + 1)
+    whistle = np.sin(2 * np.pi * (880 + 60 * np.sin(2 * np.pi * t / secs)) * t) * 0.04 * np.clip(np.sin(2 * np.pi * 3 * t / secs), 0, 1) ** 3
+    x = rush * swell / max(np.abs(rush).max(), 1e-6) + whistle
+    n = int(0.25 * SR)  # crossfade the ends so it loops
+    x[:n] = x[:n] * np.linspace(0, 1, n) + x[-n:] * np.linspace(1, 0, n)
+    return normalize(x[:-n], 0.5)
+
+
 def main() -> None:
     print("audio ->", OUT)
     write("static", static())
@@ -153,6 +195,9 @@ def main() -> None:
     write("van_horn", van_horn())
     write("tape_whir", tape_whir())
     write("power_down", power_down())
+    write("window_slide", window_slide())
+    write("window_shut", window_shut())
+    write("wind_draft", wind_draft())
 
 
 if __name__ == "__main__":

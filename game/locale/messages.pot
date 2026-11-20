@@ -19,135 +19,135 @@ msgstr ""
 msgid "No te caben más baterías"
 msgstr ""
 
-#: scripts/core/run.gd:412
+#: scripts/core/run.gd:430
 msgid "Algo la sujeta desde el otro lado"
 msgstr ""
 
-#: scripts/core/run.gd:488
+#: scripts/core/run.gd:506
 msgid "Ya llevas una cámara"
 msgstr ""
 
-#: scripts/core/run.gd:499
+#: scripts/core/run.gd:517
 msgid "No llevas baterías"
 msgstr ""
 
-#: scripts/core/run.gd:501
+#: scripts/core/run.gd:519
 msgid "No llevas cámara"
 msgstr ""
 
-#: scripts/core/run.gd:503
+#: scripts/core/run.gd:521
 msgid "La cámara ya está cargada"
 msgstr ""
 
-#: scripts/core/run.gd:510
+#: scripts/core/run.gd:528
 msgid "Batería cargada"
 msgstr ""
 
-#: scripts/core/run.gd:576
+#: scripts/core/run.gd:594
 msgid "Has soltado la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:576
+#: scripts/core/run.gd:594
 msgid "%s ha soltado la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:627
+#: scripts/core/run.gd:645
 msgid "Se oyen cintas rebobinándose por toda la casa"
 msgstr ""
 
-#: scripts/core/run.gd:647
+#: scripts/core/run.gd:665
 msgid "Llevas la cámara (%d%%)"
 msgstr ""
 
-#: scripts/core/run.gd:649
+#: scripts/core/run.gd:667
 msgid "%s lleva la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:653
+#: scripts/core/run.gd:671
 msgid "Batería guardada"
 msgstr ""
 
-#: scripts/core/run.gd:663
+#: scripts/core/run.gd:681
 msgid "¡Tienen todas las cintas! Van a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:666
+#: scripts/core/run.gd:684
 msgid "¡TENÉIS TODAS LAS CINTAS!"
 msgstr ""
 
-#: scripts/core/run.gd:666
+#: scripts/core/run.gd:684
 msgid "¡TIENES TODAS LAS CINTAS!"
 msgstr ""
 
-#: scripts/core/run.gd:667
+#: scripts/core/run.gd:685
 msgid "Salid por la puerta por la que entrasteis"
 msgstr ""
 
-#: scripts/core/run.gd:667
+#: scripts/core/run.gd:685
 msgid "Sal por la puerta por la que entraste"
 msgstr ""
 
-#: scripts/core/run.gd:668
+#: scripts/core/run.gd:686
 msgid "▶ Volved a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:668
+#: scripts/core/run.gd:686
 msgid "▶ Vuelve a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:670
+#: scripts/core/run.gd:688
 msgid "¡Corred a la furgoneta!"
 msgstr ""
 
-#: scripts/core/run.gd:670
+#: scripts/core/run.gd:688
 msgid "¡Corre a la furgoneta!"
 msgstr ""
 
-#: scripts/core/run.gd:672
+#: scripts/core/run.gd:690
 msgid "%s encontró una cinta (%d de %d)"
 msgstr ""
 
-#: scripts/core/run.gd:674
+#: scripts/core/run.gd:692
 msgid "Cinta %d de %d"
 msgstr ""
 
-#: scripts/core/run.gd:703
+#: scripts/core/run.gd:721
 msgid "Se ha ido la luz"
 msgstr ""
 
-#: scripts/core/run.gd:736
+#: scripts/core/run.gd:754
 msgid "Clic: cambiar de cámara"
 msgstr ""
 
-#: scripts/core/run.gd:739
+#: scripts/core/run.gd:757
 msgid "%s ha desaparecido"
 msgstr ""
 
-#: scripts/core/run.gd:748
+#: scripts/core/run.gd:766
 msgid "Solo el anfitrión puede crear bots"
 msgstr ""
 
-#: scripts/core/run.gd:753 scripts/main.gd:191 scripts/ui/menu.gd:286
+#: scripts/core/run.gd:771 scripts/main.gd:191 scripts/ui/menu.gd:286
 msgid "Bot %d"
 msgstr ""
 
-#: scripts/core/run.gd:772
+#: scripts/core/run.gd:790
 msgid "%s se une a la noche"
 msgstr ""
 
-#: scripts/core/run.gd:977
+#: scripts/core/run.gd:995
 msgid "La Visita era %s"
 msgstr ""
 
-#: scripts/core/run.gd:1048
+#: scripts/core/run.gd:1066
 msgid "La Visita se ha desconectado: ahora la controla la casa"
 msgstr ""
 
-#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:153
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:156
 msgid "[E] Cerrar la puerta"
 msgstr ""
 
-#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:154
+#: scripts/entity/entity_pilot.gd:588 scripts/world/door.gd:157
 msgid "[E] Abrir la puerta"
 msgstr ""
 
@@ -531,7 +531,7 @@ msgstr ""
 msgid "LAN"
 msgstr ""
 
-#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:639
+#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:634
 msgid "CRÉDITOS"
 msgstr ""
 
@@ -623,83 +623,83 @@ msgstr ""
 msgid "CHAT DE VOZ"
 msgstr ""
 
-#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:621 scripts/ui/menu.gd:656
+#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:616 scripts/ui/menu.gd:651
 msgid "VOLVER"
 msgstr ""
 
-#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:615
+#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:610
 msgid "CONTROLES Y ACCESIBILIDAD"
 msgstr ""
 
-#: scripts/ui/menu.gd:618
+#: scripts/ui/menu.gd:613
 msgid "WASD moverse · RATÓN mirar · SHIFT correr\nC agacharse · E usar · F linterna · R pilas\nCLIC DCHO cámara · CLIC IZQ flash\nTAB inventario · V hablar · ESC pausa"
 msgstr ""
 
-#: scripts/ui/menu.gd:642
+#: scripts/ui/menu.gd:637
 msgid "UN JUEGO DE"
 msgstr ""
 
-#: scripts/ui/menu.gd:643
+#: scripts/ui/menu.gd:638
 msgid "MÚSICA Y SONIDO"
 msgstr ""
 
-#: scripts/ui/menu.gd:643
+#: scripts/ui/menu.gd:638
 msgid "síntesis propia"
 msgstr ""
 
-#: scripts/ui/menu.gd:644
+#: scripts/ui/menu.gd:639
 msgid "MOTOR"
 msgstr ""
 
-#: scripts/ui/menu.gd:645
+#: scripts/ui/menu.gd:640
 msgid "ONLINE"
 msgstr ""
 
-#: scripts/ui/menu.gd:646
+#: scripts/ui/menu.gd:641
 msgid "FUENTE"
 msgstr ""
 
-#: scripts/ui/menu.gd:654
+#: scripts/ui/menu.gd:649
 msgid "Gracias por grabar con nosotros."
 msgstr ""
 
-#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
+#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: COMPLETA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:691 scripts/ui/pause_menu.gd:151
+#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: VENTANA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:695
+#: scripts/ui/menu.gd:671
 msgid "GRÁFICOS: ALTOS (960x540)"
 msgstr ""
 
-#: scripts/ui/menu.gd:695
+#: scripts/ui/menu.gd:671
 msgid "GRÁFICOS: BAJOS (480x270)"
 msgstr ""
 
-#: scripts/ui/menu.gd:699
+#: scripts/ui/menu.gd:675
 msgid "IDIOMA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:704 scripts/ui/pause_menu.gd:166
+#: scripts/ui/menu.gd:680 scripts/ui/pause_menu.gd:172
 msgid "EL DEL SISTEMA"
 msgstr ""
 
-#: scripts/ui/menu.gd:707
+#: scripts/ui/menu.gd:683
 msgid "ENTRADA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: ABIERTO"
 msgstr ""
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: PULSA V"
 msgstr ""
 
-#: scripts/ui/menu.gd:733
+#: scripts/ui/menu.gd:709
 msgid "MICRÓFONO: APAGADO"
 msgstr ""
 
@@ -719,11 +719,11 @@ msgstr ""
 msgid "SALIR DEL JUEGO"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:79
+#: scripts/ui/pause_menu.gd:85
 msgid "EL ANFITRIÓN HA PAUSADO LA PARTIDA"
 msgstr ""
 
-#: scripts/ui/pause_menu.gd:169
+#: scripts/ui/pause_menu.gd:175
 msgid "MICRÓFONO: %s"
 msgstr ""
 
@@ -897,20 +897,28 @@ msgstr[1] ""
 msgid "SALIDA"
 msgstr ""
 
-#: scripts/world/hide_spot.gd:104
+#: scripts/world/hide_spot.gd:105
 msgid "[E] Salir"
 msgstr ""
 
-#: scripts/world/hide_spot.gd:107
+#: scripts/world/hide_spot.gd:108
 msgid "[E] Esconderse bajo la cama"
 msgstr ""
 
-#: scripts/world/hide_spot.gd:109
+#: scripts/world/hide_spot.gd:110
 msgid "[E] Esconderse bajo la mesa"
 msgstr ""
 
-#: scripts/world/hide_spot.gd:110
+#: scripts/world/hide_spot.gd:111
 msgid "[E] Esconderse en el armario"
+msgstr ""
+
+#: scripts/world/house_window.gd:109
+msgid "[E] Cerrar la ventana"
+msgstr ""
+
+#: scripts/world/house_window.gd:110
+msgid "[E] Abrir la ventana"
 msgstr ""
 
 #: scripts/world/pickup.gd:56
@@ -965,15 +973,15 @@ msgstr ""
 msgid "TE ESTOY VIENDO, %s"
 msgstr ""
 
-#: scripts/world/tv_broadcast.gd:613
+#: scripts/world/tv_broadcast.gd:620
 msgid "● EN DIRECTO"
 msgstr ""
 
-#: scripts/world/tv_broadcast.gd:618
+#: scripts/world/tv_broadcast.gd:625
 msgid "CANAL 9 · SALÓN"
 msgstr ""
 
-#: scripts/world/tv_broadcast.gd:698
+#: scripts/world/tv_broadcast.gd:705
 msgid "PROTECCIÓN CIVIL\nCANAL 9 · SERVICIO PÚBLICO"
 msgstr ""
 

@@ -15,7 +15,12 @@ OUT = Path(__file__).resolve().parent.parent / "game" / "assets" / "textures"
 rng = np.random.default_rng(1989)
 
 
+_REPLACED: set = set()
+
+
 def save(name: str, arr: np.ndarray) -> None:
+    if name in _REPLACED:
+        return
     OUT.mkdir(parents=True, exist_ok=True)
     img = Image.fromarray((np.clip(arr, 0.0, 1.0) * 255).astype(np.uint8))
     img.save(OUT / f"{name}.png")
@@ -608,6 +613,214 @@ def plush() -> np.ndarray:
     return posterize(img, 18)
 
 
+
+def stretched_noise(h: int, w: int, sx: int, cells: int = 6, octaves: int = 3) -> np.ndarray:
+    """Tileable noise stretched `sx` times along x (wood fibres, brushed metal)."""
+    n = fbm(h, max(1, w // sx), cells, octaves)
+    return zoom(n, (1, w / n.shape[1]), order=1, mode="grid-wrap")[:h, :w]
+
+
+def wood(base, rings: float = 1.0, paint=None) -> np.ndarray:
+    """1 m of wood with the grain along x: long fibres, growth rings that
+    bend round the figure, pores in short dark dashes, a knot now and then,
+    varnish worn at the edges. `paint`: old paint over it, chipped."""
+    h, w = 32 * K, 32 * K
+    y, x = grid(h, w)
+    figure = stretched_noise(h, w, 6, 4, 3)
+    ring = np.sin((y + figure * 7 * K * rings + np.sin(x * np.pi * 2 / w) * K) * np.pi / (1.6 * K))
+    late = np.clip(ring, 0, 1) ** 3  # the dark late wood of each ring
+    fibre = stretched_noise(h, w, 12, 10, 3)
+    img = rgb(base, h, w)
+    img = shade(img, 0.9 + 0.12 * fibre - 0.22 * late)
+    pores = (rng.random((h, w)) > 0.985)
+    pores = pores | np.roll(pores, 1, axis=1) | np.roll(pores, 2, axis=1)
+    img[pores] *= 0.82
+    for _ in range(rng.integers(0, 2)):  # a knot, the rings swirling round it
+        kx, ky = rng.integers(0, w), rng.integers(0, h)
+        kd = np.hypot(wrap_d(x, kx, w) * 0.55, wrap_d(y, ky, h))
+        knot = np.clip(1 - kd / (2.6 * K), 0, 1)
+        img = shade(img, 1 - 0.45 * knot ** 0.7 + 0.1 * np.sin(kd * 2.4 / K) * knot)
+    img = shade(img, 0.92 + 0.12 * fbm(h, w, 2, 2))
+    if paint is not None:
+        p = rgb(paint, h, w)
+        p = shade(p, 0.9 + 0.1 * fbm(h, w, 6, 3) - 0.05 * late)  # the grain shows through
+        chips = fbm(h, w, 7, 4)
+        bare = chips > 0.8
+        p[bare] = img[bare]
+        p[(chips > 0.77) & ~bare] *= 0.78  # the paint's broken edge
+        yellow = fbm(h, w, 3, 3)[..., None]
+        img = p * (1 - 0.25 * yellow) + np.array([0.45, 0.38, 0.22]) * 0.25 * yellow
+    img += grain(h, w, 0.025)[..., None]
+    return posterize(img, 24)
+
+
+def curtain() -> np.ndarray:
+    """Heavy curtain velvet, 1 m: a faint vertical rib, faded in bands where
+    the sun reached it for years, moth holes, damp at the hem."""
+    h, w = 32 * K, 32 * K
+    y, x = grid(h, w)
+    img = rgb((0.40, 0.13, 0.12), h, w)
+    img = shade(img, 0.9 + 0.1 * ((x // max(1, K // 2)) % 2))
+    img = shade(img, 0.88 + 0.16 * stretched_noise(w, h, 10, 6, 3).T)  # pile brushed downwards
+    fade_band = np.clip(np.sin(x * np.pi / (8 * K) + fbm(h, w, 3, 2) * 2), 0, 1)[..., None]
+    img = img * (1 - 0.3 * fade_band) + np.array([0.55, 0.36, 0.30]) * 0.3 * fade_band
+    holes = fbm(h, w, 14, 2) > 0.86
+    img[holes] = [0.06, 0.04, 0.04]
+    img += grain(h, w, 0.03)[..., None]
+    return posterize(img, 20)
+
+
+def glass() -> np.ndarray:
+    """One pane (RGBA, mapped 0..1 over it): clear in the middle, grime and
+    dust gathered in the corners and along the bottom bead, rain streaks,
+    a spider web in one corner."""
+    s = 16 * K
+    y, x = grid(s, s)
+    edge = np.minimum(np.minimum(x, s - 1 - x), np.minimum(y, s - 1 - y)) / s
+    a = np.clip(0.55 - edge * 3.2, 0, 1) * (0.6 + 0.6 * fbm(s, s, 5, 3))
+    a += np.clip((y / s - 0.75) * 1.6, 0, 1) * 0.35  # dust settled on the bottom
+    for _ in range(9):  # dried rain runs
+        sx = rng.integers(0, s)
+        run = (np.abs(x - sx - np.sin(y / (2 * K)) * K * 0.6) < 0.6 * K) & (y > rng.integers(0, s // 2))
+        a[run] += 0.05
+    web = np.hypot(x, y) / s
+    ang = np.arctan2(y, x)
+    spokes = (np.abs(np.sin(ang * 7)) < 0.08) | (np.abs(np.sin(web * 40)) < 0.06)
+    a[(web < 0.32) & spokes] += 0.3
+    a = np.clip(a + grain(s, s, 0.05), 0.04, 0.85)
+    col = rgb((0.42, 0.40, 0.34), s, s) * (0.8 + 0.3 * fbm(s, s, 6, 2))[..., None]
+    return np.dstack([posterize(col, 16), np.round(a * 15) / 15])
+
+
+def outside() -> np.ndarray:
+    """What the windows look out on, 16 m wide x 16 m tall at 32 px/m (it is
+    far, behind the glass): the night sky with a few stars, a black line of
+    trees, the neighbours' roof with one lit window, a picket fence and long
+    grass. Tiles left to right."""
+    h, w = 512, 512
+    y, x = grid(h, w)
+    sky_t = y / h
+    img = np.array([0.020, 0.026, 0.050]) + np.array([0.05, 0.06, 0.09]) * (sky_t ** 1.6)[..., None]
+    img = shade(img, 0.9 + 0.2 * fbm(h, w, 3, 3))  # thin cloud
+    stars = (rng.random((h, w)) > 0.9985) & (y < h * 0.6)
+    img[stars] = [0.45, 0.48, 0.55]
+    # (No moon in it: the backdrop repeats round the house, a moon would too.)
+    ground = h - 1 - 0.25 * 32  # 0.25 m of ground at the bottom
+    trees = y > ground - 2.5 * 32
+    for _ in range(70):  # round crowns, wrapping round
+        cx, r = rng.integers(0, w), rng.uniform(1.0, 2.4) * 32
+        cy = ground - rng.uniform(3.2, 6.0) * 32
+        wob = 1 + 0.12 * np.sin(np.arctan2(y - cy, wrap_d(x, cx, w)) * 7 + rng.random() * 6)
+        trees |= np.hypot(wrap_d(x, cx, w), y - cy) < r * wob
+        trees |= (wrap_d(x, cx, w) < 4) & (y > cy)
+    img[trees] = np.array([0.010, 0.014, 0.018]) * (0.8 + 0.4 * fbm(h, w, 20, 2)[trees])[..., None]
+    # The neighbours' house between the trees: a roof and one lit window.
+    hx0, hx1 = 270, 400
+    roof = ground - 4.6 * 32 + np.abs(x - (hx0 + hx1) / 2) * 0.6
+    house = (x >= hx0) & (x < hx1) & (y > roof)
+    img[house] = [0.022, 0.022, 0.030]
+    lit = (x >= 318) & (x < 326) & (y > ground - 3.2 * 32) & (y < ground - 2.8 * 32)
+    img[lit] = [0.55, 0.38, 0.16]
+    img[lit & (x == 322)] *= 0.4
+    glow = np.exp(-(((x - 322) / 22) ** 2 + ((y - (ground - 3.0 * 32)) / 16) ** 2))
+    img += np.array([0.08, 0.05, 0.02]) * glow[..., None]
+    # The fence: pickets 0.12 m every 0.25 m, 1.1 m tall, two rails, a few
+    # missing or leaning; the moon catches their tops.
+    fence_top = ground - 1.1 * 32
+    pick = (x % 8) < 4
+    gone = (np.sin(x // 8 * 12.9898) * 43758.5) % 1 > 0.88
+    tip = fence_top + np.abs((x % 8) - 1.5) * 0.8
+    fence = pick & ~gone & (y > tip) & (y < ground)
+    rails = ((np.abs(y - (ground - 0.3 * 32)) < 1.5) | (np.abs(y - (ground - 0.85 * 32)) < 1.5))
+    img[fence | (rails & (y < ground))] = [0.06, 0.065, 0.075]
+    img[fence & (y < tip + 2)] = [0.16, 0.18, 0.24]
+    grass = y > ground - (0.2 + 0.25 * fbm(1, w, 64, 2)[0]) * 32 + 3 * np.sin(x * 1.7)
+    img[grass] = np.array([0.025, 0.035, 0.028]) * (0.7 + 0.6 * fbm(h, w, 30, 2)[grass])[..., None]
+    img += grain(h, w, 0.01)[..., None]
+    return posterize(img * 2.2, 40)  # (drawn unlit: bright enough to read behind the glass)
+
+
+def counter() -> np.ndarray:
+    """Kitchen worktop laminate: cream with grey and ochre flecks, worn pale
+    along the front, knife scores, a cigarette burn, rings from mugs."""
+    h, w = 32 * K, 32 * K
+    y, x = grid(h, w)
+    img = rgb((0.70, 0.64, 0.50), h, w)
+    img = shade(img, 0.93 + 0.08 * fbm(h, w, 4, 3))
+    for col, p in (((0.42, 0.40, 0.36), 0.03), ((0.62, 0.48, 0.26), 0.02), ((0.82, 0.78, 0.66), 0.03)):
+        f = rng.random((h, w)) < p
+        f = f | (np.roll(f, 1, 1) & (rng.random((h, w)) < 0.5))
+        img[f] = col
+    for _ in range(14):  # knife scores
+        sx, sy = rng.integers(0, w), rng.integers(0, h)
+        ln = rng.integers(3 * K, 9 * K)
+        a = rng.uniform(-0.4, 0.4)
+        for i in range(ln):
+            img[int(sy + i * a) % h, (sx + i) % w] *= 0.8
+    for _ in range(3):  # mug rings
+        cx, cy, r = rng.integers(0, w), rng.integers(0, h), rng.uniform(1.6, 2.4) * K
+        d = np.hypot(wrap_d(x, cx, w), wrap_d(y, cy, h))
+        img[np.abs(d - r) < 0.5 * K] *= 0.86
+    cx, cy = rng.integers(0, w), rng.integers(0, h)
+    burn = np.hypot(wrap_d(x, cx, w) * 0.6, wrap_d(y, cy, h))
+    img = shade(img, 1 - 0.6 * np.clip(1 - burn / (1.4 * K), 0, 1))
+    img += grain(h, w, 0.02)[..., None]
+    return posterize(img, 24)
+
+
+def brass() -> np.ndarray:
+    """Old brass: brushed along x, tarnished brown-green in the hollows,
+    rubbed bright where hands touch."""
+    h, w = 32 * K, 32 * K
+    img = rgb((0.66, 0.52, 0.24), h, w)
+    img = shade(img, 0.85 + 0.25 * stretched_noise(h, w, 16, 20, 2))
+    tarnish = fbm(h, w, 4, 4)[..., None]
+    img = img * (1 - 0.6 * np.clip(tarnish - 0.45, 0, 1) * 2) + np.array([0.22, 0.24, 0.14]) * 0.6 * np.clip(tarnish - 0.45, 0, 1) * 2
+    img += grain(h, w, 0.03)[..., None]
+    return posterize(img, 24)
+
+
+def linen() -> np.ndarray:
+    """Bed linen gone grey: a fine plain weave, a faded pinstripe, yellow
+    stains and creases."""
+    h, w = 32 * K, 32 * K
+    y, x = grid(h, w)
+    img = rgb((0.72, 0.70, 0.64), h, w)
+    img = shade(img, 0.94 + 0.06 * (((x // 2) + (y // 2)) % 2))
+    img = shade(img, np.where((x % (6 * K)) < max(1, K // 2), 0.86, 1.0))
+    crease = np.abs(np.sin((x * 0.3 + y) / (5 * K) + fbm(h, w, 3, 2) * 4))
+    img = shade(img, 0.9 + 0.1 * crease)
+    stain = np.clip(fbm(h, w, 3, 4) - 0.62, 0, 1)[..., None] * 1.6
+    img = img * (1 - stain) + np.array([0.62, 0.52, 0.30]) * stain
+    img += grain(h, w, 0.025)[..., None]
+    return posterize(img, 22)
+
+
+def plastic() -> np.ndarray:
+    """Black bakelite and plastic: a soft mottle, fine scratches."""
+    h, w = 32 * K, 32 * K
+    img = rgb((0.09, 0.09, 0.1), h, w)
+    img = shade(img, 0.85 + 0.3 * fbm(h, w, 5, 3))
+    scratch = (stretched_noise(h, w, 24, 30, 1) > 0.9) & (rng.random((h, w)) > 0.5)
+    img[scratch] *= 1.35
+    img += grain(h, w, 0.012)[..., None]
+    return posterize(img, 24)
+
+
+def window_cookie2() -> np.ndarray:
+    """Moonlight through a sash window, two over two (spot light projector):
+    the meeting rail across, a glazing bar down each sash, the grime on the
+    glass dimming the corners."""
+    s = 64
+    y, x = grid(s, s)
+    v = np.ones((s, s)) * 0.95
+    v[(np.abs(x - 32) < 2) | (np.abs(y - 32) < 3)] = 0.0
+    edge = np.minimum(np.minimum(x, s - 1 - x), np.minimum(y, s - 1 - y))
+    v *= np.clip(edge / 5, 0, 1)
+    v *= 0.8 + 0.2 * seamless(s, s, 3, 3)
+    return np.stack([v, v, v], axis=-1)
+
+
 # Textures added later: each from its own seed, so generating only them
 # (python tools/gen_textures.py books enamel ...) gives the same result as
 # a full run and the older ones never change.
@@ -617,6 +830,19 @@ LATER = {
     "plush": plush,
     "dressform": dressform,
     "wallpaper_study": lambda: wallpaper((0.17, 0.25, 0.21), (0.52, 0.44, 0.25), "stripes"),
+    # The windows (real openings since 2026-11-20) and the night outside.
+    "window_frame": lambda: wood((0.40, 0.29, 0.18), 0.8, paint=(0.76, 0.73, 0.64)),
+    "curtain": curtain,
+    "glass": glass,
+    "outside": outside,
+    "window_cookie": window_cookie2,
+    # Second pass on the weakest materials (they replace the first ones).
+    "wood_trim": lambda: wood((0.42, 0.28, 0.16), 1.0),
+    "wood_dark": lambda: wood((0.24, 0.15, 0.09), 1.3),
+    "counter": counter,
+    "brass": brass,
+    "linen": linen,
+    "plastic": plastic,
 }
 
 
@@ -626,6 +852,7 @@ def later(names) -> None:
         if names and name not in names:
             continue
         rng = np.random.default_rng(7000 + i)
+        _REPLACED.discard(name)
         save(name, LATER[name]())
 
 
@@ -635,6 +862,8 @@ def main() -> None:
         later(sys.argv[1:])
         return
     print("textures ->", OUT)
+    _REPLACED.update(LATER)  # made below by later(), from their own seeds
+    _REPLACED.add("window")  # the old flat painted window (real openings now)
     save("wallpaper", wallpaper())
     save("wallpaper_kid", wallpaper((0.42, 0.50, 0.58), (0.80, 0.72, 0.35), "stars"))
     save("wallpaper_bed", wallpaper((0.42, 0.24, 0.22), (0.62, 0.52, 0.36), "stripes"))

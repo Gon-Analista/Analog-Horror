@@ -11,12 +11,17 @@ extends RefCounted
 ##   opening above it) · k counter · t table · s sofa · b bed · w wardrobe
 ##   V television · c boxes · h bookcase / shelves · a bath · m fridge or
 ##   washer · n figure (a dress form; the show's bear in the playroom)
+##   q studio camera on its pedestal (the station)
 ##   L lamp · l dead lamp · T tape · B battery · P player · E entity
 ## Cells are Vector3i(x, floor, z).
 
-const FURNITURE_CHARS := "kstbwVchamn"
+const FURNITURE_CHARS := "kstbwVchamnq"
 const DIRS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
+## What was generated: "house" (HouseGenerator, the first night) or
+## "station" (StationGenerator, Canal 9's studios, the second night). The
+## Level dresses the same grid differently for each.
+var kind := "house"
 var width := 0
 var depth := 0
 var floors := 1
@@ -88,11 +93,12 @@ func is_walkable(c: Vector3i) -> bool:
 	return not is_solid_char(ch) and not FURNITURE_CHARS.contains(ch) and ch != "S"
 
 
-func neighbours(c: Vector3i) -> Array[Vector3i]:
+## `avoid`: chars it may not step on (The Husk: "U", the boarded doorways).
+func neighbours(c: Vector3i, avoid := "") -> Array[Vector3i]:
 	var out: Array[Vector3i] = []
 	for d in DIRS:
 		var n := c + Vector3i(d.x, 0, d.y)
-		if is_walkable(n):
+		if is_walkable(n) and (avoid == "" or not avoid.contains(char_at(n))):
 			out.append(n)
 	for s in stairs:
 		if s.bottom == c:
@@ -119,7 +125,7 @@ func nearest_walkable(c: Vector3i) -> Vector3i:
 
 ## Cells to walk from `from` to `to` (the first element is the next cell).
 ## Empty if already there or unreachable. BFS: cheap on houses this size.
-func path(from: Vector3i, to: Vector3i) -> Array[Vector3i]:
+func path(from: Vector3i, to: Vector3i, avoid := "") -> Array[Vector3i]:
 	var result: Array[Vector3i] = []
 	if from == to or not is_walkable(from) or not is_walkable(to):
 		return result
@@ -131,7 +137,7 @@ func path(from: Vector3i, to: Vector3i) -> Array[Vector3i]:
 		head += 1
 		if c == to:
 			break
-		for n in neighbours(c):
+		for n in neighbours(c, avoid):
 			if not prev.has(n):
 				prev[n] = c
 				queue.append(n)
@@ -145,14 +151,14 @@ func path(from: Vector3i, to: Vector3i) -> Array[Vector3i]:
 
 
 ## Steps from `start` to every reachable cell.
-func distances(start: Vector3i) -> Dictionary:
+func distances(start: Vector3i, avoid := "") -> Dictionary:
 	var dist := {start: 0}
 	var queue: Array[Vector3i] = [start]
 	var head := 0
 	while head < queue.size():
 		var c := queue[head]
 		head += 1
-		for n in neighbours(c):
+		for n in neighbours(c, avoid):
 			if not dist.has(n):
 				dist[n] = int(dist[c]) + 1
 				queue.append(n)
@@ -186,6 +192,8 @@ func validate() -> PackedStringArray:
 				problems.append("%s at %s unreachable" % [ch, c])
 	if find_all("X").size() != 1:
 		problems.append("no single exit")
-	if find_all("V").size() != 1:
+	if kind == "house" and find_all("V").size() != 1:
 		problems.append("no single TV")
+	if kind == "station" and find_all("E").size() != 1:
+		problems.append("no single entity spot")
 	return problems

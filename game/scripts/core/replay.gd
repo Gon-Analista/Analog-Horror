@@ -70,6 +70,7 @@ var _bodies := {}  # peer id -> Node3D (a limp body, dragged as it was)
 var _ent: Sprite3D
 var _ent_face: Sprite3D
 var _ent_model: EntityModel
+var _husk: HuskModel
 var _restore := {}
 var _gap := 0.0
 
@@ -124,6 +125,8 @@ func _sample() -> Array:
 	local.origin -= _pull_of(e, e.viewer.camera.global_position if e.viewer else e.global_position)
 	var ent := [e.global_position, e.state != Entity.State.DORMANT and not e.gone, local, s.frame, s.region_enabled, s.region_rect, s.hframes, s.vframes,
 			s.offset, s.billboard, s.flip_h, s.modulate, e._face.visible, e._face.transform, e._face.region_rect, e.model_args.duplicate()]
+	if e is Husk:
+		ent.append([(e as Husk)._shown_look, (e as Husk)._shown_yaw])  # [16]: only its shadow is on the tape
 	var doors := 0
 	for i in run.level.doors.size():
 		if run.level.doors[i].is_open:
@@ -347,7 +350,7 @@ func _begin() -> void:
 	_root.name = "ReplayStage"
 	world.add_child(_root)
 	_camera = Camera3D.new()
-	_camera.cull_mask = run.local_player.camera.cull_mask & ~(ViewModel.LAYER_MASK | PlayerAvatar.SELF_LAYER)
+	_camera.cull_mask = run.local_player.camera.cull_mask & ~(ViewModel.LAYER_MASK | PlayerAvatar.SELF_LAYER | HuskModel.NAKED_LAYER)
 	_camera.near = 0.05
 	_root.add_child(_camera)
 	_camera.current = true
@@ -386,7 +389,12 @@ func _begin() -> void:
 	_ent_face = run.entity._face.duplicate(0) as Sprite3D
 	_ent_face.layers = 1
 	_root.add_child(_ent_face)
-	if Entity.is_3d():
+	if run.entity is Husk:
+		_husk = HuskModel.new()
+		_husk.setup(HuskModel.Pose.SLUMP, false)
+		_husk.set_shadow_only(true)  # (the tape never shows it: its shadow does)
+		_root.add_child(_husk)
+	elif Entity.is_3d():
 		var holder := Node3D.new()  # (the puppet places itself on its parent, like on the entity)
 		_root.add_child(holder)
 		_ent_model = EntityModel.new()
@@ -397,6 +405,7 @@ func _end_playback() -> void:
 	if _root:
 		_root.queue_free()
 		_root = null
+		_husk = null
 	_puppets.clear()
 	_bodies.clear()
 	var shown: Dictionary = _restore.get("shown", {})
@@ -543,6 +552,12 @@ func _apply_frame(snap: bool) -> void:
 		pull = to.normalized() * minf(0.45, to.length() * 0.35)
 	_ent.global_transform = Transform3D(local.basis, at + local.origin + pull)
 	_ent_face.visible = ea[12] and ea[1]
+	if _husk and ea.size() > 16:
+		_ent.visible = false
+		_ent_face.visible = false
+		_husk.global_position = at
+		_husk.set_pose(ea[16][0])
+		_husk.rotation.y = ea[16][1]
 	if _ent_model and is_instance_valid(_ent_model):
 		var args: Array = ea[15] if ea.size() > 15 else []
 		_ent.visible = false

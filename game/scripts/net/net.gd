@@ -35,6 +35,10 @@ var entity_choice := 0
 ## VERSUS: who plays it this night (sent with the start).
 var entity_peer := 0
 var _last_entity := 0
+## Which night (propuesta): 0 the house and the Visita, 1 Canal 9's
+## studios and The Husk. The host picks it; sent with the start.
+enum Night { HOUSE, STATION }
+var night := Night.HOUSE
 ## Crew members played by the house (CrewBot), added in the lobby: the room
 ## fills up to 4 with them. Sent with the start.
 var bot_count := 0
@@ -191,7 +195,7 @@ func start_game(p_seed: int) -> void:
 	_starting = false
 	var who := 0
 	bot_count = clampi(bot_count, 0, MAX_PLAYERS - players.size())
-	if game_mode == GameMode.VERSUS and players.size() + bot_count >= 2:
+	if game_mode == GameMode.VERSUS and players.size() + bot_count >= 2 and night == Night.HOUSE:
 		if players.has(entity_choice):
 			who = entity_choice
 		else:
@@ -200,7 +204,7 @@ func start_game(p_seed: int) -> void:
 				ids.erase(_last_entity)
 			who = ids[randi() % ids.size()]
 		_last_entity = who
-	_start.rpc(p_seed, tape_count, game_mode, who, bot_count)
+	_start.rpc(p_seed, tape_count, game_mode, who, bot_count, night)
 
 
 ## A line in user://net_log.txt (what each machine saw of the session).
@@ -311,8 +315,9 @@ func _resync() -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func _start(p_seed: int, tapes: int, p_mode := 0, p_entity := 0, p_bots := 0) -> void:
+func _start(p_seed: int, tapes: int, p_mode := 0, p_entity := 0, p_bots := 0, p_night := 0) -> void:
 	bot_count = p_bots
+	night = p_night as Night
 	run_seed = p_seed
 	tape_count = tapes
 	game_mode = p_mode as GameMode

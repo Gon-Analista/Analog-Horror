@@ -788,7 +788,9 @@ static func _exits(L: HouseLayout, room: int) -> int:
 
 ## Boards across a doorway or two between rooms (crouch to pass), only
 ## where the rooms stay connected another way.
-static func _board_doors(L: HouseLayout, rng: RandomNumberGenerator, count: int) -> void:
+## `avoid`: "U" to count the boarded doorways already placed as walls too
+## (the station: nobody gets through them, The Husk included).
+static func _board_doors(L: HouseLayout, rng: RandomNumberGenerator, count: int, avoid := "") -> void:
 	var doors := L.find_all("D")
 	_shuffle(doors, rng)
 	for c in doors:
@@ -809,7 +811,7 @@ static func _board_doors(L: HouseLayout, rng: RandomNumberGenerator, count: int)
 			if L.is_walkable(n):
 				if some.x < 0:
 					some = n
-				elif not L.distances(some).has(n):
+				elif not L.distances(some, avoid).has(n):
 					some = Vector3i(-2, -2, -2)
 		L.set_char(c, "D" if some.x == -2 else "U")
 		if some.x != -2:

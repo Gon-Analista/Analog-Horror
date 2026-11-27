@@ -15,6 +15,10 @@ var _credits: Label
 var _caught_text := ""
 var _win_tv_nodes: Array[CanvasItem] = []
 var _thanks: Label
+## The second night (Canal 9, The Husk): its own briefing and tape label.
+var station := false
+## The end of the first night offers the second (host: N).
+var offer_station := false
 
 
 func _ready() -> void:
@@ -40,6 +44,12 @@ func show_intro(player_count: int, tapes: int, entity_name := "") -> void:
 	var crew := tr("EQUIPO DE %d") % player_count if player_count > 1 else tr("VAS SOLO")
 	if entity_name != "":
 		crew += " · " + tr("LA VISITA ES %s") % entity_name.to_upper()
+	if station:
+		# The second night: the master tapes, the costume, the loading dock.
+		_show(Color.BLACK, tr("15-OCT-1989 · 03:10 · CANAL 9 · ESTUDIOS · %s\n\n1. ENCUENTRA %d MÁSTERES DEL PROGRAMA\n2. SAL POR EL MUELLE DE CARGA\n\nEl disfraz no se mueve si lo miras. La cámara no lo ve: tus ojos sí.\n\nCLIC DCHO: cámara · CLIC IZQ: flash · E: usar / esconderse · TAB: inventario\n\n(clic para empezar)") % [crew, tapes])
+		_text.add_theme_font_size_override("font_size", FONT_SIZE - 3)
+		_waiting_intro = true
+		return
 	# Three steps and the one rule; the rest is learned by playing (the TV
 	# shows what the flash does).
 	_show(Color.BLACK, tr("14-OCT-1989 · 23:52 · CALLE OLMOS 14 · %s\n\n1. INVESTIGA LA EXTRAÑA MÚSICA\n2. ENCUENTRA %d CINTAS\n3. VUELVE A LA FURGONETA\n\nAlgo vive en esta casa. Solo la cámara lo ve.\n\nCLIC DCHO: cámara · CLIC IZQ: flash · E: usar / esconderse · TAB: inventario\n\n(clic para empezar)") % [crew, tapes])
@@ -98,7 +108,7 @@ func show_escaped(tapes: int, needed: int, time: float, crew: int, escaper: Stri
 	col.add_theme_constant_override("separation", 3)
 	add_child(col)
 	col.add_child(_win_label(tr("CINTA RECUPERADA"), 20, WIN_ACCENT))
-	col.add_child(_win_label(tr("14-OCT-89 · «¡TE ESTOY VIENDO!»"), 11, WIN_DIM))
+	col.add_child(_win_label(tr("15-OCT-89 · CANAL 9 · MÁSTERES") if station else tr("14-OCT-89 · «¡TE ESTOY VIENDO!»"), 11, WIN_DIM))
 	var lines := [tr("Cintas: %d/%d") % [tapes, needed], tr("Tiempo: %s") % _clock(time)]
 	if crew > 1:
 		lines.append(tr("Salió primero: %s") % escaper)
@@ -245,6 +255,8 @@ static func _corrupt(word: String) -> String:
 
 
 func _next_line(is_host: bool) -> String:
+	if is_host and offer_station:
+		return tr("R: otra noche · N: la emisora · M: menú")
 	return tr("R: otra noche · M: menú") if is_host else tr("Esperando al anfitrión · M: menú")
 
 

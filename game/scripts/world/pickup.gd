@@ -11,13 +11,16 @@ var kind := Kind.TAPE
 ## CAMERA: charge left (0-100) and whether it was left by a victim.
 var battery := 100.0
 var recording := false
+## TAPE at Canal 9: a U-matic master of the programme, not a VHS copy.
+var master := false
 var _led: Node3D
 var _glow: OmniLight3D
 
 
-static func create(p_kind: Kind) -> Pickup:
+static func create(p_kind: Kind, p_master := false) -> Pickup:
 	var p := Pickup.new()
 	p.kind = p_kind
+	p.master = p_master and p_kind == Kind.TAPE
 	return p
 
 
@@ -53,7 +56,7 @@ func _ready() -> void:
 func prompt() -> String:
 	match kind:
 		Kind.TAPE:
-			return tr("[E] Recoger cinta")
+			return tr("[E] Recoger máster") if master else tr("[E] Recoger cinta")
 		Kind.CAMERA:
 			return tr("[E] Coger la cámara (%d%%)") % int(battery)
 	return tr("[E] Recoger batería")
@@ -75,7 +78,7 @@ func _build_camera() -> void:
 
 
 func _build_tape() -> void:
-	var model := GearModels.tape()
+	var model := GearModels.umatic() if master else GearModels.tape()
 	model.rotation.y = randf() * TAU
 	add_child(model)
 	_no_shadow(model)

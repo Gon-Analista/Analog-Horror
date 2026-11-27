@@ -204,6 +204,49 @@ static func tape() -> Node3D:
 	return root
 
 
+## A U-matic master (Canal 9): a big grey studio cassette, lying flat,
+## the reel window on top, the paper label along the spine.
+static func umatic() -> Node3D:
+	var root := Node3D.new()
+	root.name = "UmaticModel"
+	var plastic := StandardMaterial3D.new()
+	plastic.albedo_color = Color(0.16, 0.16, 0.17)
+	plastic.roughness = 0.45
+	var shell := _box(Vector3(0.22, 0.032, 0.14), plastic)
+	shell.position.y = 0.016
+	root.add_child(shell)
+	var window := _box(Vector3(0.13, 0.002, 0.05), flat(Color(0.08, 0.08, 0.09)))
+	window.position = Vector3(0.0, 0.0325, 0.01)
+	root.add_child(window)
+	for x: float in [-0.04, 0.04]:
+		var reel := _cyl(0.02, 0.02, 0.003, flat(Color(0.75, 0.75, 0.72)))
+		reel.position = Vector3(x, 0.0332, 0.01)
+		root.add_child(reel)
+	var paper := StandardMaterial3D.new()
+	paper.albedo_texture = load("res://assets/textures/tape_label.png")
+	paper.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	paper.emission_enabled = true  # a faint glow: something there, in the dark
+	paper.emission_texture = paper.albedo_texture
+	paper.emission_energy_multiplier = 0.12
+	var top_label := MeshInstance3D.new()
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.18, 0.03)
+	top_label.mesh = quad
+	top_label.material_override = paper
+	top_label.rotation.x = -PI / 2
+	top_label.position = Vector3(0.0, 0.0328, -0.045)
+	root.add_child(top_label)
+	var spine := MeshInstance3D.new()
+	var sq := QuadMesh.new()
+	sq.size = Vector2(0.17, 0.022)
+	spine.mesh = sq
+	spine.material_override = paper
+	spine.position = Vector3(0.0, 0.016, 0.0705)
+	root.add_child(spine)
+	MeshMerge.merge_children(root, [], "umatic")
+	return root
+
+
 static func _box(size: Vector3, m: Material) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var b := BoxMesh.new()

@@ -47,6 +47,8 @@ var _room: Label
 var _list: GridContainer
 var _start: Button
 var _lobby_tapes: Button
+var _main_night: Button
+var _lobby_night: Button
 var _lobby_mode: Button
 var _lobby_bots: Button
 
@@ -290,6 +292,9 @@ func _refresh_lobby() -> void:
 	_name_row.visible = false  # (your name is in the list)
 	_start.visible = Net.is_host()
 	_lobby_tapes.visible = Net.is_host()
+	_lobby_night.visible = Net.is_host()
+	_lobby_night.text = _lobby_night.text.left(2) + _night_label()
+	_main_night.text = _main_night.text.left(2) + _night_label()
 	_lobby_mode.visible = Net.is_host()
 	if not Net.players.has(Net.entity_choice):
 		Net.entity_choice = 0
@@ -402,6 +407,8 @@ func _build() -> void:
 	col.add_child(_main_box)
 	_main_box.add_child(_button(tr("JUGAR SOLO"), _solo))
 	_main_box.add_child(_tapes_button())
+	_main_night = _night_button()
+	_main_box.add_child(_main_night)
 	_main_box.add_child(_button(tr("OPCIONES"), func() -> void: _show_options(true)))
 	_main_box.add_child(_button(tr("CREAR SALA ONLINE"), _host))
 	_join_box = HBoxContainer.new()
@@ -437,7 +444,12 @@ func _build() -> void:
 	_list.add_theme_constant_override("h_separation", 14)
 	_lobby_box.add_child(_list)
 	_lobby_tapes = _tapes_button()
-	_lobby_box.add_child(_lobby_tapes)
+	var tapes_row := HBoxContainer.new()  # (the tapes and the night on one line)
+	tapes_row.add_theme_constant_override("separation", 6)
+	_lobby_box.add_child(tapes_row)
+	tapes_row.add_child(_lobby_tapes)
+	_lobby_night = _night_button()
+	tapes_row.add_child(_lobby_night)
 	# The night: all against the house, or one of you is the entity (at
 	# random or someone in particular): one button goes round them all.
 	_lobby_mode = _button(_mode_label(), func() -> void:
@@ -493,6 +505,22 @@ func _tapes_button() -> Button:
 			step.call(-1))
 	b.tooltip_text = tr("Clic: más cintas · clic derecho: menos")
 	return b
+
+
+## Which night (propuesta): the house and the Visita, or Canal 9's studios
+## and The Husk.
+func _night_button() -> Button:
+	var b := _button(_night_label(), func() -> void: pass)
+	b.pressed.connect(func() -> void:
+		Net.night = Net.Night.STATION if Net.night == Net.Night.HOUSE else Net.Night.HOUSE
+		b.text = b.text.left(2) + _night_label()
+		_refresh_lobby())
+	b.tooltip_text = tr("Noche 1: la casa y la Visita · noche 2: la emisora y The Husk")
+	return b
+
+
+func _night_label() -> String:
+	return tr("NOCHE 1 · LA CASA") if Net.night == Net.Night.HOUSE else tr("NOCHE 2 · LA EMISORA")
 
 
 func _mode_label() -> String:

@@ -9,6 +9,8 @@ extends Node
 ##   --tapes N       tapes to recover (5-12, the house grows with it)
 ##   --shots <dir>   fixed camera tour that saves screenshots and quits
 ##   --smoke         checks the core rules headless and quits
+##   --station       the second night (Canal 9, The Husk); with --smoke or
+##                   --shots, its own checks and tour
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 
@@ -43,21 +45,40 @@ func _ready() -> void:
 	if t >= 0 and t + 1 < args.size():
 		Net.tape_count = int(args[t + 1])
 	Net.tape_count = clampi(Net.tape_count, HouseGenerator.MIN_TAPES, HouseGenerator.MAX_TAPES)
+	if args.has("--station"):
+		Net.night = Net.Night.STATION
 	if i < 0 and (args.has("--smoke") or args.has("--shots")):
 		run_seed = 1
-	# The house: generated from the run's seed, sized for the tapes.
-	level.build(HouseGenerator.generate(run_seed, Net.tape_count), run_seed)
-	var tv := TvBroadcast.new()
-	tv.name = "TV"  # same path on every machine: its state is replicated
-	level.add_child(tv)
-	tv.place(level)
+	var station := Net.night == Net.Night.STATION
+	var tv: TvBroadcast = null
+	if station:
+		# The second night: Canal 9's studios, and The Husk in place of the
+		# Visita (the same node name and path on every machine).
+		var husk := (load("res://scenes/husk.tscn") as PackedScene).instantiate() as Husk
+		var at := entity.get_index()
+		entity.name = "VisitaUnused"
+		world.remove_child(entity)
+		entity.queue_free()
+		husk.name = "Entity"
+		world.add_child(husk)
+		world.move_child(husk, at)
+		entity = husk
+		level.build(StationGenerator.generate(run_seed, Net.tape_count), run_seed)
+	else:
+		# The house: generated from the run's seed, sized for the tapes.
+		level.build(HouseGenerator.generate(run_seed, Net.tape_count), run_seed)
+		tv = TvBroadcast.new()
+		tv.name = "TV"  # same path on every machine: its state is replicated
+		level.add_child(tv)
+		tv.place(level)
 	var players := _spawn_players()
 	if player == null:
 		# (Should not happen: Net waits for our place in the roster.)
 		Net.log_line("no body for my id %d in %s" % [multiplayer.get_unique_id(), Net.players.keys()])
 		Net.end_session.call_deferred(tr("No se pudo entrar en la partida"))
 		return
-	tv.viewer = player
+	if tv:
+		tv.viewer = player
 	run.setup(level, players, player, entity, tv, screens)
 	if multiplayer.is_server():
 		for p: Player in players.values():
@@ -90,9 +111,15 @@ func _ready() -> void:
 	voice.setup(run)
 	entity.voices = voice
 	$UILayer/Hud.voice = voice
+	if station:
+		var night := StationNight.new()
+		night.name = "StationNight"
+		$UILayer.add_child(night)
+		$UILayer.move_child(night, 0)  # (under the viewfinder and the HUD)
+		night.setup(run, entity as Husk)
 	var ambience := AudioStreamPlayer.new()
-	ambience.stream = Sfx.get_stream("house_ambience", true)
-	ambience.volume_db = -20.0  # the air of the house: there, but under everything
+	ambience.stream = Sfx.get_stream("station_ambience" if station else "house_ambience", true)
+	ambience.volume_db = -18.0 if station else -20.0  # the air of the place: there, but under everything
 	ambience.bus = "Effects"
 	add_child(ambience)
 	ambience.play()
@@ -102,7 +129,12 @@ func _ready() -> void:
 
 	run.tapes_needed = Net.tape_count
 	var shots := args.find("--shots")
-	if args.has("--smoke"):
+	if station and (args.has("--smoke") or shots >= 0):
+		run.start(run_seed, true)
+		var st := StationTest.new()
+		add_child(st)
+		st.run_test(self, args[shots + 1] if shots >= 0 and shots + 1 < args.size() else "")
+	elif args.has("--smoke"):
 		run.start(run_seed, true)
 		var smoke := SmokeTest.new()
 		add_child(smoke)

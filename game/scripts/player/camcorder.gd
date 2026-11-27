@@ -82,6 +82,12 @@ func _process(delta: float) -> void:
 		cam.cull_mask |= Entity.LAYER_MASK
 	else:
 		cam.cull_mask &= ~Entity.LAYER_MASK
+	# The Husk is the other way round: the eye sees it, the tape does not
+	# (only its shadow). Taken, you see it whatever you hold.
+	if filming and not reveal:
+		cam.cull_mask &= ~HuskModel.NAKED_LAYER
+	else:
+		cam.cull_mask |= HuskModel.NAKED_LAYER
 
 
 func add_battery(amount: float) -> void:

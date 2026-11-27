@@ -104,7 +104,8 @@ func start(p_seed: int, skip_intro := false) -> void:
 	if multiplayer.is_server():
 		entity.caught.connect(_on_caught)
 		entity.moment.connect(_moment)
-		tv.alert_started.connect(func() -> void: _alert_at = time)
+		if tv:
+			tv.alert_started.connect(func() -> void: _alert_at = time)
 	Net.players_changed.connect(_on_players_changed)
 	tapes_changed.emit(tapes_got, tapes_needed)
 	if entity_peer == local_player.peer_id:
@@ -116,6 +117,7 @@ func start(p_seed: int, skip_intro := false) -> void:
 	if pilot:
 		screens.show_pilot_intro(players.size() - 1, tapes_needed)
 	else:
+		screens.station = level.is_station()
 		screens.show_intro(players.size() - (1 if entity_peer else 0), tapes_needed, Net.name_of(entity_peer) if entity_peer else "")
 	await screens.intro_done
 	local_player.input_enabled = pilot == null
@@ -148,14 +150,18 @@ func _process(delta: float) -> void:
 	time += delta
 	if multiplayer.is_server():
 		_host_tick(delta)
-	if reading and not local_player.seated and local_player.global_position.distance_to(tv.global_position) > Tuning.READ_RANGE:
+	if reading and tv and not local_player.seated and local_player.global_position.distance_to(tv.global_position) > Tuning.READ_RANGE:
 		_close_reading()
 	_disturb()
 
 
 func _host_tick(delta: float) -> void:
 	# The alert cutting into the show is what wakes it; if nobody watches
-	# the TV, the alert cuts in anyway after a while.
+	# the TV, the alert cuts in anyway after a while. (At the station there
+	# is no TV: the first master tape taken wakes The Husk.)
+	if tv == null:
+		_watch_close_calls(delta)
+		return
 	if tv.state == TvBroadcast.State.SHOW and time > Tuning.ENTITY_WAKE_TIME * (0.5 if entity_peer else 1.0):
 		tv.interrupt()
 	if not _watchers.is_empty():
@@ -212,12 +218,16 @@ func _mark_moment(id: int, kind: String, focus: int) -> void:
 func _disturb() -> void:
 	var awake := entity.state != Entity.State.DORMANT
 	var at := entity.global_position
+	# The Husk: only the tubes right over it stutter, and the flashlights
+	# never fail for it (seeing it is all you have).
+	var station := level.is_station()
+	var reach := Tuning.FLICKER_RANGE * (0.45 if station else 1.0)
 	for lamp in level.lamps:
-		lamp.disturbance = clampf(1.0 - lamp.global_position.distance_to(at + Vector3.UP * 2.0) / Tuning.FLICKER_RANGE, 0.0, 1.0) if awake else 0.0
+		lamp.disturbance = clampf(1.0 - lamp.global_position.distance_to(at + Vector3.UP * 2.0) / reach, 0.0, 1.0) * (0.6 if station else 1.0) if awake else 0.0
 	level.update_shadows(viewed_player().global_position)
 	for p: Player in players.values():
 		var d := p.global_position.distance_to(at)
-		p.disturbance = clampf(1.0 - d / Tuning.FLASHLIGHT_FAIL_RANGE, 0.0, 1.0) if awake else 0.0
+		p.disturbance = clampf(1.0 - d / Tuning.FLASHLIGHT_FAIL_RANGE, 0.0, 1.0) if awake and not station else 0.0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -243,6 +253,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_play_replay.rpc(-1)
 			return
 	if event.is_action_pressed("restart") and not event.is_echo() and multiplayer.is_server():
+		Net.start_game(randi())
+	elif event is InputEventKey and event.pressed and (event as InputEventKey).physical_keycode == KEY_N \
+			and multiplayer.is_server() and phase == Phase.ESCAPED and not level.is_station():
+		Net.night = Net.Night.STATION  # the second night: Canal 9
 		Net.start_game(randi())
 	elif event is InputEventKey and event.pressed and (event as InputEventKey).physical_keycode == KEY_M:
 		Net.end_session()
@@ -291,6 +305,8 @@ func _spawn_entity() -> void:
 	entity.viewer = local_player
 	entity.global_position = level.center(c)
 	entity.net_pos = entity.global_position
+	if entity is Husk:
+		(entity as Husk).place_dormant(entity.global_position)  # facing the room, like the costumes
 
 
 ## Same seed on every machine: the same pickups in the same places, with
@@ -300,6 +316,8 @@ func _spawn_pickups() -> void:
 	var batteries := level.spots_of("B")
 	for i in batteries.size():
 		_place_pickup(Pickup.Kind.BATTERY, batteries[i], "Battery%d" % i, _rng)
+	if level.is_station():
+		_spawn_tapes()  # (the masters are on the shelves from the start)
 
 
 func _spawn_tapes() -> void:
@@ -316,7 +334,7 @@ func _spawn_tapes() -> void:
 
 
 func _place_pickup(kind: Pickup.Kind, c: Vector3i, pickup_name: String, rng: RandomNumberGenerator) -> void:
-	var p := Pickup.create(kind)
+	var p := Pickup.create(kind, level.is_station())
 	p.name = pickup_name
 	level.add_child(p)
 	p.global_position = level.center(c) + Vector3(rng.randf_range(-0.25, 0.25), 0.0, rng.randf_range(-0.25, 0.25))
@@ -363,7 +381,7 @@ func _on_interact(target: Node) -> void:
 	if phase != Phase.PLAYING or not local_player.alive:
 		return
 	if reading:  # E again gets up, but only once the alert is on the screen
-		if tv.is_showing_text():
+		if tv == null or tv.is_showing_text():
 			_close_reading()
 		return
 	if local_player.hiding:
@@ -376,7 +394,7 @@ func _on_interact(target: Node) -> void:
 			message.emit(tr("No te caben más baterías"))
 			return
 		_request_pickup.rpc_id(1, String(target.name))
-	elif target is ReadableScreen:
+	elif target is ReadableScreen and tv:
 		# Sat in front of it: you watch it from there to the end (the
 		# programme, what it shows of the room, the alert).
 		var seat := tv.seat_for(_seat_index())
@@ -690,8 +708,11 @@ func _pickup_taken(pickup_name: String, by: int) -> void:
 			message.emit(tr("%s encontró una cinta (%d de %d)") % [Net.name_of(by), tapes_got, tapes_needed])
 		else:
 			message.emit(tr("Cinta %d de %d") % [tapes_got, tapes_needed])
-		if multiplayer.is_server() and tapes_got == Tuning.TV_CORRUPT_AT:
+		if multiplayer.is_server() and tapes_got == Tuning.TV_CORRUPT_AT and tv:
 			tv.set_corrupted()
+		# The first master tape off the shelf wakes the costume.
+		if multiplayer.is_server() and level.is_station() and entity.state == Entity.State.DORMANT:
+			entity.wake()
 		if tapes_got == blackout_at():
 			_blackout()
 	p.queue_free()
@@ -714,7 +735,8 @@ func _blackout() -> void:
 	for lamp in level.lamps:
 		lamp.dead = true
 		lamp.shadow_enabled = false
-	tv.power_off()
+	if tv:
+		tv.power_off()
 	if reading:
 		_close_reading()
 	Sfx.play(self, "power_down", -2.0)
@@ -994,6 +1016,7 @@ func _end(p_phase: Phase, p_time: float, by: int) -> void:
 	if entity_peer:
 		screens.note(tr("La Visita era %s") % Net.name_of(entity_peer))
 	if phase == Phase.ESCAPED:
+		screens.offer_station = not level.is_station()
 		screens.show_escaped(tapes_got, tapes_needed, p_time, players.size(), Net.name_of(by), survivors, multiplayer.is_server())
 	else:
 		screens.show_caught(tapes_got, tapes_needed, p_time, multiplayer.is_server())
@@ -1034,7 +1057,7 @@ func _stop_replay() -> void:
 ## body, no camera, not counted among the living); the AI stays asleep.
 func _pick_entity_player() -> void:
 	entity_peer = 0
-	if Net.game_mode == Net.GameMode.VERSUS and players.size() >= 2 and players.has(Net.entity_peer):
+	if Net.game_mode == Net.GameMode.VERSUS and players.size() >= 2 and players.has(Net.entity_peer) and not level.is_station():
 		entity_peer = Net.entity_peer
 	entity.pilot_id = entity_peer
 	if entity_peer == 0:

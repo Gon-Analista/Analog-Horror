@@ -7,139 +7,139 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: scripts/core/run.gd:283
+#: scripts/core/run.gd:297
 msgid "No llevas cámara: quédate cerca de quien la lleva"
 msgstr ""
 
-#: scripts/core/run.gd:351
+#: scripts/core/run.gd:369
 msgid "%s se ha desconectado"
 msgstr ""
 
-#: scripts/core/run.gd:376
+#: scripts/core/run.gd:394
 msgid "No te caben más baterías"
 msgstr ""
 
-#: scripts/core/run.gd:430
+#: scripts/core/run.gd:448
 msgid "Algo la sujeta desde el otro lado"
 msgstr ""
 
-#: scripts/core/run.gd:506
+#: scripts/core/run.gd:524
 msgid "Ya llevas una cámara"
 msgstr ""
 
-#: scripts/core/run.gd:517
+#: scripts/core/run.gd:535
 msgid "No llevas baterías"
 msgstr ""
 
-#: scripts/core/run.gd:519
+#: scripts/core/run.gd:537
 msgid "No llevas cámara"
 msgstr ""
 
-#: scripts/core/run.gd:521
+#: scripts/core/run.gd:539
 msgid "La cámara ya está cargada"
 msgstr ""
 
-#: scripts/core/run.gd:528
+#: scripts/core/run.gd:546
 msgid "Batería cargada"
 msgstr ""
 
-#: scripts/core/run.gd:594
+#: scripts/core/run.gd:612
 msgid "Has soltado la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:594
+#: scripts/core/run.gd:612
 msgid "%s ha soltado la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:645
+#: scripts/core/run.gd:663
 msgid "Se oyen cintas rebobinándose por toda la casa"
 msgstr ""
 
-#: scripts/core/run.gd:665
+#: scripts/core/run.gd:683
 msgid "Llevas la cámara (%d%%)"
 msgstr ""
 
-#: scripts/core/run.gd:667
+#: scripts/core/run.gd:685
 msgid "%s lleva la cámara"
 msgstr ""
 
-#: scripts/core/run.gd:671
+#: scripts/core/run.gd:689
 msgid "Batería guardada"
 msgstr ""
 
-#: scripts/core/run.gd:681
+#: scripts/core/run.gd:699
 msgid "¡Tienen todas las cintas! Van a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:684
+#: scripts/core/run.gd:702
 msgid "¡TENÉIS TODAS LAS CINTAS!"
 msgstr ""
 
-#: scripts/core/run.gd:684
+#: scripts/core/run.gd:702
 msgid "¡TIENES TODAS LAS CINTAS!"
 msgstr ""
 
-#: scripts/core/run.gd:685
+#: scripts/core/run.gd:703
 msgid "Salid por la puerta por la que entrasteis"
 msgstr ""
 
-#: scripts/core/run.gd:685
+#: scripts/core/run.gd:703
 msgid "Sal por la puerta por la que entraste"
 msgstr ""
 
-#: scripts/core/run.gd:686
+#: scripts/core/run.gd:704
 msgid "▶ Volved a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:686
+#: scripts/core/run.gd:704
 msgid "▶ Vuelve a la puerta de entrada"
 msgstr ""
 
-#: scripts/core/run.gd:688
+#: scripts/core/run.gd:706
 msgid "¡Corred a la furgoneta!"
 msgstr ""
 
-#: scripts/core/run.gd:688
+#: scripts/core/run.gd:706
 msgid "¡Corre a la furgoneta!"
 msgstr ""
 
-#: scripts/core/run.gd:690
+#: scripts/core/run.gd:708
 msgid "%s encontró una cinta (%d de %d)"
 msgstr ""
 
-#: scripts/core/run.gd:692
+#: scripts/core/run.gd:710
 msgid "Cinta %d de %d"
 msgstr ""
 
-#: scripts/core/run.gd:721
+#: scripts/core/run.gd:743
 msgid "Se ha ido la luz"
 msgstr ""
 
-#: scripts/core/run.gd:754
+#: scripts/core/run.gd:776
 msgid "Clic: cambiar de cámara"
 msgstr ""
 
-#: scripts/core/run.gd:757
+#: scripts/core/run.gd:779
 msgid "%s ha desaparecido"
 msgstr ""
 
-#: scripts/core/run.gd:766
+#: scripts/core/run.gd:788
 msgid "Solo el anfitrión puede crear bots"
 msgstr ""
 
-#: scripts/core/run.gd:771 scripts/main.gd:191 scripts/ui/menu.gd:286
+#: scripts/core/run.gd:793 scripts/main.gd:223 scripts/ui/menu.gd:288
 msgid "Bot %d"
 msgstr ""
 
-#: scripts/core/run.gd:790
+#: scripts/core/run.gd:812
 msgid "%s se une a la noche"
 msgstr ""
 
-#: scripts/core/run.gd:995
+#: scripts/core/run.gd:1017
 msgid "La Visita era %s"
 msgstr ""
 
-#: scripts/core/run.gd:1066
+#: scripts/core/run.gd:1089
 msgid "La Visita se ha desconectado: ahora la controla la casa"
 msgstr ""
 
@@ -159,7 +159,7 @@ msgstr ""
 msgid "[E] Esconderte o mirar dentro"
 msgstr ""
 
-#: scripts/main.gd:58
+#: scripts/main.gd:78
 msgid "No se pudo entrar en la partida"
 msgstr ""
 
@@ -207,27 +207,27 @@ msgstr ""
 msgid "No se pudo conectar con el anfitrión"
 msgstr ""
 
-#: scripts/net/net.gd:66
+#: scripts/net/net.gd:70
 msgid "No se pudo conectar con la sala"
 msgstr ""
 
-#: scripts/net/net.gd:67
+#: scripts/net/net.gd:71
 msgid "El anfitrión cerró la sala"
 msgstr ""
 
-#: scripts/net/net.gd:77
+#: scripts/net/net.gd:81
 msgid "Se perdió la conexión con la sala"
 msgstr ""
 
-#: scripts/net/net.gd:128
+#: scripts/net/net.gd:132
 msgid "No se pudo abrir la sala en el puerto %d"
 msgstr ""
 
-#: scripts/net/net.gd:141
+#: scripts/net/net.gd:145
 msgid "Dirección no válida"
 msgstr ""
 
-#: scripts/net/net.gd:329
+#: scripts/net/net.gd:334
 msgid "No se pudo entrar en la partida (id %d)"
 msgstr ""
 
@@ -451,255 +451,267 @@ msgstr ""
 msgid "Arrastra para cambiar · TAB: cerrar"
 msgstr ""
 
-#: scripts/ui/menu.gd:171
+#: scripts/ui/menu.gd:173
 msgid "Creando sala…"
 msgstr ""
 
-#: scripts/ui/menu.gd:182
+#: scripts/ui/menu.gd:184
 msgid "Escribe el código de la sala"
 msgstr ""
 
-#: scripts/ui/menu.gd:185
+#: scripts/ui/menu.gd:187
 msgid "Buscando la sala…"
 msgstr ""
 
-#: scripts/ui/menu.gd:194
+#: scripts/ui/menu.gd:196
 msgid "Conectando…"
 msgstr ""
 
-#: scripts/ui/menu.gd:210
+#: scripts/ui/menu.gd:212
 msgid "Operador"
 msgstr ""
 
-#: scripts/ui/menu.gd:261
+#: scripts/ui/menu.gd:263
 msgid "SALA LAN · %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:263
+#: scripts/ui/menu.gd:265
 msgid "CÓDIGO DE SALA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:275
+#: scripts/ui/menu.gd:277
 msgid "  (anfitrión)"
 msgstr ""
 
-#: scripts/ui/menu.gd:286
+#: scripts/ui/menu.gd:288
 msgid "  (IA)"
 msgstr ""
 
-#: scripts/ui/menu.gd:289
+#: scripts/ui/menu.gd:291
 msgid "  · libre"
 msgstr ""
 
-#: scripts/ui/menu.gd:298 scripts/ui/menu.gd:459
+#: scripts/ui/menu.gd:303 scripts/ui/menu.gd:471
 msgid "BOTS: %d"
 msgstr ""
 
-#: scripts/ui/menu.gd:299
+#: scripts/ui/menu.gd:304
 msgid "Esperando a que el anfitrión empiece…"
 msgstr ""
 
-#: scripts/ui/menu.gd:388
+#: scripts/ui/menu.gd:393
 msgid "UNIDAD DE RECUPERACIÓN · CANAL 9 · 1989"
 msgstr ""
 
-#: scripts/ui/menu.gd:392
+#: scripts/ui/menu.gd:397
 msgid "NOMBRE "
 msgstr ""
 
-#: scripts/ui/menu.gd:403
+#: scripts/ui/menu.gd:408
 msgid "JUGAR SOLO"
 msgstr ""
 
-#: scripts/ui/menu.gd:405 scripts/ui/pause_menu.gd:38
+#: scripts/ui/menu.gd:412 scripts/ui/pause_menu.gd:38
 msgid "OPCIONES"
 msgstr ""
 
-#: scripts/ui/menu.gd:406
+#: scripts/ui/menu.gd:413
 msgid "CREAR SALA ONLINE"
 msgstr ""
 
-#: scripts/ui/menu.gd:409
+#: scripts/ui/menu.gd:416
 msgid "UNIRSE"
 msgstr ""
 
-#: scripts/ui/menu.gd:411
+#: scripts/ui/menu.gd:418
 msgid "código"
 msgstr ""
 
-#: scripts/ui/menu.gd:415
+#: scripts/ui/menu.gd:422
 msgid "LAN"
 msgstr ""
 
-#: scripts/ui/menu.gd:416 scripts/ui/menu.gd:634
+#: scripts/ui/menu.gd:423 scripts/ui/menu.gd:662
 msgid "CRÉDITOS"
 msgstr ""
 
-#: scripts/ui/menu.gd:417
+#: scripts/ui/menu.gd:424
 msgid "SALIR"
 msgstr ""
 
-#: scripts/ui/menu.gd:431
+#: scripts/ui/menu.gd:438
 msgid "COPIAR"
 msgstr ""
 
-#: scripts/ui/menu.gd:433
+#: scripts/ui/menu.gd:440
 msgid "Código %s copiado: pégalo a tus amigos"
 msgstr ""
 
-#: scripts/ui/menu.gd:434
+#: scripts/ui/menu.gd:441
 msgid "Pasa el código a tus amigos (hasta 4)."
 msgstr ""
 
-#: scripts/ui/menu.gd:453
+#: scripts/ui/menu.gd:465
 msgid "Uno de vosotros controla a la Visita (2 jugadores o más)"
 msgstr ""
 
-#: scripts/ui/menu.gd:463
+#: scripts/ui/menu.gd:475
 msgid "Compañeros manejados por la casa (para llenar la sala o para cazarlos siendo la Visita)"
 msgstr ""
 
-#: scripts/ui/menu.gd:465
+#: scripts/ui/menu.gd:477
 msgid "EMPEZAR LA NOCHE"
 msgstr ""
 
-#: scripts/ui/menu.gd:467
+#: scripts/ui/menu.gd:479
 msgid "SALIR DE LA SALA"
 msgstr ""
 
-#: scripts/ui/menu.gd:473
+#: scripts/ui/menu.gd:485
 msgid "Auriculares recomendados."
 msgstr ""
 
-#: scripts/ui/menu.gd:494
+#: scripts/ui/menu.gd:506
 msgid "Clic: más cintas · clic derecho: menos"
 msgstr ""
 
-#: scripts/ui/menu.gd:500
+#: scripts/ui/menu.gd:518
+msgid "Noche 1: la casa y la Visita · noche 2: la emisora y The Husk"
+msgstr ""
+
+#: scripts/ui/menu.gd:523
+msgid "NOCHE 1 · LA CASA"
+msgstr ""
+
+#: scripts/ui/menu.gd:523
+msgid "NOCHE 2 · LA EMISORA"
+msgstr ""
+
+#: scripts/ui/menu.gd:528
 msgid "MODO: NORMAL"
 msgstr ""
 
-#: scripts/ui/menu.gd:501
+#: scripts/ui/menu.gd:529
 msgid "MODO: VISITA AL AZAR"
 msgstr ""
 
-#: scripts/ui/menu.gd:501
+#: scripts/ui/menu.gd:529
 msgid "MODO: VISITA ES %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:506
+#: scripts/ui/menu.gd:534
 msgid "casa pequeña"
 msgstr ""
 
-#: scripts/ui/menu.gd:506
+#: scripts/ui/menu.gd:534
 msgid "casa grande"
 msgstr ""
 
-#: scripts/ui/menu.gd:506
+#: scripts/ui/menu.gd:534
 msgid "dos plantas"
 msgstr ""
 
-#: scripts/ui/menu.gd:506
+#: scripts/ui/menu.gd:534
 msgid "casa enorme"
 msgstr ""
 
-#: scripts/ui/menu.gd:507
+#: scripts/ui/menu.gd:535
 msgid "CINTAS: %d · %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
+#: scripts/ui/menu.gd:549 scripts/ui/pause_menu.gd:55
 msgid "GENERAL"
 msgstr ""
 
-#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
+#: scripts/ui/menu.gd:549 scripts/ui/pause_menu.gd:55
 msgid "MÚSICA"
 msgstr ""
 
-#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
+#: scripts/ui/menu.gd:549 scripts/ui/pause_menu.gd:55
 msgid "EFECTOS"
 msgstr ""
 
-#: scripts/ui/menu.gd:521 scripts/ui/pause_menu.gd:55
+#: scripts/ui/menu.gd:549 scripts/ui/pause_menu.gd:55
 msgid "CHAT DE VOZ"
 msgstr ""
 
-#: scripts/ui/menu.gd:584 scripts/ui/menu.gd:616 scripts/ui/menu.gd:651
+#: scripts/ui/menu.gd:612 scripts/ui/menu.gd:644 scripts/ui/menu.gd:679
 msgid "VOLVER"
 msgstr ""
 
-#: scripts/ui/menu.gd:585 scripts/ui/menu.gd:610
+#: scripts/ui/menu.gd:613 scripts/ui/menu.gd:638
 msgid "CONTROLES Y ACCESIBILIDAD"
 msgstr ""
 
-#: scripts/ui/menu.gd:613
+#: scripts/ui/menu.gd:641
 msgid "WASD moverse · RATÓN mirar · SHIFT correr\nC agacharse · E usar · F linterna · R pilas\nCLIC DCHO cámara · CLIC IZQ flash\nTAB inventario · V hablar · ESC pausa"
 msgstr ""
 
-#: scripts/ui/menu.gd:637
+#: scripts/ui/menu.gd:665
 msgid "UN JUEGO DE"
 msgstr ""
 
-#: scripts/ui/menu.gd:638
+#: scripts/ui/menu.gd:666
 msgid "MÚSICA Y SONIDO"
 msgstr ""
 
-#: scripts/ui/menu.gd:638
+#: scripts/ui/menu.gd:666
 msgid "síntesis propia"
 msgstr ""
 
-#: scripts/ui/menu.gd:639
+#: scripts/ui/menu.gd:667
 msgid "MOTOR"
 msgstr ""
 
-#: scripts/ui/menu.gd:640
+#: scripts/ui/menu.gd:668
 msgid "ONLINE"
 msgstr ""
 
-#: scripts/ui/menu.gd:641
+#: scripts/ui/menu.gd:669
 msgid "FUENTE"
 msgstr ""
 
-#: scripts/ui/menu.gd:649
+#: scripts/ui/menu.gd:677
 msgid "Gracias por grabar con nosotros."
 msgstr ""
 
-#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
+#: scripts/ui/menu.gd:695 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: COMPLETA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:667 scripts/ui/pause_menu.gd:157
+#: scripts/ui/menu.gd:695 scripts/ui/pause_menu.gd:157
 msgid "PANTALLA: VENTANA (F11)"
 msgstr ""
 
-#: scripts/ui/menu.gd:671
+#: scripts/ui/menu.gd:699
 msgid "GRÁFICOS: ALTOS (960x540)"
 msgstr ""
 
-#: scripts/ui/menu.gd:671
+#: scripts/ui/menu.gd:699
 msgid "GRÁFICOS: BAJOS (480x270)"
 msgstr ""
 
-#: scripts/ui/menu.gd:675
+#: scripts/ui/menu.gd:703
 msgid "IDIOMA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:680 scripts/ui/pause_menu.gd:172
+#: scripts/ui/menu.gd:708 scripts/ui/pause_menu.gd:172
 msgid "EL DEL SISTEMA"
 msgstr ""
 
-#: scripts/ui/menu.gd:683
+#: scripts/ui/menu.gd:711
 msgid "ENTRADA: %s"
 msgstr ""
 
-#: scripts/ui/menu.gd:709
+#: scripts/ui/menu.gd:737
 msgid "MICRÓFONO: ABIERTO"
 msgstr ""
 
-#: scripts/ui/menu.gd:709
+#: scripts/ui/menu.gd:737
 msgid "MICRÓFONO: PULSA V"
 msgstr ""
 
-#: scripts/ui/menu.gd:709
+#: scripts/ui/menu.gd:737
 msgid "MICRÓFONO: APAGADO"
 msgstr ""
 
@@ -763,103 +775,115 @@ msgstr ""
 msgid "Elige el anfitrión · M: menú"
 msgstr ""
 
-#: scripts/ui/screens.gd:40
+#: scripts/ui/screens.gd:44
 msgid "EQUIPO DE %d"
 msgstr ""
 
-#: scripts/ui/screens.gd:40
+#: scripts/ui/screens.gd:44
 msgid "VAS SOLO"
 msgstr ""
 
-#: scripts/ui/screens.gd:42
+#: scripts/ui/screens.gd:46
 msgid "LA VISITA ES %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:45
+#: scripts/ui/screens.gd:49
+msgid "15-OCT-1989 · 03:10 · CANAL 9 · ESTUDIOS · %s\n\n1. ENCUENTRA %d MÁSTERES DEL PROGRAMA\n2. SAL POR EL MUELLE DE CARGA\n\nEl disfraz no se mueve si lo miras. La cámara no lo ve: tus ojos sí.\n\nCLIC DCHO: cámara · CLIC IZQ: flash · E: usar / esconderse · TAB: inventario\n\n(clic para empezar)"
+msgstr ""
+
+#: scripts/ui/screens.gd:55
 msgid "14-OCT-1989 · 23:52 · CALLE OLMOS 14 · %s\n\n1. INVESTIGA LA EXTRAÑA MÚSICA\n2. ENCUENTRA %d CINTAS\n3. VUELVE A LA FURGONETA\n\nAlgo vive en esta casa. Solo la cámara lo ve.\n\nCLIC DCHO: cámara · CLIC IZQ: flash · E: usar / esconderse · TAB: inventario\n\n(clic para empezar)"
 msgstr ""
 
-#: scripts/ui/screens.gd:51
+#: scripts/ui/screens.gd:61
 msgid "SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s\n\n%s"
 msgstr ""
 
-#: scripts/ui/screens.gd:52
+#: scripts/ui/screens.gd:62
 msgid "SIN SEÑAL\n\nCintas recuperadas: %d/%d · %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:100
+#: scripts/ui/screens.gd:110
 msgid "CINTA RECUPERADA"
 msgstr ""
 
-#: scripts/ui/screens.gd:101
+#: scripts/ui/screens.gd:111
+msgid "15-OCT-89 · CANAL 9 · MÁSTERES"
+msgstr ""
+
+#: scripts/ui/screens.gd:111
 msgid "14-OCT-89 · «¡TE ESTOY VIENDO!»"
 msgstr ""
 
-#: scripts/ui/screens.gd:102
+#: scripts/ui/screens.gd:112
 msgid "Cintas: %d/%d"
 msgstr ""
 
-#: scripts/ui/screens.gd:102
+#: scripts/ui/screens.gd:112
 msgid "Tiempo: %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:104
+#: scripts/ui/screens.gd:114
 msgid "Salió primero: %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:106
+#: scripts/ui/screens.gd:116
 msgid "Volvieron: %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:106
+#: scripts/ui/screens.gd:116
 msgid "No volvieron: %d"
 msgstr ""
 
-#: scripts/ui/screens.gd:107
+#: scripts/ui/screens.gd:117
 msgid "GRACIAS POR JUGAR LA DEMO"
 msgstr ""
 
-#: scripts/ui/screens.gd:114
+#: scripts/ui/screens.gd:124
 msgid "Canal 9"
 msgstr ""
 
-#: scripts/ui/screens.gd:128
+#: scripts/ui/screens.gd:138
 msgid "Las copias serán destruidas."
 msgstr ""
 
-#: scripts/ui/screens.gd:131
+#: scripts/ui/screens.gd:141
 msgid "destruidas."
 msgstr ""
 
-#: scripts/ui/screens.gd:132
+#: scripts/ui/screens.gd:142
 msgid "emitidas."
 msgstr ""
 
-#: scripts/ui/screens.gd:135
+#: scripts/ui/screens.gd:145
 msgid "Las copias serán %s"
 msgstr ""
 
-#: scripts/ui/screens.gd:248
+#: scripts/ui/screens.gd:259
+msgid "R: otra noche · N: la emisora · M: menú"
+msgstr ""
+
+#: scripts/ui/screens.gd:260
 msgid "R: otra noche · M: menú"
 msgstr ""
 
-#: scripts/ui/screens.gd:248
+#: scripts/ui/screens.gd:260
 msgid "Esperando al anfitrión · M: menú"
 msgstr ""
 
-#: scripts/ui/screens.gd:279
+#: scripts/ui/screens.gd:291
 msgid "ERES LA VISITA\n\nHay %d en tu casa. Buscan %d cintas para llevárselas.\n\nCógelos a todos antes de que escapen. Solo te ven por la cámara; su flash te ciega.\n\nWASD andar · SHIFT correr · C agacharse · ESPACIO techo\nCLIC IZQ embestir gritando · Q sentirlos · E puerta / esconderte / mirar\n\n(clic para empezar)"
 msgstr ""
 
-#: scripts/ui/screens.gd:286
+#: scripts/ui/screens.gd:298
 msgid "LA CASA ES TUYA"
 msgstr ""
 
-#: scripts/ui/screens.gd:286
+#: scripts/ui/screens.gd:298
 msgid "SE HAN ESCAPADO"
 msgstr ""
 
-#: scripts/ui/screens.gd:287
+#: scripts/ui/screens.gd:299
 msgid "Cintas que se llevaron: %d/%d · %s"
 msgstr ""
 
@@ -913,23 +937,27 @@ msgstr ""
 msgid "[E] Esconderse en el armario"
 msgstr ""
 
-#: scripts/world/house_window.gd:109
+#: scripts/world/house_window.gd:113
 msgid "[E] Cerrar la ventana"
 msgstr ""
 
-#: scripts/world/house_window.gd:110
+#: scripts/world/house_window.gd:114
 msgid "[E] Abrir la ventana"
 msgstr ""
 
-#: scripts/world/pickup.gd:56
-msgid "[E] Recoger cinta"
-msgstr ""
-
-#: scripts/world/pickup.gd:58
-msgid "[E] Coger la cámara (%d%%)"
+#: scripts/world/pickup.gd:59
+msgid "[E] Recoger máster"
 msgstr ""
 
 #: scripts/world/pickup.gd:59
+msgid "[E] Recoger cinta"
+msgstr ""
+
+#: scripts/world/pickup.gd:61
+msgid "[E] Coger la cámara (%d%%)"
+msgstr ""
+
+#: scripts/world/pickup.gd:62
 msgid "[E] Recoger batería"
 msgstr ""
 
@@ -939,6 +967,34 @@ msgstr ""
 
 #: scripts/world/readable_screen.gd:21
 msgid "[E] Sentarse a ver la tele"
+msgstr ""
+
+#: scripts/world/station_night.gd:141
+msgid "MEGAFONÍA: «Personal de Canal 9: recojan los másteres del programa y salgan por el muelle de carga.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:143
+msgid "MEGAFONÍA: «Recuerden: el muñeco no se mueve mientras alguien lo mira.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:145
+msgid "MEGAFONÍA: «La cámara no lo ve. Sus ojos sí.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:147
+msgid "MEGAFONÍA: «Corte de luz en el edificio. Usen las linternas. No dejen de mirarlo.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:149
+msgid "MEGAFONÍA: «Puede dejar de mirarlo. Apague la linterna. Descanse los ojos.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:151
+msgid "MEGAFONÍA: «Grabe al muñeco para el archivo. Mírelo por la cámara.»"
+msgstr ""
+
+#: scripts/world/station_night.gd:153
+msgid "MEGAFONÍA: «¡Hola, vecinito! ¡Te estoy viendo!»"
 msgstr ""
 
 #: scripts/world/tv_broadcast.gd:230 scripts/world/tv_broadcast.gd:408

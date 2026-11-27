@@ -56,6 +56,18 @@ const MATERIAL_LOOK := {
 	"paper": [0.8, 0.0],
 	"photos": [0.3, 0.0],        # glossy prints
 	"drawing*": [0.85, 0.0],
+	# Canal 9's studios (the second night, StationGenerator).
+	"wall_block": [0.5, 1.4],     # gloss paint over concrete block: the light slides along it
+	"wall_studio": [0.95, 1.6],
+	"floor_lino": [0.35, 1.2],    # waxed vinyl tiles
+	"floor_studio": [0.7, 0.8],
+	"carpet": [1.0, 2.0],
+	"ceiling_tiles": [0.95, 1.4],
+	"tapes_shelf": [0.6, 1.4],
+	"locker": [0.45, 1.2],
+	"metal": [0.42, 1.0],
+	"door_dock": [0.45, 1.4],
+	"husk_*": [1.0, 2.2],
 }
 
 var layout: HouseLayout
@@ -105,10 +117,17 @@ func build(p_layout: HouseLayout, decor_seed := 14) -> void:
 	for s in layout.stairs:
 		_build_stairs(s)
 	_build_furniture()
+	if is_station():
+		for c in layout.find_all("E"):
+			_hook(center(c))  # The Husk hangs there too, until it wakes
 	_build_decor()
-	_build_facade()
+	if is_station():
+		_build_set()
+	else:
+		_build_facade()
 	_commit()
-	_build_outside()
+	if not is_station():
+		_build_outside()
 	add_child(_furniture_body)
 	_build_doors(decor_seed)
 	_build_windows()
@@ -131,7 +150,8 @@ func _plan_doors(seed_value: int) -> void:
 				if rng.randf() > Tuning.DOOR_CHANCE:
 					continue
 				_door_plan[c] = {"axis": axis, "face": 1 if rng.randf() < 0.5 else -1, "hinge": 1 if rng.randf() < 0.5 else -1,
-						"transom": rng.randf() < Tuning.TRANSOM_CHANCE, "open": rng.randf() < Tuning.DOOR_OPEN_CHANCE}
+						"transom": rng.randf() < Tuning.TRANSOM_CHANCE and not is_station(),  # (the Husk cannot climb)
+						 "open": rng.randf() < Tuning.DOOR_OPEN_CHANCE}
 	# Most have the window, but at least one is a whole door (to shut
 	# yourself in behind).
 	var solid := _door_plan.keys().filter(func(c: Vector3i) -> bool: return not _door_plan[c].transom)
@@ -245,8 +265,8 @@ func nearest_walkable(c: Vector3i) -> Vector3i:
 	return layout.nearest_walkable(c)
 
 
-func path(from: Vector3i, to: Vector3i) -> Array[Vector3i]:
-	return layout.path(from, to)
+func path(from: Vector3i, to: Vector3i, avoid := "") -> Array[Vector3i]:
+	return layout.path(from, to, avoid)
 
 
 func spots_of(ch: String) -> Array:
@@ -318,8 +338,15 @@ func _n(c: Vector3i, d: Vector2i) -> Vector3i:
 	return c + Vector3i(d.x, 0, d.y)
 
 
+## Canal 9's studios (the second night) instead of the house.
+func is_station() -> bool:
+	return layout != null and layout.kind == "station"
+
+
 func _floor_key(c: Vector3i) -> String:
 	var ch := char_at(c)
+	if is_station():
+		return _station_floor_key(c, ch)
 	if ch == ",":
 		return "floor_tile"
 	if ch == "r":
@@ -338,6 +365,10 @@ func _floor_key(c: Vector3i) -> String:
 
 
 func _wall_key(open_cell: Vector3i) -> String:
+	if is_station():
+		if _floor_key(open_cell) == "floor_tile":
+			return "wall_tile"
+		return "wall_studio" if layout.room_type_at(open_cell) == "studio" else "wall_block"
 	if _floor_key(open_cell) == "floor_tile":
 		return "wall_tile"
 	match layout.room_type_at(open_cell):
@@ -358,7 +389,7 @@ func _build_cell(c: Vector3i) -> void:
 			var n := _n(c, d)
 			if not layout.inside(n) or _is_solid(char_at(n)):
 				continue
-			var key := "door_exit" if ch == "X" else _wall_key(n)
+			var key := ("door_dock" if is_station() else "door_exit") if ch == "X" else _wall_key(n)
 			# Into the stairwell the wall goes up through the slab.
 			var top := base + (FLOOR_H if char_at(n) == "S" and c.y == 0 else HEIGHT)
 			if ch == "W":
@@ -405,7 +436,7 @@ func _build_cell(c: Vector3i) -> void:
 					_wall_face(c, d, base + LINTEL, base + HEIGHT, _wall_key(n), base)
 		if ch == "U":
 			_add_boards(c)
-	_quad("ceiling", [Vector3(x0, base + top, z0), Vector3(x1, base + top, z0), Vector3(x1, base + top, z1), Vector3(x0, base + top, z1)], uv, Vector3.DOWN)
+	_quad(_ceiling_key(c), [Vector3(x0, base + top, z0), Vector3(x1, base + top, z0), Vector3(x1, base + top, z1), Vector3(x0, base + top, z1)], uv, Vector3.DOWN)
 	if ch == "L" or ch == "l":
 		_add_lamp(c, ch == "l")
 	if (ch == "." or ch == "r") and _decor.randf() < PAPER_CHANCE:
@@ -433,7 +464,7 @@ func _wall_part(c: Vector3i, d: Vector2i, u0: float, u1: float, y0: float, y1: f
 	var b := mid + along * CELL * u1
 	var ua: float
 	var ub: float
-	if key == "door_exit":
+	if key == "door_exit" or key == "door_dock":
 		ua = 0.0
 		ub = 1.0
 	else:
@@ -586,6 +617,8 @@ func mat(key: String) -> StandardMaterial3D:
 		return _mats[key]
 	if key == "glass":
 		return HouseWindow.glass_material()
+	if key.begins_with("glow_"):
+		return _glow_material(key)
 	var m := StandardMaterial3D.new()
 	var path := "res://assets/textures/%s.png" % key
 	var tex := load(path) as Texture2D
@@ -699,7 +732,7 @@ func _add_occluder(arch: ArrayMesh) -> void:
 	var verts := PackedVector3Array()
 	for i in arch.get_surface_count():
 		var key := arch.surface_get_name(i)
-		if not (key.begins_with("wall") or key.begins_with("floor") or key == "ceiling" or key == "rug"):
+		if not (key.begins_with("wall") or key.begins_with("floor") or key.begins_with("ceiling") or key == "rug" or key == "carpet"):
 			continue
 		verts.append_array(arch.surface_get_arrays(i)[Mesh.ARRAY_VERTEX])
 	if verts.is_empty():
@@ -799,6 +832,9 @@ func _furniture_piece(ch: String, r: Rect2i, f: int) -> void:
 			# The apron under the top, between the legs.
 			for d: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 				_box("wood_dark", _edge(cx, cz, sx - 0.16, sz - 0.16, d, 0.03, 0.66) + up, _edge_size(sx - 0.16, sz - 0.16, d, 0.03, 0.1))
+		"k" when is_station() and _room_type(r, f) == "control":
+			height = 0.95
+			_console(r, f, cx, cz, sx, sz, up)
 		"k":
 			height = 0.92
 			var front := -_against_wall(r, f)
@@ -806,6 +842,11 @@ func _furniture_piece(ch: String, r: Rect2i, f: int) -> void:
 			_box("plastic", Vector3(cx, 0.04, cz) + up - Vector3(front.x, 0, front.y) * 0.05, Vector3(sx - 0.14, 0.08, sz - 0.14))  # toe kick
 			_box("counter", Vector3(cx, 0.89, cz) + up, Vector3(sx + 0.03, 0.06, sz + 0.03))
 			_cabinet_doors(r, front, cx, cz, sx, sz, 0.12, 0.8, up, true)
+			if is_station() and _room_type(r, f) == "dressing":
+				_make_up_mirror(r, f, cx, cz, sx, sz, up)
+		"w" when is_station():
+			height = 1.9
+			_lockers(r, f, cx, cz, sx, sz, up)
 		"w":
 			height = 2.0
 			var front := -_against_wall(r, f)
@@ -849,18 +890,36 @@ func _furniture_piece(ch: String, r: Rect2i, f: int) -> void:
 		"h":
 			height = 2.0
 			_bookcase(r, f, cx, cz, sx, sz, up)
+		"q":
+			height = 1.5
+			for c in _cells_of(r, f):
+				_studio_camera(c)
 		"a":
 			height = 0.62
 			_bath(r, f, cx, cz, sx, sz, x0, z0, x1, z1, up)
 		"m":
 			# A fridge in the kitchen, a washing machine anywhere else.
-			var fridge := layout.room_type_at(Vector3i(r.position.x, f, r.position.y)) == "kitchen"
+			var fridge := _room_type(r, f) in ["kitchen", "breakroom"]
+			if is_station() and not fridge:
+				height = 1.9
+				for c in _cells_of(r, f):
+					_rack(center(c), Vector3(-_against_wall(r, f).x, 0, -_against_wall(r, f).y))
+				_add_furniture_box(cx, cz, sx, sz, height, base)
+				return
 			height = 1.75 if fridge else 0.88
 			var front := -_against_wall(r, f)
 			for c in _cells_of(r, f):
 				_appliance(center(c), Vector3(front.x, 0, front.y), fridge)  # (center() is at its floor)
 		"n":
 			# The show's bear in the playroom; dress forms anywhere else.
+			if is_station():
+				# The costumes in the wardrobe: The Husk's double, again and
+				# again (it stands among them until it wakes).
+				height = 1.95
+				for c in _cells_of(r, f):
+					_costume(c)
+				_add_furniture_box(cx, cz, sx * 0.7, sz * 0.7, height, base)
+				return
 			var bear := layout.room_type_at(Vector3i(r.position.x, f, r.position.y)) == "playroom"
 			height = 0.98 if bear else 1.62
 			for c in _cells_of(r, f):
@@ -914,26 +973,31 @@ func _bookcase(r: Rect2i, f: int, cx: float, cz: float, sx: float, sz: float, up
 	var ends: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0)]
 	if not along_x:
 		ends = [Vector2i(0, 1), Vector2i(0, -1)]
+	# The station's are steel shelving; tapes in the archive and the store.
+	var frame := "metal" if is_station() else "wood_dark"
+	var books := "books"
+	if is_station() and _room_type(r, f) in ["archive", "storage"]:
+		books = "tapes_shelf"
 	for e in ends:
-		_box("wood_dark", _edge(cx, cz, sx, sz, e, 0.04, 1.0) + up, _edge_size(sx, sz, e, 0.04, 2.0))
-	_box("wood_trim", Vector3(cx, 2.01, cz) + up, Vector3(sx + 0.03, 0.03, sz + 0.03))
+		_box(frame, _edge(cx, cz, sx, sz, e, 0.04, 1.0) + up, _edge_size(sx, sz, e, 0.04, 2.0))
+	_box("metal" if is_station() else "wood_trim", Vector3(cx, 2.01, cz) + up, Vector3(sx + 0.03, 0.03, sz + 0.03))
 	if wall != Vector2i.ZERO:
-		_box("wood_dark", _edge(cx, cz, sx, sz, wall, 0.03, 1.0) + up, _edge_size(sx, sz, wall, 0.03, 2.0))
+		_box(frame, _edge(cx, cz, sx, sz, wall, 0.03, 1.0) + up, _edge_size(sx, sz, wall, 0.03, 2.0))
 	else:
-		_box("wood_dark", Vector3(cx, 1.0, cz) + up, Vector3(0.03, 2.0, sz - 0.08) if not along_x else Vector3(sx - 0.08, 2.0, 0.03))
+		_box(frame, Vector3(cx, 1.0, cz) + up, Vector3(0.03, 2.0, sz - 0.08) if not along_x else Vector3(sx - 0.08, 2.0, 0.03))
 	var inner_x := sx - 0.09 if along_x else sx
 	var inner_z := sz if along_x else sz - 0.09
 	for k in 7:  # the bottom, five shelves, under the top
 		var y := 0.04 if k == 0 else k / 3.0
 		if k == 6:
 			y = 1.97
-		_box("wood_dark", Vector3(cx, y, cz) + up, Vector3(inner_x, 0.025, inner_z))
+		_box(frame, Vector3(cx, y, cz) + up, Vector3(inner_x, 0.025, inner_z))
 	var depth := (sz if along_x else sx) * (0.4 if faces.size() == 2 else 0.75)
 	for face in faces:
 		# Set back a little from the front edge of the shelves.
 		var book := _edge(cx, cz, inner_x, inner_z - 0.04 if along_x else inner_z, face, depth, 1.0) if along_x \
 				else _edge(cx, cz, inner_x - 0.04, inner_z, face, depth, 1.0)
-		_box("books", book + up, _edge_size(inner_x, inner_z, face, depth, 1.9))
+		_box(books, book + up, _edge_size(inner_x, inner_z, face, depth, 1.9))
 
 
 ## A clawfoot bath: an enamel shell on brass feet, a skin of grey water
@@ -1125,6 +1189,15 @@ func _edge_size(sx: float, sz: float, d: Vector2i, thick: float, h: float) -> Ve
 
 ## The side facing away from the TV (a sofa's back), north if there is none.
 func _away_from_tv(r: Rect2i) -> Vector2i:
+	if is_station():
+		# The show's sofa: its back to the flats, facing the rug and the cameras.
+		var rug := _set_centre(Vector3i(r.position.x, 0, r.position.y))
+		var away := Vector2(r.position) + Vector2(r.size) * 0.5 - Vector2(rug.x, rug.z)
+		if away.length() < 0.01:
+			return Vector2i(0, -1)
+		if absf(away.x) > absf(away.y):
+			return Vector2i(int(signf(away.x)), 0)
+		return Vector2i(0, int(signf(away.y)))
 	var tvs := layout.find_all("V")
 	if tvs.is_empty():
 		return Vector2i(0, -1)
@@ -1273,6 +1346,9 @@ func _add_papers(c: Vector3i) -> void:
 
 
 func _add_lamp(c: Vector3i, dead: bool) -> void:
+	if is_station():
+		_add_tube_lamp(c, dead)
+		return
 	var p := center(c)
 	var fixture := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
@@ -1486,7 +1562,7 @@ func _add_wall_trim(c: Vector3i, d: Vector2i, base: float, top: float, key: Stri
 	if key.begins_with("wallpaper"):
 		_box("wood_dark", o + n * 0.011 + Vector3.UP * 0.095, size.call(CELL + 0.044, 0.19, 0.022))
 		_box("wood_dark", o + n * 0.016 + Vector3.UP * 0.192, size.call(CELL + 0.064, 0.016, 0.032))
-	if is_equal_approx(top, base + HEIGHT):
+	if is_equal_approx(top, base + HEIGHT) and not is_station():
 		_box("ceiling", o + n * 0.02 + Vector3.UP * (top - 0.045), size.call(CELL + 0.08, 0.09, 0.04))
 		_box("ceiling", o + n * 0.033 + Vector3.UP * (top - 0.012), size.call(CELL + 0.13, 0.024, 0.066))
 
@@ -1594,3 +1670,401 @@ static func _quad_into(st: SurfaceTool, p: Array, uv: Array, n: Vector3) -> void
 		st.set_normal(n)
 		st.set_uv(uv[i])
 		st.add_vertex(p[i])
+
+
+# --- Canal 9 (the second night) ---------------------------------------------------
+
+func _room_type(r: Rect2i, f: int) -> String:
+	return layout.room_type_at(Vector3i(r.position.x, f, r.position.y))
+
+
+func _station_floor_key(c: Vector3i, ch: String) -> String:
+	if ch == ",":
+		return "floor_tile"
+	if ch == "r":
+		return "rug"  # the show's own rug, on the set
+	match layout.room_type_at(c):
+		"studio":
+			return "floor_studio"
+		"office", "control":
+			return "carpet"
+		"restroom":
+			return "floor_tile"
+	return "floor_lino"
+
+
+func _ceiling_key(c: Vector3i) -> String:
+	if not is_station():
+		return "ceiling"
+	# The studio has no ceiling to speak of: black paint, a lighting grid.
+	return "metal" if layout.room_type_at(c) == "studio" else "ceiling_tiles"
+
+
+## Flat emissive colours (keys "glow_<name>"): the LEDs of the racks, the
+## bulbs round the mirrors, the monitors' pictures.
+func _glow_material(key: String) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	match key:
+		"glow_red":
+			m.albedo_color = Color(0.9, 0.12, 0.08)
+			m.emission = Color(1.0, 0.1, 0.05)
+			m.emission_energy_multiplier = 1.6
+		"glow_green":
+			m.albedo_color = Color(0.2, 0.9, 0.3)
+			m.emission = Color(0.2, 1.0, 0.35)
+			m.emission_energy_multiplier = 1.2
+		"glow_amber":
+			m.albedo_color = Color(1.0, 0.7, 0.2)
+			m.emission = Color(1.0, 0.6, 0.15)
+			m.emission_energy_multiplier = 1.0
+		"glow_bulb":
+			m.albedo_color = Color(1.0, 0.88, 0.7)
+			m.emission = Color(1.0, 0.8, 0.55)
+			m.emission_energy_multiplier = 1.4
+		"glow_tube":
+			m.albedo_color = Color(0.86, 0.95, 0.9)
+			m.emission = Color(0.8, 0.95, 0.88)
+			m.emission_energy_multiplier = 0.0  # set by its FlickerLight
+		"glow_show":
+			# The monitors in the control room, still showing the tape: a
+			# frame of the programme, frozen.
+			m.albedo_texture = load(TvShow.SHEET) as Texture2D
+			m.albedo_color = Color(0.08, 0.08, 0.08)
+			m.emission_enabled = true
+			m.emission_texture = m.albedo_texture
+			m.emission = Color(0.55, 0.62, 0.75)
+			m.emission_energy_multiplier = 0.35
+			m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	if key != "glow_show":
+		m.emission_enabled = true
+	m.roughness = 0.4
+	_mats[key] = m
+	return m
+
+
+## A collision box for a piece built of separate parts.
+func _add_furniture_box(cx: float, cz: float, sx: float, sz: float, h: float, base: float) -> void:
+	var shape := CollisionShape3D.new()
+	var bs := BoxShape3D.new()
+	bs.size = Vector3(sx, h, sz)
+	shape.shape = bs
+	shape.position = Vector3(cx, base + h * 0.5, cz)
+	_furniture_body.add_child(shape)
+
+
+## The middle of the set: the rug in the studio (the room of `c`); the
+## room's middle if it has none.
+func _set_centre(c: Vector3i) -> Vector3:
+	var room := layout.room_at(c)
+	var sum := Vector3.ZERO
+	var n := 0
+	for rc in layout.find_all("r"):
+		if layout.room_at(rc) == room:
+			sum += center(rc)
+			n += 1
+	if n > 0:
+		return sum / n
+	if room >= 0:
+		var rr: Rect2i = layout.rooms[room].rect
+		return Vector3(rr.position.x + rr.size.x * 0.5, 0, rr.position.y + rr.size.y * 0.5)
+	return center(c)
+
+
+## The mixing desk in the control room: a steel body, a sloping panel of
+## faders and knobs, and the monitors along the back, still showing the
+## programme (a frozen frame each).
+func _console(r: Rect2i, f: int, cx: float, cz: float, sx: float, sz: float, up: Vector3) -> void:
+	var front := -_against_wall(r, f)
+	var out := Vector3(front.x, 0, front.y)
+	var along := Vector3(absf(front.y), 0, absf(front.x))
+	var length := sx if front.y != 0 else sz
+	var deep := sz if front.y != 0 else sx
+	_box("metal", Vector3(cx, 0.36, cz) + up, Vector3(sx - 0.04, 0.72, sz - 0.04))
+	_box("plastic", Vector3(cx, 0.75, cz) + out * 0.08 + up, _sized(along, length, deep - 0.16, 0.06))  # the panel
+	_box("metal", Vector3(cx, 0.73, cz) + out * (deep * 0.5 - 0.04) + up, _sized(along, length + 0.02, 0.08, 0.04))  # the arm rest
+	var n := maxi(2, int(length / 0.12))
+	for k in n:
+		var at := Vector3(cx, 0.79, cz) + along * (-length * 0.5 + (k + 0.5) * length / n)
+		_box("metal", at + out * (0.05 + _decor.randf_range(-0.1, 0.1)) + up, _sized(along, 0.025, 0.05, 0.03))  # a fader
+		if _decor.randf() < 0.5:
+			_box("glow_red" if _decor.randf() < 0.3 else "glow_green", at - out * 0.18 + up, Vector3(0.012, 0.01, 0.012))
+	# The monitors, along the back on a shelf.
+	var shelf := Vector3(cx, 0.95, cz) - out * (deep * 0.5 - 0.2) + up
+	_box("metal", shelf, _sized(along, length, 0.36, 0.04))
+	var frames := [TvShow.EMPTY, TvShow.STARE_DARK, TvShow.STATIC_A, TvShow.BARS, TvShow.CLOSE, TvShow.STATIC_B, TvShow.STARE]
+	var count := maxi(1, int(length / 0.55))
+	for k in count:
+		var at := shelf + along * (-length * 0.5 + (k + 0.5) * length / count) + Vector3.UP * 0.22
+		_box("plastic", at, _sized(along, 0.44, 0.36, 0.38))
+		var frame: int = frames[_decor.randi() % frames.size()]
+		var uv := Rect2(float(frame * TvShow.FRAME.x) / 9600.0, 0, float(TvShow.FRAME.x) / 9600.0, 1)
+		_wall_sheet("glow_show", at + out * 0.181, out, 0.34, 0.26, uv)
+
+
+## A bank of steel lockers, against the wall: vents, a gap between doors.
+func _lockers(r: Rect2i, f: int, cx: float, cz: float, sx: float, sz: float, up: Vector3) -> void:
+	var front := -_against_wall(r, f)
+	var out := Vector3(front.x, 0, front.y)
+	var along := Vector3(absf(front.y), 0, absf(front.x))
+	var length := sx if front.y != 0 else sz
+	var deep := sz if front.y != 0 else sx
+	_box("locker", Vector3(cx, 0.98, cz) + up, Vector3(sx, 1.8, sz))
+	_box("metal", Vector3(cx, 0.04, cz) + up, Vector3(sx - 0.04, 0.08, sz - 0.04))
+	_box("metal", Vector3(cx, 1.895, cz) + up, Vector3(sx + 0.02, 0.03, sz + 0.02))
+	var n := maxi(1, roundi(length / 0.4))
+	var face := Vector3(cx, 0, cz) + out * (deep * 0.5 + 0.004) + up
+	for k in n:
+		var at := face + along * (-length * 0.5 + (k + 0.5) * length / n)
+		if k > 0:
+			_box("plastic", face + along * (-length * 0.5 + k * length / n) + Vector3.UP * 0.98, _sized(along, 0.012, 0.006, 1.76))
+		for v in 3:  # the louvres
+			_box("plastic", at + Vector3.UP * (1.66 - v * 0.05), _sized(along, 0.2, 0.006, 0.014))
+		_box("metal", at + along * (0.13 if k % 2 == 0 else -0.13) + Vector3.UP * 1.0 + out * 0.01, _sized(along, 0.025, 0.02, 0.12))  # the latch
+
+
+## A studio camera on its pedestal: a weighted base on three castors, the
+## column, the pan head and the camera body with its hood, pointed at the
+## set. Off: its red tally light is dark.
+func _studio_camera(c: Vector3i) -> void:
+	var p := center(c)
+	var to := _set_centre(c) - p
+	to.y = 0.0
+	var aim := to.normalized() if to.length() > 0.01 else Vector3.FORWARD
+	if absf(aim.x) > absf(aim.z):
+		aim = Vector3(signf(aim.x), 0, 0)
+	else:
+		aim = Vector3(0, 0, signf(aim.z))
+	var side := Vector3(absf(aim.z), 0, absf(aim.x))
+	_box("metal", p + Vector3.UP * 0.08, Vector3(0.62, 0.1, 0.62))
+	for k in 3:
+		var a := TAU * k / 3.0
+		_box("plastic", p + Vector3(cos(a) * 0.26, 0.035, sin(a) * 0.26), Vector3(0.07, 0.07, 0.07))
+	_box("metal", p + Vector3.UP * 0.62, Vector3(0.12, 1.0, 0.12))
+	_box("metal", p + Vector3.UP * 1.13, Vector3(0.22, 0.04, 0.22))  # the steering ring
+	var body := p + Vector3.UP * 1.3 + aim * 0.05
+	_box("plastic", body, _sized(side, 0.3, 0.5, 0.3))
+	_box("metal", body + aim * 0.34, _sized(side, 0.22, 0.2, 0.22))  # the lens
+	_box("plastic", body + aim * 0.45 + Vector3.UP * 0.0, _sized(side, 0.26, 0.04, 0.26))  # its hood
+	_box("plastic", body - aim * 0.2 + Vector3.UP * 0.22, _sized(side, 0.24, 0.2, 0.16))  # the viewfinder
+	_box("metal", body - aim * 0.5 + Vector3.DOWN * 0.08, _sized(aim.abs(), 0.5, 0.03, 0.03))  # the pan bar
+	_box("plastic", body + Vector3.UP * 0.16 + aim * 0.2, Vector3(0.03, 0.02, 0.03))  # the tally, off
+
+
+## A 19-inch rack of transmitter gear: steel, rows of panels, a few LEDs
+## still lit (the only thing in the building that never went off).
+func _rack(p: Vector3, front: Vector3) -> void:
+	var along := Vector3(absf(front.z), 0, absf(front.x))
+	_box("metal", p + Vector3.UP * 0.95, Vector3(0.82, 1.9, 0.82))
+	var face := p + front * 0.412
+	var y := 0.18
+	while y < 1.75:
+		var h := [0.09, 0.13, 0.18, 0.27][_decor.randi() % 4] as float
+		_box("plastic", face + Vector3.UP * (y + h * 0.5), _sized(along, 0.7, 0.012, h - 0.015))
+		for k in _decor.randi_range(0, 3):
+			var key := ["glow_red", "glow_green", "glow_amber"][_decor.randi() % 3] as String
+			_box(key, face + front * 0.008 + along * (-0.3 + k * 0.05) + Vector3.UP * (y + h * 0.5), Vector3(0.015, 0.012, 0.015))
+		y += h
+	_box("metal", face + Vector3.UP * 1.84, _sized(along, 0.78, 0.02, 0.08))
+
+
+## A costume of Vecinito hung on its hook: The Husk's double. The same
+## model as The Husk asleep, a plain prop (the camcorder sees these).
+func _costume(c: Vector3i) -> void:
+	var m := HuskModel.new()
+	m.name = "Costume%d_%d" % [c.x, c.z]
+	m.setup(HuskModel.Pose.SLUMP, false)
+	m.position = center(c)
+	var face := _toward_middle(c)
+	m.rotation.y = atan2(-face.x, -face.z) + _decor.randf_range(-0.15, 0.15)
+	add_child(m)
+	_hook(center(c))
+
+
+## A wire hook down from the ceiling, holding a costume up by the head.
+func _hook(p: Vector3) -> void:
+	var top := HEIGHT
+	_box("metal", p + Vector3.UP * (top - 0.33), Vector3(0.014, 0.66, 0.014))
+	_box("metal", p + Vector3.UP * (top - 0.67), Vector3(0.05, 0.014, 0.014))
+
+
+## Round the make-up mirror: a dark glass on the wall over the counter, and
+## the bulbs, most of them dead.
+func _make_up_mirror(r: Rect2i, f: int, cx: float, cz: float, sx: float, sz: float, up: Vector3) -> void:
+	var wall := _against_wall(r, f)
+	var out := Vector3(-wall.x, 0, -wall.y)
+	var along := Vector3(absf(wall.y), 0, absf(wall.x))
+	var length := sx if wall.y != 0 else sz
+	var deep := sz if wall.y != 0 else sx
+	var mid := Vector3(cx, 1.45, cz) - out * (deep * 0.5 - 0.01) + up
+	_box("plastic", mid, _sized(along, length - 0.2, 0.012, 0.7))
+	var n := maxi(3, int(length / 0.22))
+	for k in n:
+		var key := "glow_bulb" if _decor.randf() < 0.2 else "enamel"
+		_box(key, mid + out * 0.03 + along * (-(length - 0.3) * 0.5 + k * (length - 0.3) / (n - 1)) + Vector3.UP * 0.4, Vector3(0.06, 0.06, 0.06))
+
+
+## The set of the show in the studio: the flats of its living room behind
+## the sofa (wallpaper in front, bare braces behind), a doorway flat with
+## nothing behind it, and the lighting grid overhead with its lamps aimed
+## at the set.
+func _build_set() -> void:
+	for room: int in layout.rooms.size():
+		if str(layout.rooms[room].type) != "studio":
+			continue
+		var rr: Rect2i = layout.rooms[room].rect
+		var sofa: Array[Vector3i] = []
+		for c in layout.find_all("s"):
+			if layout.room_at(c) == room:
+				sofa.append(c)
+		if not sofa.is_empty():
+			var rect := Rect2i(Vector2i(sofa[0].x, sofa[0].z), Vector2i.ONE)
+			for c in sofa:
+				rect = rect.expand(Vector2i(c.x, c.z)).expand(Vector2i(c.x, c.z) + Vector2i.ONE)
+			var back := _away_from_tv(rect)
+			var out := Vector3(back.x, 0, back.y)
+			var along := Vector3(absf(back.y), 0, absf(back.x))
+			var length := float(rect.size.x if back.y != 0 else rect.size.y)
+			var mid := Vector3(rect.position.x + rect.size.x * 0.5, 0, rect.position.y + rect.size.y * 0.5)
+			var edge := mid + out * ((rect.size.y if back.y != 0 else rect.size.x) * 0.5 + 0.08)
+			var h := 2.3
+			# The flat: a frame of battens, painted canvas on the front.
+			_box("wood_trim", edge + Vector3.UP * h * 0.5, _sized(along, length, 0.06, h))
+			_wall_sheet("wallpaper", edge - out * 0.031 + Vector3.UP * h * 0.5, -out, length, h, Rect2(0, 0, length / WALL_TEX_WIDTH, h / HEIGHT))
+			_box("wood_dark", edge - out * 0.035 + Vector3.UP * 0.06, _sized(along, length, 0.02, 0.12))  # painted skirting
+			for k in int(length) + 1:  # the braces behind, and their weights
+				var at := edge + along * (-length * 0.5 + k * length / maxf(1.0, int(length)))
+				_box("wood_dark", at + out * 0.3 + Vector3.UP * 0.9, Vector3(0.04, 1.6, 0.04))
+				_box("wood_dark", at + out * 0.25, _sized(out.abs(), 0.5, 0.06, 0.05))
+				_box("metal", at + out * 0.45 + Vector3.UP * 0.06, Vector3(0.16, 0.12, 0.16))
+			_add_furniture_box(edge.x, edge.z, length if along.x > 0.5 else 0.06, 0.06 if along.x > 0.5 else length, h, 0.0)
+			# A picture on the set's wall, the one on the tape.
+			_wall_sheet("photos", edge - out * 0.035 + Vector3.UP * 1.5, -out, 0.5, 0.4, Rect2(0, 0, 0.5, 0.5))
+		# The lighting grid: pipes across the room, and lamps hung off them.
+		var target := _set_centre(Vector3i(rr.position.x, 0, rr.position.y))
+		_ghost_light(target)
+		var y := HEIGHT - 0.25
+		var x := rr.position.x + 1.5
+		while x < rr.end.x - 1.0:
+			_box("metal", Vector3(x, y, rr.position.y + rr.size.y * 0.5), Vector3(0.05, 0.05, rr.size.y - 0.4))
+			for z in [rr.position.y + 1.5, rr.end.y - 1.5]:
+				var lamp := Vector3(x, y - 0.2, z)
+				if lamp.distance_to(Vector3(target.x, lamp.y, target.z)) < 1.6:
+					continue
+				_box("metal", lamp + Vector3.UP * 0.12, Vector3(0.03, 0.16, 0.03))
+				var aim := (Vector3(target.x, 0, target.z) - Vector3(lamp.x, 0, lamp.z)).normalized()
+				_box("plastic", lamp, Vector3(0.26, 0.26, 0.26))
+				_box("metal", lamp + aim * 0.16 + Vector3.DOWN * 0.04, Vector3(0.2, 0.2, 0.2) - aim.abs() * 0.16)  # the barn doors
+			x += 2.0
+
+
+
+## The station's lights: fluorescent tubes in a steel box with a diffuser,
+## cold green-white, stuttering; in the studio only the dim work light
+## over the floor (the show's lamps are off).
+func _add_tube_lamp(c: Vector3i, dead: bool) -> void:
+	var p := center(c)
+	var kind := layout.room_type_at(c)
+	var studio := kind == "studio"
+	var long_x := is_walkable(_n(c, Vector2i(1, 0))) or is_walkable(_n(c, Vector2i(-1, 0)))
+	var size := Vector3(1.2, 0.06, 0.28) if long_x else Vector3(0.28, 0.06, 1.2)
+	if studio:
+		size = Vector3(0.4, 0.1, 0.4)
+	_box("metal", p + Vector3.UP * (HEIGHT - 0.03), size + Vector3(0.04, 0, 0.04))
+	var diffuser := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(size.x - 0.06, 0.01, size.z - 0.06)
+	diffuser.mesh = bm
+	diffuser.position = p + Vector3.UP * (HEIGHT - 0.065)
+	diffuser.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var bulb := StandardMaterial3D.new()
+	var tone := Color(0.8, 0.95, 0.88)
+	var power := 0.95
+	match kind:
+		"hall":
+			power = 0.85
+		"studio":
+			tone = Color(1.0, 0.7, 0.45)
+			power = 0.85
+		"control", "transmitter":
+			tone = Color(0.72, 0.86, 1.0)
+			power = 0.7
+		"office", "breakroom", "dressing":
+			power = 0.9
+		_:
+			power = 0.75
+	power *= _decor.randf_range(0.8, 1.1)
+	bulb.albedo_color = tone
+	bulb.emission_enabled = true
+	bulb.emission = tone
+	diffuser.material_override = bulb
+	add_child(diffuser)
+	var light := FlickerLight.new()
+	light.position = p + Vector3.UP * (HEIGHT - 0.3)
+	light.light_color = tone
+	light.omni_range = 4.6
+	light.omni_attenuation = 1.5
+	light.light_volumetric_fog_energy = 0.4
+	light.base_energy = power
+	light.fluorescent = not studio
+	var cone := SpotLight3D.new()
+	cone.light_color = tone
+	cone.spot_range = HEIGHT + 0.6
+	cone.spot_angle = 60.0
+	cone.spot_attenuation = 0.9
+	cone.spot_angle_attenuation = 1.4
+	cone.light_volumetric_fog_energy = 1.8
+	cone.shadow_enabled = false
+	cone.distance_fade_enabled = true
+	cone.distance_fade_begin = 14.0
+	cone.rotation.x = -PI / 2
+	light.add_child(cone)
+	light.spot = cone
+	light.shadow_enabled = false  # turned on near the viewer: update_shadows()
+	light.distance_fade_enabled = true
+	light.distance_fade_begin = 14.0
+	light.dead = dead
+	light.bulb = bulb
+	add_child(light)
+	lamps.append(light)
+
+
+## The ghost light: a bare bulb on a stand, left burning on the empty set
+## (an old theatre habit). It is a lamp like the others: it dies with the
+## power.
+func _ghost_light(at: Vector3) -> void:
+	var p := at + Vector3(0.35, 0, 0.35)
+	_box("metal", p + Vector3.UP * 0.02, Vector3(0.36, 0.04, 0.36))
+	_box("metal", p + Vector3.UP * 0.8, Vector3(0.035, 1.56, 0.035))
+	_box("metal", p + Vector3.UP * 1.62, Vector3(0.1, 0.03, 0.1))
+	for k in 4:  # the wire cage round the bulb
+		var a := TAU * k / 4.0
+		_box("metal", p + Vector3(cos(a) * 0.07, 1.72, sin(a) * 0.07), Vector3(0.01, 0.2, 0.01))
+	_add_furniture_box(p.x, p.z, 0.3, 0.3, 1.8, 0.0)
+	var bulb := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.05
+	sm.height = 0.12
+	sm.radial_segments = 8
+	sm.rings = 4
+	bulb.mesh = sm
+	bulb.position = p + Vector3.UP * 1.71
+	bulb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var glow := StandardMaterial3D.new()
+	glow.albedo_color = Color(1.0, 0.85, 0.6)
+	glow.emission_enabled = true
+	glow.emission = Color(1.0, 0.75, 0.45)
+	bulb.material_override = glow
+	add_child(bulb)
+	var light := FlickerLight.new()
+	light.position = p + Vector3.UP * 1.71
+	light.light_color = Color(1.0, 0.72, 0.45)
+	light.omni_range = 6.0
+	light.omni_attenuation = 1.4
+	light.light_volumetric_fog_energy = 0.8
+	light.base_energy = 0.9
+	light.shadow_enabled = false
+	light.distance_fade_enabled = true
+	light.distance_fade_begin = 16.0
+	light.bulb = glow
+	add_child(light)
+	lamps.append(light)
